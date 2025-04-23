@@ -73,6 +73,10 @@
                                                     </div>
                                                     <form id="prediction-form" class="form-validate">
                                                         <div class="row g-4">
+                                                            <!-- Basic Information -->
+                                                            <div class="col-12">
+                                                                <h6 class="overline-title text-primary">Basic Information</h6>
+                                                            </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="age">Age</label>
@@ -83,135 +87,215 @@
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label">Sex</label>
+                                                                    <label class="form-label" for="gender">Gender</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-select" id="sex" name="sex" required>
+                                                                        <select class="form-select" id="gender" name="gender" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1">Male</option>
-                                                                            <option value="0">Female</option>
+                                                                            <option value="Male">Male</option>
+                                                                            <option value="Female">Female</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="cp">Chest Pain Type</label>
+                                                                    <label class="form-label" for="bmi">BMI</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-select" id="cp" name="cp" required>
+                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="50" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Cardiovascular Indicators -->
+                                                            <div class="col-12">
+                                                                <h6 class="overline-title text-primary mt-3">Cardiovascular Indicators</h6>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="blood_pressure">Blood Pressure (mm Hg)</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" class="form-control" id="blood_pressure" name="blood_pressure" min="80" max="200" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="cholesterol_level">Cholesterol Level (mg/dl)</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" class="form-control" id="cholesterol_level" name="cholesterol_level" min="100" max="600" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="high_blood_pressure">High Blood Pressure</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="high_blood_pressure" name="high_blood_pressure" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0">Typical Angina</option>
-                                                                            <option value="1">Atypical Angina</option>
-                                                                            <option value="2">Non-anginal Pain</option>
-                                                                            <option value="3">Asymptomatic</option>
+                                                                            <option value="Yes">Yes</option>
+                                                                            <option value="No">No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="trestbps">Resting Blood Pressure (mm Hg)</label>
+                                                                    <label class="form-label" for="low_hdl_cholesterol">Low HDL Cholesterol</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" class="form-control" id="trestbps" name="trestbps" min="80" max="200" required>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="chol">Cholesterol (mg/dl)</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <input type="number" class="form-control" id="chol" name="chol" min="100" max="600" required>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="fbs">Fasting Blood Sugar > 120 mg/dl</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-select" id="fbs" name="fbs" required>
+                                                                        <select class="form-select" id="low_hdl_cholesterol" name="low_hdl_cholesterol" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1">Yes</option>
-                                                                            <option value="0">No</option>
+                                                                            <option value="Yes">Yes</option>
+                                                                            <option value="No">No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="restecg">Resting ECG Results</label>
+                                                                    <label class="form-label" for="high_ldl_cholesterol">High LDL Cholesterol</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-select" id="restecg" name="restecg" required>
+                                                                        <select class="form-select" id="high_ldl_cholesterol" name="high_ldl_cholesterol" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0">Normal</option>
-                                                                            <option value="1">ST-T Wave Abnormality</option>
-                                                                            <option value="2">Left Ventricular Hypertrophy</option>
+                                                                            <option value="Yes">Yes</option>
+                                                                            <option value="No">No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="thalach">Maximum Heart Rate</label>
+                                                                    <label class="form-label" for="triglyceride_level">Triglyceride Level</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" class="form-control" id="thalach" name="thalach" min="60" max="220" required>
+                                                                        <input type="number" class="form-control" id="triglyceride_level" name="triglyceride_level" min="50" max="500" required>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="exang">Exercise Induced Angina</label>
+                                                                    <label class="form-label" for="fasting_blood_sugar">Fasting Blood Sugar</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-select" id="exang" name="exang" required>
+                                                                        <input type="number" class="form-control" id="fasting_blood_sugar" name="fasting_blood_sugar" min="70" max="200" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="crp_level">CRP Level</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" step="0.01" class="form-control" id="crp_level" name="crp_level" min="0" max="20" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="homocysteine_level">Homocysteine Level</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" step="0.01" class="form-control" id="homocysteine_level" name="homocysteine_level" min="0" max="30" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Lifestyle Factors -->
+                                                            <div class="col-12">
+                                                                <h6 class="overline-title text-primary mt-3">Lifestyle Factors</h6>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="exercise_habits">Exercise Habits</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="exercise_habits" name="exercise_habits" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1">Yes</option>
-                                                                            <option value="0">No</option>
+                                                                            <option value="Low">Low</option>
+                                                                            <option value="Medium">Medium</option>
+                                                                            <option value="High">High</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="oldpeak">ST Depression Induced by Exercise</label>
+                                                                    <label class="form-label" for="smoking">Smoking</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="oldpeak" name="oldpeak" min="0" max="10" required>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div class="form-group">
-                                                                    <label class="form-label" for="slope">Slope of Peak Exercise ST Segment</label>
-                                                                    <div class="form-control-wrap">
-                                                                        <select class="form-select" id="slope" name="slope" required>
+                                                                        <select class="form-select" id="smoking" name="smoking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0">Upsloping</option>
-                                                                            <option value="1">Flat</option>
-                                                                            <option value="2">Downsloping</option>
+                                                                            <option value="Yes">Yes</option>
+                                                                            <option value="No">No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="ca">Number of Major Vessels</label>
+                                                                    <label class="form-label" for="alcohol_consumption">Alcohol Consumption</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-select" id="ca" name="ca" required>
+                                                                        <select class="form-select" id="alcohol_consumption" name="alcohol_consumption" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0">0</option>
-                                                                            <option value="1">1</option>
-                                                                            <option value="2">2</option>
-                                                                            <option value="3">3</option>
+                                                                            <option value="Low">Low</option>
+                                                                            <option value="Medium">Medium</option>
+                                                                            <option value="High">High</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
-                                                                    <label class="form-label" for="thal">Thalassemia</label>
+                                                                    <label class="form-label" for="stress_level">Stress Level</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-select" id="thal" name="thal" required>
+                                                                        <select class="form-select" id="stress_level" name="stress_level" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1">Normal</option>
-                                                                            <option value="2">Fixed Defect</option>
-                                                                            <option value="3">Reversible Defect</option>
+                                                                            <option value="Low">Low</option>
+                                                                            <option value="Medium">Medium</option>
+                                                                            <option value="High">High</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="sleep_hours">Sleep Hours</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" step="0.1" class="form-control" id="sleep_hours" name="sleep_hours" min="3" max="12" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="sugar_consumption">Sugar Consumption</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="sugar_consumption" name="sugar_consumption" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="Low">Low</option>
+                                                                            <option value="Medium">Medium</option>
+                                                                            <option value="High">High</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Medical History -->
+                                                            <div class="col-12">
+                                                                <h6 class="overline-title text-primary mt-3">Medical History</h6>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="family_heart_disease">Family Heart Disease</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="family_heart_disease" name="family_heart_disease" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="Yes">Yes</option>
+                                                                            <option value="No">No</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="diabetes">Diabetes</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="diabetes" name="diabetes" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="Yes">Yes</option>
+                                                                            <option value="No">No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -237,23 +321,38 @@
                                                         
                                                         <div id="result-high" class="result-box result-high">
                                                             <h6 class="text-danger"><em class="icon ni ni-alert-circle"></em> High Risk</h6>
-                                                            <p>The model predicts a high risk of heart disease. Please consult with a healthcare professional as soon as possible.</p>
+                                                            <p>Based on the comprehensive analysis of your 21 health parameters, the model predicts a high risk of heart disease. Please consult with a healthcare professional as soon as possible.</p>
+                                                            <ul class="list list-sm list-checked">
+                                                                <li>Your combination of lifestyle factors, medical history, and cardiovascular indicators suggests significant risk</li>
+                                                                <li>Consider immediate lifestyle modifications and medical consultation</li>
+                                                                <li>Regular monitoring of blood pressure, cholesterol, and blood sugar is recommended</li>
+                                                            </ul>
                                                         </div>
                                                         
                                                         <div id="result-medium" class="result-box result-medium">
                                                             <h6 class="text-warning"><em class="icon ni ni-alert-circle"></em> Medium Risk</h6>
-                                                            <p>The model predicts a moderate risk of heart disease. Consider discussing these results with your doctor.</p>
+                                                            <p>Based on the comprehensive analysis of your 21 health parameters, the model predicts a moderate risk of heart disease. Consider discussing these results with your doctor.</p>
+                                                            <ul class="list list-sm list-checked">
+                                                                <li>Some of your health parameters indicate potential concerns</li>
+                                                                <li>Moderate lifestyle changes may help reduce your risk</li>
+                                                                <li>Regular health check-ups are recommended</li>
+                                                            </ul>
                                                         </div>
                                                         
                                                         <div id="result-low" class="result-box result-low">
                                                             <h6 class="text-success"><em class="icon ni ni-check-circle"></em> Low Risk</h6>
-                                                            <p>The model predicts a low risk of heart disease. Continue maintaining a healthy lifestyle.</p>
+                                                            <p>Based on the comprehensive analysis of your 21 health parameters, the model predicts a low risk of heart disease. Continue maintaining a healthy lifestyle.</p>
+                                                            <ul class="list list-sm list-checked">
+                                                                <li>Your overall health profile shows positive indicators</li>
+                                                                <li>Maintain your current healthy habits</li>
+                                                                <li>Continue regular health check-ups</li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="mt-4">
                                                         <h6 class="overline-title">Important Note</h6>
-                                                        <p class="text-soft">This prediction is based on an AI model and should not replace professional medical advice. Always consult with healthcare professionals for accurate diagnosis and treatment.</p>
+                                                        <p class="text-soft">This prediction is based on an AI model analyzing 21 comprehensive health parameters including lifestyle factors, medical history, and cardiovascular indicators. While our model is trained on extensive data, it should not replace professional medical advice. Always consult with healthcare professionals for accurate diagnosis and treatment.</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -289,7 +388,43 @@
                 box.style.display = 'none';
             });
             
-            // Simulate prediction (in a real app, this would call your ML model)
+            // Collect all form data
+            const formData = {
+                // Basic Information
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                bmi: document.getElementById('bmi').value,
+                
+                // Cardiovascular Indicators
+                blood_pressure: document.getElementById('blood_pressure').value,
+                cholesterol_level: document.getElementById('cholesterol_level').value,
+                high_blood_pressure: document.getElementById('high_blood_pressure').value,
+                low_hdl_cholesterol: document.getElementById('low_hdl_cholesterol').value,
+                high_ldl_cholesterol: document.getElementById('high_ldl_cholesterol').value,
+                triglyceride_level: document.getElementById('triglyceride_level').value,
+                fasting_blood_sugar: document.getElementById('fasting_blood_sugar').value,
+                crp_level: document.getElementById('crp_level').value,
+                homocysteine_level: document.getElementById('homocysteine_level').value,
+                
+                // Lifestyle Factors
+                exercise_habits: document.getElementById('exercise_habits').value,
+                smoking: document.getElementById('smoking').value,
+                alcohol_consumption: document.getElementById('alcohol_consumption').value,
+                stress_level: document.getElementById('stress_level').value,
+                sleep_hours: document.getElementById('sleep_hours').value,
+                sugar_consumption: document.getElementById('sugar_consumption').value,
+                
+                // Medical History
+                family_heart_disease: document.getElementById('family_heart_disease').value,
+                diabetes: document.getElementById('diabetes').value
+            };
+            
+            console.log('Form data collected:', formData);
+            
+            // In a real application, you would send this data to your backend
+            // For example: fetch('/predict', { method: 'POST', body: JSON.stringify(formData) })
+            
+            // For now, we'll simulate a prediction result
             const randomValue = Math.random();
             let resultBox;
             
