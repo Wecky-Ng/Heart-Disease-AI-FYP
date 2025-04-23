@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Heart Disease Prediction using AI">
+    <title>Heart Disease Prediction</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/dashlite.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <style>
+        .card-prediction {
+            transition: all 0.3s ease;
+        }
+        .card-prediction:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(43, 84, 180, 0.15);
+        }
+        .result-box {
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        .result-high {
+            background-color: rgba(255, 91, 91, 0.1);
+            border-left: 4px solid #ff5b5b;
+        }
+        .result-low {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+        }
+        .result-medium {
+            background-color: rgba(255, 165, 0, 0.1);
+            border-left: 4px solid #ffa500;
+        }
+        @media (max-width: 768px) {
+            .form-group {
+                margin-bottom: 1rem;
+            }
+            .card-inner {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body class="nk-body bg-lighter">
+    <div class="nk-app-root">
+        <div class="nk-main">
+            <div class="nk-wrap">
+                <div class="nk-content">
+                    <div class="container-fluid">
+                        <div class="nk-content-inner">
+                            <div class="nk-content-body">
+                                <div class="nk-block-head nk-block-head-sm">
+                                    <div class="nk-block-between">
+                                        <div class="nk-block-head-content">
+                                            <h3 class="nk-block-title page-title">Heart Disease Prediction</h3>
+                                            <div class="nk-block-des text-soft">
+                                                <p>Enter your health parameters to predict heart disease risk.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="nk-block">
+                                    <div class="row g-gs">
+                                        <div class="col-lg-8">
+                                            <div class="card card-bordered h-100 card-prediction">
+                                                <div class="card-inner">
+                                                    <div class="card-head">
+                                                        <h5 class="card-title">Health Parameters</h5>
+                                                    </div>
+                                                    <form id="prediction-form" class="form-validate">
+                                                        <div class="row g-4">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="age">Age</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" class="form-control" id="age" name="age" min="1" max="120" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label">Sex</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="sex" name="sex" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="1">Male</option>
+                                                                            <option value="0">Female</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="cp">Chest Pain Type</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="cp" name="cp" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="0">Typical Angina</option>
+                                                                            <option value="1">Atypical Angina</option>
+                                                                            <option value="2">Non-anginal Pain</option>
+                                                                            <option value="3">Asymptomatic</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="trestbps">Resting Blood Pressure (mm Hg)</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" class="form-control" id="trestbps" name="trestbps" min="80" max="200" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="chol">Cholesterol (mg/dl)</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" class="form-control" id="chol" name="chol" min="100" max="600" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="fbs">Fasting Blood Sugar > 120 mg/dl</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="fbs" name="fbs" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="1">Yes</option>
+                                                                            <option value="0">No</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="restecg">Resting ECG Results</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="restecg" name="restecg" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="0">Normal</option>
+                                                                            <option value="1">ST-T Wave Abnormality</option>
+                                                                            <option value="2">Left Ventricular Hypertrophy</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="thalach">Maximum Heart Rate</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" class="form-control" id="thalach" name="thalach" min="60" max="220" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="exang">Exercise Induced Angina</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="exang" name="exang" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="1">Yes</option>
+                                                                            <option value="0">No</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="oldpeak">ST Depression Induced by Exercise</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <input type="number" step="0.1" class="form-control" id="oldpeak" name="oldpeak" min="0" max="10" required>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="slope">Slope of Peak Exercise ST Segment</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="slope" name="slope" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="0">Upsloping</option>
+                                                                            <option value="1">Flat</option>
+                                                                            <option value="2">Downsloping</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="ca">Number of Major Vessels</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="ca" name="ca" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="0">0</option>
+                                                                            <option value="1">1</option>
+                                                                            <option value="2">2</option>
+                                                                            <option value="3">3</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="form-label" for="thal">Thalassemia</label>
+                                                                    <div class="form-control-wrap">
+                                                                        <select class="form-select" id="thal" name="thal" required>
+                                                                            <option value="">Select</option>
+                                                                            <option value="1">Normal</option>
+                                                                            <option value="2">Fixed Defect</option>
+                                                                            <option value="3">Reversible Defect</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <div class="form-group">
+                                                                    <button type="submit" class="btn btn-primary">Predict Risk</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="card card-bordered h-100 card-prediction">
+                                                <div class="card-inner">
+                                                    <div class="card-head">
+                                                        <h5 class="card-title">Prediction Result</h5>
+                                                    </div>
+                                                    <div id="result-container">
+                                                        <p class="text-soft">Fill in the form and click "Predict Risk" to see your heart disease risk assessment.</p>
+                                                        
+                                                        <div id="result-high" class="result-box result-high">
+                                                            <h6 class="text-danger"><em class="icon ni ni-alert-circle"></em> High Risk</h6>
+                                                            <p>The model predicts a high risk of heart disease. Please consult with a healthcare professional as soon as possible.</p>
+                                                        </div>
+                                                        
+                                                        <div id="result-medium" class="result-box result-medium">
+                                                            <h6 class="text-warning"><em class="icon ni ni-alert-circle"></em> Medium Risk</h6>
+                                                            <p>The model predicts a moderate risk of heart disease. Consider discussing these results with your doctor.</p>
+                                                        </div>
+                                                        
+                                                        <div id="result-low" class="result-box result-low">
+                                                            <h6 class="text-success"><em class="icon ni ni-check-circle"></em> Low Risk</h6>
+                                                            <p>The model predicts a low risk of heart disease. Continue maintaining a healthy lifestyle.</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="mt-4">
+                                                        <h6 class="overline-title">Important Note</h6>
+                                                        <p class="text-soft">This prediction is based on an AI model and should not replace professional medical advice. Always consult with healthcare professionals for accurate diagnosis and treatment.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nk-footer">
+                    <div class="container-fluid">
+                        <div class="nk-footer-wrap">
+                            <div class="nk-footer-copyright">© 2024 Heart Disease Prediction. All Rights Reserved.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="js/bundle.js"></script>
+    <script src="js/scripts.js"></script>
+    <script>
+        // Simple prediction simulation
+        document.getElementById('prediction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Hide all result boxes
+            document.querySelectorAll('.result-box').forEach(function(box) {
+                box.style.display = 'none';
+            });
+            
+            // Simulate prediction (in a real app, this would call your ML model)
+            const randomValue = Math.random();
+            let resultBox;
+            
+            if (randomValue > 0.7) {
+                resultBox = document.getElementById('result-high');
+            } else if (randomValue > 0.4) {
+                resultBox = document.getElementById('result-medium');
+            } else {
+                resultBox = document.getElementById('result-low');
+            }
+            
+            // Show the selected result box
+            resultBox.style.display = 'block';
+            
+            // Scroll to result on mobile
+            if (window.innerWidth < 992) {
+                document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    </script>
+</body>
+</html>
