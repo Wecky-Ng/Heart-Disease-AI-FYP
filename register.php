@@ -1,6 +1,7 @@
 <?php
-// Include session management
+// Include session management and user functions
 require_once 'session.php';
+require_once 'database/set_user.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -13,6 +14,9 @@ $error = '';
 $success = '';
 $username = '';
 $email = '';
+$full_name = '';
+$date_of_birth = '';
+$gender = '';
 
 // Process registration form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,6 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
+    $full_name = trim($_POST['full_name'] ?? '');
+    $date_of_birth = trim($_POST['date_of_birth'] ?? '');
+    $gender = $_POST['gender'] ?? '';
     
     // Basic validation
     if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
@@ -29,12 +36,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Passwords do not match';
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters long';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Please enter a valid email address';
+    } elseif (strlen($username) < 3 || strlen($username) > 50) {
+        $error = 'Username must be between 3 and 50 characters';
     } else {
-        // TODO: Replace with actual database registration
-        // For demonstration purposes only - simulate successful registration
-        $success = 'Registration successful! You can now log in.';
-        $username = '';
-        $email = '';
+        // Register the user
+        $result = registerUser($username, $email, $password);
+        
+        if ($result['status']) {
+            // If additional profile data was provided, update the user profile
+            if (!empty($full_name) || !empty($date_of_birth) || !empty($gender)) {
+                $userData = [
+                    'full_name' => $full_name,
+                    'date_of_birth' => $date_of_birth ?: null,
+                    'gender' => $gender ?: null
+                ];
+                
+                updateUserProfile($result['user_id'], $userData);
+            }
+            
+            $success = 'Registration successful! You can now log in.';
+            // Clear form data
+            $username = '';
+            $email = '';
+            $full_name = '';
+            $date_of_birth = '';
+            $gender = '';
+        } else {
+            $error = $result['message'];
+        }
     }
 }
 ?>
@@ -87,6 +118,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <label class="form-label" for="email">Email</label>
                                         <div class="form-control-wrap">
                                             <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Enter your email address" value="<?php echo htmlspecialchars($email); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="full_name">Full Name</label>
+                                        <div class="form-control-wrap">
+                                            <input type="text" class="form-control form-control-lg" id="full_name" name="full_name" placeholder="Enter your full name" value="<?php echo htmlspecialchars($full_name); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="date_of_birth">Date of Birth</label>
+                                        <div class="form-control-wrap">
+                                            <input type="date" class="form-control form-control-lg" id="date_of_birth" name="date_of_birth" value="<?php echo htmlspecialchars($date_of_birth); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="gender">Gender</label>
+                                        <div class="form-control-wrap">
+                                            <select class="form-control form-control-lg" id="gender" name="gender">
+                                                <option value="" <?php echo empty($gender) ? 'selected' : ''; ?>>Select Gender</option>
+                                                <option value="Male" <?php echo $gender === 'Male' ? 'selected' : ''; ?>>Male</option>
+                                                <option value="Female" <?php echo $gender === 'Female' ? 'selected' : ''; ?>>Female</option>
+                                                <option value="Other" <?php echo $gender === 'Other' ? 'selected' : ''; ?>>Other</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="form-group">

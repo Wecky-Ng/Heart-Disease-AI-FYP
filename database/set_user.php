@@ -18,7 +18,7 @@ require_once __DIR__ . '/connection.php';
  * @param string $role User role (default: 'user')
  * @return array Result with status and message
  */
-function registerUser($username, $email, $password, $role = 'user') {
+function registerUser($username, $email, $password, $full_name = null, $date_of_birth = null, $gender = null) {
     $db = getDbConnection();
     
     // Check if username or email already exists
@@ -39,8 +39,8 @@ function registerUser($username, $email, $password, $role = 'user') {
     
     // Insert new user
     try {
-        $stmt = $db->prepare("INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())");
-        $result = $stmt->execute([$username, $email, $hashedPassword, $role]);
+        $stmt = $db->prepare("INSERT INTO users (username, email, password, full_name, date_of_birth, gender, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $result = $stmt->execute([$username, $email, $hashedPassword, $full_name, $date_of_birth, $gender]);
         
         if ($result) {
             return [
@@ -81,8 +81,8 @@ function loginUser($username, $password) {
     
     // Verify password
     if (password_verify($password, $user['password'])) {
-        // Update last login time
-        $updateStmt = $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+        // Update last login time by updating the updated_at timestamp
+        $updateStmt = $db->prepare("UPDATE users SET updated_at = NOW() WHERE id = ?");
         $updateStmt->execute([$user['id']]);
         
         // Remove password from user data
@@ -174,13 +174,18 @@ function createUsersTable() {
     try {
         $db->exec("
             CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                email VARCHAR(100) NOT NULL UNIQUE,
+                id INT NOT NULL AUTO_INCREMENT,
+                username VARCHAR(50) NOT NULL,
+                email VARCHAR(100) NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(20) NOT NULL DEFAULT 'user',
-                created_at DATETIME NOT NULL,
-                last_login DATETIME NULL
+                full_name VARCHAR(100) DEFAULT NULL,
+                date_of_birth DATE DEFAULT NULL,
+                gender ENUM('Male','Female','Other') DEFAULT NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY username (username),
+                UNIQUE KEY email (email)
             )
         ");
         return true;

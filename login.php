@@ -22,17 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Please enter both email and password';
     } else {
-        // TODO: Replace with actual database authentication
-        // For demonstration purposes only
-        if ($email === 'demo@example.com' && $password === 'password') {
+        // Include user functions
+        require_once 'database/set_user.php';
+        
+        // Authenticate user
+        $result = loginUser($email, $password);
+        
+        if ($result['status']) {
             // Set user session
-            setUserSession(1, 'Demo User', $email, 'User');
+            $user = $result['user'];
+            setUserSession($user['id'], $user['username'], $user['email']);
             
             // Redirect to dashboard
             header('Location: home.php');
             exit();
         } else {
-            $error = 'Invalid email or password';
+            $error = $result['message'];
         }
     }
 }
