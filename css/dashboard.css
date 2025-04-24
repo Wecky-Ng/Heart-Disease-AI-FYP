@@ -1,0 +1,177 @@
+/* Dashboard Custom Styles for Heart Disease Prediction */
+
+/* Sidebar Customization */
+.nk-sidebar {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.nk-sidebar-logo {
+    padding: 1.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #364a63;
+}
+
+/* Header Customization */
+.nk-header {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    height: auto;
+}
+
+/* Search Box Customization */
+.nk-header-search .form-inline {
+    display: flex;
+    align-items: center;
+}
+
+.nk-header-search .form-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 280px;
+}
+
+.nk-header-search .form-icon-left {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8094ae;
+}
+
+.nk-header-search .form-control-sm {
+    height: 34px;
+    padding-left: 30px;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+/* Mobile Sidebar Toggle */
+@media (max-width: 991.98px) {
+    .nk-sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1022;
+    }
+    
+    .nk-sidebar.toggle-active {
+        transform: translateX(0);
+    }
+    
+    .sidebar-active {
+        overflow: hidden;
+    }
+    
+    .sidebar-active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1021;
+    }
+}
+
+/* Menu Item Customization */
+.nk-menu-item.active > .nk-menu-link {
+    color: #6576ff;
+    background-color: #ebeef2;
+}
+
+.nk-menu-link:hover {
+    color: #6576ff;
+    background-color: #f5f6fa;
+}
+
+/* Submenu Animation */
+.nk-menu-sub {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.has-sub.active > .nk-menu-sub {
+    max-height: 1000px;
+}
+
+/* Card Customization */
+.card-prediction {
+    border-radius: 5px;
+    border: 1px solid #dbdfea;
+}
+
+/* Form Elements */
+.form-control:focus {
+    border-color: #6576ff;
+    box-shadow: 0 0 0 3px rgba(101, 118, 255, 0.1);
+}
+
+/* Button Customization */
+.btn-primary {
+    background-color: #6576ff;
+    border-color: #6576ff;
+}
+
+.btn-primary:hover {
+    background-color: #4b5fff;
+    border-color: #4b5fff;
+}
+
+/* Result Box Animation */
+.result-box {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* User Profile Dropdown */
+.user-avatar {
+    background-color: #e5e9f2;
+    color: #6576ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+}
+
+.user-avatar.sm {
+    height: 32px;
+    width: 32px;
+    font-size: 0.875rem;
+}
+
+/* Notification Dropdown */
+.icon-status {
+    position: relative;
+}
+
+.icon-status::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    background-color: #f4bd0e;
+    border: 2px solid #fff;
+}
+
+.icon-status-info::after {
+    background-color: #09c2de;
+}
