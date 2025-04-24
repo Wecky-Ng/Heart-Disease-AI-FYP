@@ -6,12 +6,17 @@
  * using PDO with proper error handling.
  */
 
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'heart_disease_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_CHARSET', 'utf8mb4');
+// Load environment variables from .env file
+require_once __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
+// Database configuration from environment variables
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'heart_disease_db');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? 'utf8mb4');
 
 // Connection options
 $options = [

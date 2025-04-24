@@ -1,0 +1,16 @@
+# Environment variables
+.env
+
+# Composer dependencies
+/vendor/
+/composer.lock
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+Thumbs.db
