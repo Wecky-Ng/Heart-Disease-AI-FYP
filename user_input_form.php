@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI">
     <title>Heart Disease Prediction</title>
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/dashlite.css">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Include common stylesheets -->
+    <?php include 'includes/styles.php'; ?>
     <style>
         .card-prediction {
             transition: all 0.3s ease;
@@ -472,5 +470,8 @@
             }
         });
     </script>
+    
+    <!-- Include common JavaScript -->
+    <?php include 'includes/scripts.php'; ?>
 </body>
 </html>

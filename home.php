@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI">
     <title>Heart Disease Prediction - Dashboard</title>
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/dashlite.css">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Include common stylesheets -->
+    <?php include 'includes/styles.php'; ?>
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <!-- Include the side menu component -->
         <?php include 'sidemenu.php'; ?>
+
+        <!-- Sidebar Overlay -->
+        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
         
         <div class="nk-main">
             <!-- Include the header component -->
@@ -69,9 +70,7 @@
         </div>
     </div>
     
-    <!-- JavaScript -->
-    <script src="js/bundle.js"></script>
-    <script src="js/scripts.js"></script>
-    <script src="js/dashboard.js"></script>
+    <!-- Include common JavaScript -->
+    <?php include 'includes/scripts.php'; ?>
 </body>
 </html>

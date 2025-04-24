@@ -1,0 +1,61 @@
+/* Enhanced overlay fix for DashLite template sidebar
+ * Based on DashLite documentation and structure
+ */
+
+/* Ensure only one overlay is visible and properly positioned */
+.nk-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 998; /* Below sidebar (999) but above other content */
+    pointer-events: none; /* Allow clicks to pass through by default */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* When sidebar is active (body has .nav-shown), make overlay visible and capture clicks */
+.nav-shown .nk-sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto; /* Capture clicks on the overlay */
+}
+
+/* Ensure sidebar remains interactive even when overlay is active */
+.nav-shown .nk-sidebar {
+    z-index: 999; /* Keep sidebar above overlay */
+    transform: translateX(0); /* Ensure sidebar is visible when active */
+    pointer-events: auto; /* Ensure sidebar can be interacted with */
+}
+
+/* Fix for mobile view */
+@media (max-width: 991.98px) {
+    /* Prevent multiple overlays from stacking */
+    .nk-sidebar-overlay + .nk-sidebar-overlay {
+        display: none;
+    }
+    
+    /* Ensure main content is below overlay */
+    .nk-wrap {
+        position: relative;
+        z-index: 1; /* Below overlay */
+    }
+    
+    /* Fix sidebar positioning on mobile */
+    .nk-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    /* When sidebar is toggled on mobile */
+    .nav-shown .nk-sidebar {
+        transform: translateX(0);
+    }
+    
+    /* Ensure overlay covers entire screen */
+    .nk-sidebar-overlay {
+        width: 100vw;
+        height: 100vh;
+    }
+}

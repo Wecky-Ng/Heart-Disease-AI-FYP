@@ -44,10 +44,8 @@ $predictionHistory = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI - Prediction History">
     <title>Prediction History - Heart Disease Prediction</title>
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/dashlite.css">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Include common stylesheets -->
+    <?php include 'includes/styles.php'; ?>
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
@@ -137,8 +135,7 @@ $predictionHistory = [
         </div>
     </div>
     
-    <!-- JavaScript -->
-    <script src="js/bundle.js"></script>
-    <script src="js/scripts.js"></script>
+    <!-- Include common JavaScript -->
+    <?php include 'includes/scripts.php'; ?>
 </body>
 </html>

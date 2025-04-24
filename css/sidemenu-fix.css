@@ -1,0 +1,50 @@
+/* Fix for sidemenu scrolling issues */
+
+/* Ensure the sidebar has proper height and scrolling */
+.nk-sidebar {
+    height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 999;
+}
+
+/* Fix the content area to properly adjust with sidebar */
+.nk-sidebar-content {
+    height: calc(100vh - 65px); /* Adjust based on header height */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Make the menu scrollable */
+.nk-sidebar-menu {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 12px; /* Add some padding for scrollbar */
+}
+
+/* Ensure main content adjusts properly */
+.nk-wrap {
+    margin-left: 280px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 991.98px) {
+    .nk-wrap {
+        margin-left: 0;
+    }
+}
+
+/* Fix for simplebar plugin */
+[data-simplebar] {
+    position: relative;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-content: flex-start;
+    align-items: flex-start;
+    height: 100%;
+}

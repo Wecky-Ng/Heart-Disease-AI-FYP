@@ -11,7 +11,7 @@
         </div>
     </div>
     <div class="nk-sidebar-element">
-        <div class="nk-sidebar-conten p-3">
+        <div class="nk-sidebar-content p-3">
             <div class="nk-sidebar-menu" data-simplebar>
                 <ul class="nk-menu">
                     <li class="nk-menu-heading">
@@ -59,7 +59,7 @@
                         </ul>
                     </li>
                     <li class="nk-menu-item">
-                        <a href="#" class="nk-menu-link">
+                        <a href="faq.php" class="nk-menu-link">
                             <span class="nk-menu-icon"><em class="icon ni ni-help-alt"></em></span>
                             <span class="nk-menu-text">FAQ</span>
                         </a>

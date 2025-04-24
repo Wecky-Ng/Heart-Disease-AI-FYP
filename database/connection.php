@@ -3,7 +3,7 @@
  * Database Connection File
  * 
  * This file establishes a secure connection to the MySQL database
- * using PDO with proper error handling.
+ * using mysqli with proper error handling.
  */
 
 // Load environment variables from .env file
@@ -18,30 +18,24 @@ define('DB_USER', $_ENV['DB_USER'] ?? 'root');
 define('DB_PASS', $_ENV['DB_PASS'] ?? '');
 define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? 'utf8mb4');
 
-// Connection options
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
+// Create a mysqli connection
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
-// DSN (Data Source Name)
-$dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-
-// Create a PDO instance (connect to the database)
-try {
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-    // Set the connection as a global variable
-    $GLOBALS['db'] = $pdo;
-} catch (PDOException $e) {
-    // Handle connection error
-    die('Database Connection Error: ' . $e->getMessage());
+// Check for connection errors
+if ($mysqli->connect_error) {
+    die('Database Connection Error: ' . $mysqli->connect_error);
 }
+
+// Set charset
+$mysqli->set_charset(DB_CHARSET);
+
+// Store the connection in a global variable
+$GLOBALS['db'] = $mysqli;
 
 /**
  * Get database connection
  * 
- * @return PDO Database connection object
+ * @return mysqli Database connection object
  */
 function getDbConnection() {
     return $GLOBALS['db'];

@@ -28,12 +28,12 @@ function initSidebarToggle() {
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Toggle sidebar visibility
-                const sidebar = document.querySelector('.nk-sidebar');
-                if (sidebar) {
-                    sidebar.classList.toggle('toggle-active');
-                    document.body.classList.toggle('sidebar-active');
-                }
+                // Toggle sidebar visibility (Handled by core scripts.js)
+                // const sidebar = document.querySelector('.nk-sidebar');
+                // if (sidebar) {
+                //     sidebar.classList.toggle('toggle-active');
+                //     document.body.classList.toggle('sidebar-active');
+                // }
             });
         });
         
@@ -54,11 +54,11 @@ function initSidebarToggle() {
                 }
             });
             
-            // Close sidebar if clicked outside
-            if (clickedOutside && sidebar && sidebar.classList.contains('toggle-active')) {
-                sidebar.classList.remove('toggle-active');
-                document.body.classList.remove('sidebar-active');
-            }
+            // Close sidebar if clicked outside (Handled by core scripts.js)
+            // if (clickedOutside && sidebar && sidebar.classList.contains('toggle-active')) {
+            //     sidebar.classList.remove('toggle-active');
+            //     document.body.classList.remove('sidebar-active');
+            // }
         });
     }, 500); // Wait for components to load
 }
