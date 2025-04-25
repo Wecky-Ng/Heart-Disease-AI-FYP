@@ -27,7 +27,7 @@ function getLastTestRecord($userId) {
 }
 
 // Check if user is logged in
-if (isUserLoggedIn()) {
+if (isLoggedIn()) {
     // Get current user session data
     $sessionData = getCurrentUser();
     
@@ -124,7 +124,7 @@ if (isUserLoggedIn()) {
                                                     <div class="card-head">
                                                         <h5 class="card-title">Health Parameters</h5>
                                                     </div>
-                                                    <?php if (isUserLoggedIn() && ($gender || $lastTestData)): ?>
+                                                    <?php if (isLoggedIn() && ($gender || $lastTestData)): ?>
                                                     <div class="alert alert-info">
                                                         <div class="alert-icon"><em class="icon ni ni-info-fill"></em></div>
                                                         <div class="alert-text">Some fields have been prefilled with your profile data and previous test information.</div>
