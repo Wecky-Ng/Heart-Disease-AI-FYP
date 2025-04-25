@@ -6,6 +6,7 @@
 # Create the .vercel/output directory structure
 mkdir -p .vercel/output/static
 mkdir -p .vercel/output/functions/api
+mkdir -p .vercel/output/config
 
 # Copy all static assets to the static directory
 cp -r css fonts img js .vercel/output/static/
@@ -15,6 +16,11 @@ echo "<?php require __DIR__ . '/../../api/index.php';" > .vercel/output/function
 
 # Copy the main PHP files to the functions directory
 cp -r *.php api/ database/ includes/ .vercel/output/functions/
+
+# Copy configuration files
+cp .htaccess .vercel/output/functions/
+cp vercel.json .vercel/output/config/
+cp .vercel.php .vercel/output/functions/
 
 # Make the build script executable
 chmod +x vercel-build.sh

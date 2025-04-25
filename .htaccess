@@ -12,6 +12,11 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^(.*)$ $1.php [L]
 
+# Fallback to API handler for all other requests
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ api/index.php [QSA,L]
+
 # Ensure PHP files are properly processed
 <FilesMatch \.php$>
     SetHandler application/x-httpd-php

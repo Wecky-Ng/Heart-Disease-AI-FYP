@@ -61,9 +61,17 @@ if (empty($path) || $path === '/') {
     exit();
 }
 
-// Otherwise, include the requested PHP file
+// Check if the path has a .php extension
+if (substr($path, -4) !== '.php') {
+    // If no extension, append .php
+    $path .= '.php';
+}
+
+// Include the requested PHP file
 $file_path = __DIR__ . '/..' . $path;
 if (file_exists($file_path)) {
+    // Set content type for PHP files
+    header('Content-Type: text/html; charset=UTF-8');
     require $file_path;
 } else {
     // Fallback to home if file doesn't exist

@@ -16,10 +16,5 @@
     { "src": "/(.*)\\.php$", "dest": "/api/index.php" },
     { "src": "/", "dest": "/api/index.php" },
     { "src": "/(.*)", "dest": "/api/index.php" }
-  ],
-  "build": {
-    "env": {
-      "NOW_PHP_DEBUG": "1"
-    }
-  }
+  ]
 }
