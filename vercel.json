@@ -1,21 +1,15 @@
 {
-  "functions": {
-    "api/*.php": {
-      "runtime": "vercel-php@0.7.3"
-    },
-    "*.php": {
-      "runtime": "vercel-php@0.7.3"
-    }
-  },
+  "buildCommand": "./vercel-build.sh",
+  "outputDirectory": ".vercel/output",
   "routes": [
-    { "src": "/css/(.*)", "dest": "/css/$1" },
-    { "src": "/js/(.*)", "dest": "/js/$1" },
-    { "src": "/img/(.*)", "dest": "/img/$1" },
-    { "src": "/fonts/(.*)", "dest": "/fonts/$1" },
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)\\.php$", "dest": "/api/index.php" },
-    { "src": "/", "dest": "/api/index.php" },
-    { "src": "/(.*)", "dest": "/api/index.php" }
+    { "src": "/css/(.*)", "dest": "/static/css/$1" },
+    { "src": "/js/(.*)", "dest": "/static/js/$1" },
+    { "src": "/img/(.*)", "dest": "/static/img/$1" },
+    { "src": "/fonts/(.*)", "dest": "/static/fonts/$1" },
+    { "src": "/api/(.*)", "dest": "/functions/api/$1" },
+    { "src": "/(.*)\\.php$", "dest": "/functions/index" },
+    { "src": "/", "dest": "/functions/index" },
+    { "src": "/(.*)", "dest": "/functions/index" }
   ],
   "build": {
     "env": {
