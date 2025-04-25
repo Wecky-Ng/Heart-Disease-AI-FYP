@@ -10,3 +10,4 @@
 <link rel="stylesheet" href="css/dashboard.css">
 <link rel="stylesheet" href="css/sidemenu-fix.css">
 <link rel="stylesheet" href="css/overlay-fix.css">
+<link rel="stylesheet" href="css/customcss.css">
