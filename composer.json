@@ -1,5 +1,14 @@
 {
+    "name": "heart-disease-ai-fyp",
+    "description": "Heart Disease AI Final Year Project",
+    "type": "project",
     "require": {
+        "php": "^7.4|^8.0",
         "vlucas/phpdotenv": "^5.5"
+    },
+    "scripts": {
+        "vercel": [
+            "php -S localhost:8000"
+        ]
     }
 }

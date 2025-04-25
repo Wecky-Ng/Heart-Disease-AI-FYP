@@ -1,0 +1,18 @@
+# Enable PHP execution
+AddType application/x-httpd-php .php
+
+# Set default index file
+DirectoryIndex index.php home.php
+
+# Rewrite rules for clean URLs
+RewriteEngine On
+
+# Redirect to PHP files even without extension
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# Ensure PHP files are properly processed
+<FilesMatch \.php$>
+    SetHandler application/x-httpd-php
+</FilesMatch>

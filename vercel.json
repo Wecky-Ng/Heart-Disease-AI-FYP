@@ -14,7 +14,7 @@
     { "src": "/fonts/(.*)", "dest": "/fonts/$1" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/(.*)\\.php", "dest": "/$1.php" },
-    { "src": "/", "dest": "/index.php" },
-    { "src": "/(.*)", "dest": "/$1" }
+    { "src": "/", "dest": "/api/index.php" },
+    { "src": "/(.*)", "dest": "/api/index.php" }
   ]
 }
