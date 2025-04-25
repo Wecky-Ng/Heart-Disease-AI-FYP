@@ -4,32 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Include database connection
-require_once 'database/connection.php';
-
-// Fetch FAQs from database
-function getFaqs() {
-    try {
-        $db = getDbConnection();
-        $result = $db->query("SELECT id, faq_title, detail FROM faq ORDER BY id ASC");
-        
-        if (!$result) {
-            throw new Exception("Query failed: " . $db->error);
-        }
-        
-        $faqs = [];
-        while ($row = $result->fetch_assoc()) {
-            $faqs[] = $row;
-        }
-        
-        $result->free();
-        return $faqs;
-    } catch (Exception $e) {
-        // Log error and return empty array
-        error_log('Database Error: ' . $e->getMessage());
-        return [];
-    }
-}
+// Include FAQ data retrieval function
+require_once 'database/get_faq.php';
 
 // Get all FAQs
 $faqs = getFaqs();
@@ -44,23 +20,8 @@ $faqs = getFaqs();
     <title>FAQ - Heart Disease Prediction</title>
     <!-- Include common stylesheets -->
     <?php include 'includes/styles.php'; ?>
-    <style>
-        .faq-card {
-            transition: all 0.3s ease;
-            height: 100%;
-        }
-        .faq-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(43, 84, 180, 0.15);
-        }
-        .faq-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        .faq-detail {
-            color: #526484;
-        }
-    </style>
+    <!-- Include custom CSS for FAQ page -->
+    <link rel="stylesheet" href="css/customcss.css">
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">

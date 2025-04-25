@@ -61,32 +61,32 @@
                                     <div class="row g-gs">
                                         <div class="col-lg-8">
                                             <?php
-                                            // Include validation and preprocessing file
-                                            require_once 'database/form_validation_preprocessing.php';
+                                            // Include form preprocessing file
+                                            require_once 'form_preprocessing.php';
                                             
                                             // Check if form was submitted
                                             if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                                                // Validate and preprocess the form data
-                                                $validationResult = validateAndPreprocessFormData($_POST);
+                                                // Process form data and call prediction API
+                                                $predictionResult = processAndPredict($_POST);
                                                 
-                                                if ($validationResult['isValid']) {
-                                                    // Data is valid, proceed with prediction
-                                                    $data = $validationResult['data'];
+                                                if ($predictionResult['success']) {
+                                                    // API call successful, get the result
+                                                    $result = $predictionResult['result'];
+                                                    $data = $_POST; // Original form data for display
                                                     
-                                                    // For demonstration, we'll use a random prediction
-                                                    // In a real application, you would call your ML model API here
-                                                    $randomValue = mt_rand(1, 100) / 100;
+                                                    // Get risk level and probability from API result
+                                                    $riskLevel = ucfirst($result['risk_level']);
+                                                    $probability = $result['probability'];
+                                                    $factors = $result['factors'];
                                                     
-                                                    if ($randomValue > 0.7) {
-                                                        $riskLevel = "High";
+                                                    // Set risk class and description based on risk level
+                                                    if ($riskLevel == "High") {
                                                         $riskClass = "result-high";
                                                         $riskDescription = "Based on the provided parameters, you have a high risk of heart disease. Please consult with a healthcare professional as soon as possible.";
-                                                    } elseif ($randomValue > 0.4) {
-                                                        $riskLevel = "Medium";
+                                                    } elseif ($riskLevel == "Medium") {
                                                         $riskClass = "result-medium";
                                                         $riskDescription = "Based on the provided parameters, you have a moderate risk of heart disease. Consider lifestyle changes and regular check-ups.";
                                                     } else {
-                                                        $riskLevel = "Low";
                                                         $riskClass = "result-low";
                                                         $riskDescription = "Based on the provided parameters, you have a low risk of heart disease. Maintain a healthy lifestyle to keep it that way.";
                                                     }
@@ -99,7 +99,21 @@
                                                     echo "</div>";
                                                     echo "<div class='result-box {$riskClass}'>";
                                                     echo "<h4>Heart Disease Risk: {$riskLevel}</h4>";
+                                                    echo "<p>Probability: {$probability}%</p>";
                                                     echo "<p>{$riskDescription}</p>";
+                                                    
+                                                    // Display contributing factors
+                                                    if (!empty($factors)) {
+                                                        echo "<div class='mt-3'>";
+                                                        echo "<h6>Contributing Factors:</h6>";
+                                                        echo "<ul class='list'>";
+                                                        foreach ($factors as $factor) {
+                                                            echo "<li>{$factor}</li>";
+                                                        }
+                                                        echo "</ul>";
+                                                        echo "</div>";
+                                                    }
+                                                    
                                                     echo "</div>";
                                                     echo "<div class='mt-4'>";
                                                     echo "<h6>Your Health Parameters</h6>";
@@ -150,19 +164,30 @@
                                                     echo "</div>";
                                                     echo "</div>";
                                                 } else {
-                                                    // Display validation errors
+                                                    // API call failed or validation errors
                                                     echo "<div class='card card-bordered'>";
                                                     echo "<div class='card-inner'>";
                                                     echo "<div class='card-head'>";
-                                                    echo "<h5 class='card-title'>Validation Error</h5>";
-                                                    echo "</div>";
-                                                    echo "<div class='alert alert-danger'>";
-                                                    echo "<p>There were errors in your submission:</p>";
-                                                    echo "<ul>";
-                                                    foreach ($validationResult['errors'] as $error) {
-                                                        echo "<li>{$error}</li>";
+                                                    
+                                                    if (isset($predictionResult['errors']) && !empty($predictionResult['errors'])) {
+                                                        // Display validation errors
+                                                        echo "<h5 class='card-title'>Validation Error</h5>";
+                                                        echo "</div>";
+                                                        echo "<div class='alert alert-danger'>";
+                                                        echo "<p>There were errors in your submission:</p>";
+                                                        echo "<ul>";
+                                                        foreach ($predictionResult['errors'] as $error) {
+                                                            echo "<li>{$error}</li>";
+                                                        }
+                                                        echo "</ul>";
+                                                    } else {
+                                                        // Display API error
+                                                        echo "<h5 class='card-title'>Prediction Error</h5>";
+                                                        echo "</div>";
+                                                        echo "<div class='alert alert-danger'>";
+                                                        echo "<p>" . $predictionResult['error'] . "</p>";
+                                                        echo "<p>The prediction service might be unavailable. Please try again later.</p>";
                                                     }
-                                                    echo "</ul>";
                                                     echo "</div>";
                                                     echo "<div class='mt-4'>";
                                                     echo "<a href='user_input_form.php' class='btn btn-outline-primary'>Go Back</a>";

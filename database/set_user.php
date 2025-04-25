@@ -81,6 +81,13 @@ function loginUser($username, $password) {
     
     // Verify password
     if (password_verify($password, $user['password'])) {
+        // Check user status
+        if ($user['status'] == 0) {
+            return ['status' => false, 'message' => 'Your account has been suspended. Please contact support.'];
+        } elseif ($user['status'] == 2) {
+            return ['status' => false, 'message' => 'This account has been deleted.'];
+        }
+        
         // Update last login time by updating the updated_at timestamp
         $updateStmt = $db->prepare("UPDATE users SET updated_at = NOW() WHERE id = ?");
         $updateStmt->execute([$user['id']]);
