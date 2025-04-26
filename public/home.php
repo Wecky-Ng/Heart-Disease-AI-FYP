@@ -6,19 +6,19 @@
     <meta name="description" content="Heart Disease Prediction using AI">
     <title>Heart Disease Prediction - Dashboard</title>
     <!-- Include common stylesheets -->
-    <?php include '../includes/styles.php'; ?>
+    <?php require_once PROJECT_ROOT . '/includes/styles.php'; ?>
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <!-- Include the side menu component -->
-        <?php include '../sidemenu.php'; ?>
+        <?php require_once PROJECT_ROOT . '../sidemenu.php'; ?>
 
         <!-- Sidebar Overlay -->
         <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
         
         <div class="nk-main">
             <!-- Include the header component -->
-            <?php include '../header.php'; ?>
+            <?php require_once PROJECT_ROOT . '../header.php'; ?>
             
             <div class="nk-wrap">
                 <div class="nk-content">
@@ -71,6 +71,6 @@
     </div>
     
     <!-- Include common JavaScript -->
-    <?php include '../includes/scripts.php'; ?>
+    <?php require_once PROJECT_ROOT . '../includes/scripts.php'; ?>
 </body>
 </html>

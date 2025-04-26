@@ -5,12 +5,29 @@
   },
   "routes": [
     { "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))", "dest": "/public/$1" },
-    { "src": "/css/(.*)", "dest": "/public/css/$1" },
-    { "src": "/js/(.*)", "dest": "/public/js/$1" },
-    { "src": "/img/(.*)", "dest": "/public/img/$1" },
-    { "src": "/fonts/(.*)", "dest": "/public/fonts/$1" },
-    { "src": "/includes/(.*)", "dest": "/public/includes/$1" },
+    { "src": "/home.php", "dest": "/api/index.php" },
+    { "src": "/user_input_form.php", "dest": "/api/index.php" },
+    { "src": "/result.php", "dest": "/api/index.php" },
+    { "src": "/session.php", "dest": "/api/index.php" },
+    
+    { "src": "/database/(.*\\.php)", "dest": "/api/index.php" },
+
+    
+    { "src": "/includes/(.*\\.php)", "dest": "/api/index.php" },
+
+    
+    { "src": "/", "dest": "/api/index.php" },
+
+    
     { "src": "/(.*)", "dest": "/api/index.php" }
+    
+    // { "src": "/css/(.*)", "dest": "/public/css/$1" },
+    // { "src": "/js/(.*)", "dest": "/public/js/$1" },
+    // { "src": "/img/(.*)", "dest": "/public/img/$1" },
+    // { "src": "/fonts/(.*)", "dest": "/public/fonts/$1" },
+    // { "src": "/includes/(.*)", "dest": "/public/includes/$1" },
+    // { "src": "/(.*)", "dest": "/api/index.php" }
+
   ],
   "build": {
     "env": {
