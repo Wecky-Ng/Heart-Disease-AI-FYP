@@ -5,7 +5,8 @@ require_once PROJECT_ROOT . '/database/get_user.php';
 require_once PROJECT_ROOT . '/database/connection.php'; // Include connection.php here as it's needed for getLastTestRecord
 
 // Initialize variables for form prefill
-$gender = '';
+$genderPrefillValue = '';
+$agePrefillValue = ''; // Initialize age prefill value
 $userData = null;
 $lastTestData = null;
 
@@ -52,22 +53,50 @@ if (isLoggedIn()) {
         $userId = $sessionData['user_id'];
         $userData = getUserById($userId);
 
-        // Get gender if available from user profile
-        if ($userData && !empty($userData['gender'])) {
-            // Map gender string to the tinyint value expected by the database
-            // Assuming 'Male' -> 1, 'Female' -> 0 based on your DB schema comment
-            $genderPrefillValue = ($userData['gender'] === 'Male') ? '1' : '0';
-        } else {
-            $genderPrefillValue = ''; // No gender data in profile
-        }
-
         // Get user's last test record if available
         $lastTestData = getLastTestRecord($userId);
+
+        // --- Prefill Logic ---
+
+        // Prefill Gender: Prioritize last test data, then user profile
+        if ($lastTestData && isset($lastTestData['sex'])) {
+            $genderPrefillValue = htmlspecialchars($lastTestData['sex']);
+        } elseif ($userData && !empty($userData['gender'])) {
+            // Map gender string to the tinyint value expected by the form (0 for Female, 1 for Male)
+            // Assuming 'Male' -> 1, 'Female' -> 0 based on your DB schema comment for user_prediction_history.sex
+            $genderPrefillValue = ($userData['gender'] === 'Male') ? '1' : '0';
+             // Handle 'Other' if necessary, perhaps default to empty or a specific value
+             if ($userData['gender'] === 'Other') {
+                 $genderPrefillValue = ''; // Or handle 'Other' as needed
+             }
+        } else {
+             $genderPreffillValue = ''; // No gender data available
+        }
+
+
+        // Prefill Age: Prioritize last test data, then calculate from date of birth
+        if ($lastTestData && isset($lastTestData['age']) && $lastTestData['age'] !== null) {
+            $agePrefillValue = htmlspecialchars($lastTestData['age']);
+        } elseif ($userData && !empty($userData['date_of_birth'])) {
+            // Calculate age from date of birth
+            try {
+                $birthDate = new DateTime($userData['date_of_birth']);
+                $today = new DateTime('today');
+                $age = $birthDate->diff($today)->y;
+                $agePrefillValue = $age;
+            } catch (Exception $e) {
+                error_log("Error calculating age from date of birth for user ID {$userId}: " . $e->getMessage());
+                $agePrefillValue = ''; // Fallback if date calculation fails
+            }
+        } else {
+             $agePrefillValue = ''; // No age data available
+        }
     }
 } else {
     // If not logged in, no prefill data is available
     $genderPrefillValue = '';
-    $lastTestData = null;
+    $agePrefillValue = '';
+    $lastTestData = null; // Ensure this is null if not logged in
 }
 
 ?>
@@ -146,7 +175,7 @@ if (isLoggedIn()) {
                                                     <div class="card-head">
                                                         <h5 class="card-title">Health Parameters</h5>
                                                     </div>
-                                                    <?php if (isLoggedIn() && ($genderPrefillValue !== '' || $lastTestData)): ?>
+                                                    <?php if (isLoggedIn() && ($genderPrefillValue !== '' || $agePrefillValue !== '' || $lastTestData)): ?>
                                                     <div class="alert alert-info">
                                                         <div class="alert-icon"><em class="icon ni ni-info-fill"></em></div>
                                                         <div class="alert-text">Some fields have been prefilled with your profile data and previous test information.</div>
@@ -165,7 +194,7 @@ if (isLoggedIn()) {
                                                                             <option value="">Select</option>
                                                                             <option value="0" <?php echo ($genderPrefillValue === '0') ? 'selected' : ''; ?>>Female</option>
                                                                             <option value="1" <?php echo ($genderPrefillValue === '1') ? 'selected' : ''; ?>>Male</option>
-                                                                        </select>
+                                                                            </select>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -173,7 +202,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="age">Age</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" class="form-control" id="age" name="age" min="1" max="120" value="<?php echo ($lastTestData && isset($lastTestData['age'])) ? htmlspecialchars($lastTestData['age']) : ''; ?>" required>
+                                                                        <input type="number" class="form-control" id="age" name="age" min="1" max="120" value="<?php echo htmlspecialchars($agePrefillValue); ?>" required>
                                                                         <small class="form-text text-muted">Enter your age in years (e.g., 45)</small>
                                                                     </div>
                                                                 </div>
@@ -459,8 +488,8 @@ if (isLoggedIn()) {
             });
 
             // Prefill logic for dropdowns based on lastTestData
+            // This part remains mostly the same, using the PHP variables set above
             <?php if ($lastTestData): ?>
-                $('#sex').val('<?php echo htmlspecialchars($lastTestData['sex']); ?>');
                 $('#race').val('<?php echo htmlspecialchars($lastTestData['race']); ?>');
                 $('#smoking').val('<?php echo htmlspecialchars($lastTestData['smoking']); ?>');
                 $('#alcohol_drinking').val('<?php echo htmlspecialchars($lastTestData['alcohol_drinking']); ?>');
@@ -469,15 +498,22 @@ if (isLoggedIn()) {
                 $('#diabetic').val('<?php echo htmlspecialchars($lastTestData['diabetic']); ?>');
                 $('#physical_activity').val('<?php echo htmlspecialchars($lastTestData['physical_activity']); ?>');
                 $('#gen_health').val('<?php echo htmlspecialchars($lastTestData['gen_health']); ?>');
+                $('#sleep_time').val('<?php echo htmlspecialchars($lastTestData['sleep_time']); ?>'); // Added sleep_time prefill
                 $('#asthma').val('<?php echo htmlspecialchars($lastTestData['asthma']); ?>');
                 $('#kidney_disease').val('<?php echo htmlspecialchars($lastTestData['kidney_disease']); ?>');
                 $('#skin_cancer').val('<?php echo htmlspecialchars($lastTestData['skin_cancer']); ?>');
             <?php endif; ?>
 
              // Prefill logic for gender from user profile if no last test data
-            <?php if (!isset($lastTestData['sex']) && isset($genderPrefillValue)): ?>
+            <?php if ($genderPrefillValue !== '' && (!isset($lastTestData['sex']) || $lastTestData['sex'] === null)): ?>
                  $('#sex').val('<?php echo htmlspecialchars($genderPrefillValue); ?>');
             <?php endif; ?>
+
+             // Prefill logic for age from user profile if no last test data age
+            <?php if ($agePrefillValue !== '' && (!isset($lastTestData['age']) || $lastTestData['age'] === null)): ?>
+                 $('#age').val('<?php echo htmlspecialchars($agePrefillValue); ?>');
+            <?php endif; ?>
+
         });
     </script>
 </body>

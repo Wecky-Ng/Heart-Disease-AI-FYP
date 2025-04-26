@@ -1,4 +1,10 @@
 <?php
+// Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
+if (!defined('PROJECT_ROOT')) {
+    // Assuming home.php is at the project root
+    define('PROJECT_ROOT', __DIR__);
+    // If home.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
+}
 // Include session management
 require_once PROJECT_ROOT . '/session.php';
 
@@ -17,22 +23,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get form data
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    
+
     // Basic validation
     if (empty($email) || empty($password)) {
         $error = 'Please enter both email and password';
     } else {
         // Include user functions
         require_once PROJECT_ROOT . '/database/set_user.php';
-        
+
         // Authenticate user
         $result = loginUser($email, $password);
-        
+
         if ($result['status']) {
             // Set user session
             $user = $result['user'];
             setUserSession($user['id'], $user['username'], $user['email']);
-            
+
             // Redirect to dashboard
             header('Location: home.php');
             exit();
@@ -44,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/dashlite.css">
     <link rel="stylesheet" href="css/theme.css">
 </head>
+
 <body class="nk-body bg-white npc-default pg-auth">
     <div class="nk-app-root">
         <div class="nk-main">
@@ -75,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </div>
                                 </div>
                                 <?php if (!empty($error)): ?>
-                                <div class="alert alert-danger"><?php echo $error; ?></div>
+                                    <div class="alert alert-danger"><?php echo $error; ?></div>
                                 <?php endif; ?>
                                 <form action="login.php" method="post">
                                     <div class="form-group">
@@ -109,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="row g-3">
                                 <div class="col-lg-6">
                                     <div class="nk-block-content text-center text-lg-left">
-                                        <p class="text-soft">&copy; 2023 Heart Disease AI. All Rights Reserved.</p>
+                                        <p class="text-soft">&copy; Wecky TP051083 FYP project 2025 powered by vercel</p>
                                     </div>
                                 </div>
                             </div>
@@ -123,4 +131,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="js/bundle.js"></script>
     <script src="js/scripts.js"></script>
 </body>
+
 </html>

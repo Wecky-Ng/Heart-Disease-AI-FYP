@@ -3,12 +3,7 @@
  * Common stylesheet includes for Heart Disease AI FYP
  * This file centralizes all CSS imports for easier global management
  */
-// Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
-if (!defined('PROJECT_ROOT')) {
-    // Assuming home.php is at the project root
-    define('PROJECT_ROOT', __DIR__);
-    // If home.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
-}
+
 require_once PROJECT_ROOT . '/session.php';
 ?>
 <!-- Stylesheets -->
@@ -18,3 +13,6 @@ require_once PROJECT_ROOT . '/session.php';
 <link rel="stylesheet" href="css/sidemenu-fix.css">
 <link rel="stylesheet" href="css/overlay-fix.css">
 <link rel="stylesheet" href="css/customcss.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">

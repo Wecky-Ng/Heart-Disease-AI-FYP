@@ -6,7 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI">
     <title>Heart Disease Prediction - Dashboard</title>
-    <?php require_once PROJECT_ROOT . '/includes/styles.php'; ?>
+    <?php
+    // Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
+    if (!defined('PROJECT_ROOT')) {
+        // Assuming home.php is at the project root
+        define('PROJECT_ROOT', __DIR__);
+        // If home.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
+    }
+    require_once PROJECT_ROOT . '/includes/styles.php';
+    ?>
 </head>
 
 <body class="nk-body bg-lighter">

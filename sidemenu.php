@@ -32,12 +32,7 @@
                             <span class="nk-menu-text">Heart Disease Prediction</span>
                         </a>
                     </li>
-                    <li class="nk-menu-item">
-                        <a href="#" class="nk-menu-link">
-                            <span class="nk-menu-icon"><em class="icon ni ni-activity"></em></span>
-                            <span class="nk-menu-text">Risk Assessment</span>
-                        </a>
-                    </li>
+                    
                     <li class="nk-menu-heading">
                         <h6 class="overline-title text-primary-alt">Health Resources</h6>
                     </li>
@@ -68,19 +63,19 @@
                         <h6 class="overline-title text-primary-alt">Account</h6>
                     </li>
                     <li class="nk-menu-item">
-                        <a href="#" class="nk-menu-link">
+                        <a href="profile.php" class="nk-menu-link">
                             <span class="nk-menu-icon"><em class="icon ni ni-user-alt"></em></span>
                             <span class="nk-menu-text">My Profile</span>
                         </a>
                     </li>
                     <li class="nk-menu-item">
-                        <a href="#" class="nk-menu-link">
+                        <a href="history.php" class="nk-menu-link">
                             <span class="nk-menu-icon"><em class="icon ni ni-history"></em></span>
                             <span class="nk-menu-text">Prediction History</span>
                         </a>
                     </li>
                     <li class="nk-menu-item">
-                        <a href="#" class="nk-menu-link">
+                        <a href="account_setting.php" class="nk-menu-link">
                             <span class="nk-menu-icon"><em class="icon ni ni-setting"></em></span>
                             <span class="nk-menu-text">Settings</span>
                         </a>

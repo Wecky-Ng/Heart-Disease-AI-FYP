@@ -176,17 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                     </div>
-                    <div class="nk-footer nk-auth-footer-full">
-                        <div class="container wide-lg">
-                            <div class="row g-3">
-                                <div class="col-lg-6">
-                                    <div class="nk-block-content text-center text-lg-left">
-                                        <p class="text-soft">&copy; 2023 Heart Disease AI. All Rights Reserved.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <?php include PROJECT_ROOT . '/footer.php'; ?>
                 </div>
             </div>
         </div>

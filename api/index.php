@@ -28,12 +28,16 @@ switch ($request_path) {
         // Route the root path to home.php
         $target_file = 'home.php';
         break;
+    case '/index.php':
     case '/home.php':
     case '/user_input_form.php':
     case '/result.php':
     case '/faq.php':
     case '/login.php':
     case '/register.php':
+    case '/user_profile.php':
+    case '/history.php':
+    case '/account_setting.php':
     case '/session.php':
         // Route direct requests for these top-level PHP files
         $target_file = ltrim($request_path, '/'); // Remove leading slash
