@@ -75,6 +75,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                     </div>
                 </div>
             </div>
+            <?php require_once PROJECT_ROOT . '/footer.php'; ?>
         </div>
     </div>
 

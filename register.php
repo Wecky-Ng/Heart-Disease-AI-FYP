@@ -8,6 +8,7 @@ if (!defined('PROJECT_ROOT')) {
 // Include session management and user functions
 require_once PROJECT_ROOT . '/session.php';
 require_once PROJECT_ROOT . '/database/set_user.php';
+require_once PROJECT_ROOT . '/database/get_user.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -46,6 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter a valid email address';
     } elseif (strlen($username) < 3 || strlen($username) > 50) {
         $error = 'Username must be between 3 and 50 characters';
+    } elseif (usernameExists($username)) {
+        $error = 'Username already exists. Please choose a different username.';
+    } elseif (emailExists($email)) {
+        $error = 'Email already exists. Please use a different email address.';
     } else {
         // Register the user
         $result = registerUser($username, $email, $password);
@@ -62,7 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 updateUserProfile($result['user_id'], $userData);
             }
             
-            $success = 'Registration successful! You can now log in.';
+            $success = 'Registration successful!';
+            // Store user data for auto-login
+            $user_id = $result['user_id'];
+            
             // Clear form data
             $username = '';
             $email = '';
@@ -83,8 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="description" content="Heart Disease Prediction using AI - Register">
     <title>Register - Heart Disease Prediction</title>
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/dashlite.css">
-    <link rel="stylesheet" href="css/theme.css">
+    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
+    
 </head>
 <body class="nk-body bg-white npc-default pg-auth">
     <div class="nk-app-root">
@@ -107,12 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                     </div>
                                 </div>
-                                <?php if (!empty($error)): ?>
-                                <div class="alert alert-danger"><?php echo $error; ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($success)): ?>
-                                <div class="alert alert-success"><?php echo $success; ?></div>
-                                <?php endif; ?>
+                                <!-- Alert messages will be shown via SweetAlert2 -->
                                 <form action="register.php" method="post">
                                     <div class="form-group">
                                         <label class="form-label" for="username">Username</label>
@@ -182,7 +185,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <!-- JavaScript -->
-    <script src="js/bundle.js"></script>
-    <script src="js/scripts.js"></script>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+
+    
+    <?php if (!empty($error)): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Registration Error',
+                text: '<?php echo addslashes($error); ?>',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6576ff'
+            });
+        });
+    </script>
+    <?php endif; ?>
+    
+    <?php if (!empty($success)): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Success!',
+                text: '<?php echo addslashes($success); ?>',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6576ff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Auto-login and redirect to home page
+                    <?php if (isset($user_id)): ?>
+                    // Set session variables for the user
+                    <?php 
+                        $user = getUserById($user_id);
+                        if ($user) {
+                            $_SESSION['user_id'] = $user_id;
+                            $_SESSION['username'] = $user['username'];
+                            $_SESSION['email'] = $user['email'];
+                        }
+                    ?>
+                    window.location.href = 'home.php';
+                    <?php endif; ?>
+                }
+            });
+        });
+    </script>
+    <?php endif; ?>
 </body>
 </html>

@@ -50,13 +50,13 @@ require_once PROJECT_ROOT . '/session.php';
                         </a>
                         <ul class="nk-menu-sub">
                             <li class="nk-menu-item">
-                                <a href="#" class="nk-menu-link"><span class="nk-menu-text">Heart Disease Facts</span></a>
+                                <a href="health_disease_facts.php?category=1" class="nk-menu-link"><span class="nk-menu-text">Heart Disease Facts</span></a>
                             </li>
                             <li class="nk-menu-item">
-                                <a href="#" class="nk-menu-link"><span class="nk-menu-text">Prevention Tips</span></a>
+                                <a href="health_disease_facts.php?category=2" class="nk-menu-link"><span class="nk-menu-text">Prevention Tips</span></a>
                             </li>
                             <li class="nk-menu-item">
-                                <a href="#" class="nk-menu-link"><span class="nk-menu-text">Treatment Options</span></a>
+                                <a href="health_disease_facts.php?category=3" class="nk-menu-link"><span class="nk-menu-text">Treatment Options</span></a>
                             </li>
                         </ul>
                     </li>
@@ -80,12 +80,6 @@ require_once PROJECT_ROOT . '/session.php';
                         <a href="history.php" class="nk-menu-link">
                             <span class="nk-menu-icon"><em class="icon ni ni-history"></em></span>
                             <span class="nk-menu-text">Prediction History</span>
-                        </a>
-                    </li>
-                    <li class="nk-menu-item">
-                        <a href="account_setting.php" class="nk-menu-link">
-                            <span class="nk-menu-icon"><em class="icon ni ni-setting"></em></span>
-                            <span class="nk-menu-text">Settings</span>
                         </a>
                     </li>
                     <?php endif; ?>

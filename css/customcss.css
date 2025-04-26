@@ -1,5 +1,26 @@
 /* Custom styles for the Heart Disease Prediction Application */
 
+/* Sticky Footer Fix */
+/* Ensure the main wrapper takes at least the full viewport height and uses flex */
+.nk-wrap {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure wrapper takes full height */
+}
+
+/* Make the main content area grow to push the footer down */
+.nk-content {
+    flex-grow: 1;
+}
+
+/* Footer Overlap Fix (Desktop) */
+@media (min-width: 992px) {
+    .nk-footer {
+        /* Add padding to align footer content with main content, avoiding sidebar */
+        padding-left: 280px; /* Match sidebar width */
+    }
+}
+
 /* FAQ Page Styles */
 .faq-card {
     transition: all 0.3s ease;

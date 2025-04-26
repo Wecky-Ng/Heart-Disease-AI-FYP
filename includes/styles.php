@@ -13,3 +13,4 @@ require_once PROJECT_ROOT . '/session.php';
 <link rel="stylesheet" href="css/sidemenu-fix.css">
 <link rel="stylesheet" href="css/overlay-fix.css">
 <link rel="stylesheet" href="css/customcss.css">
+<link rel="stylesheet" href="css/sweetalert2.min.css">

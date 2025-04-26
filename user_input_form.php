@@ -498,5 +498,7 @@ if (isLoggedIn()) {
 
         });
     </script>
+    <?php require_once PROJECT_ROOT . '/footer.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>
 </html>
