@@ -1,4 +1,9 @@
 <?php
+if (!defined('PROJECT_ROOT')) {
+    // Assuming home.php is at the project root
+    define('PROJECT_ROOT', __DIR__);
+    // If home.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
+}
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

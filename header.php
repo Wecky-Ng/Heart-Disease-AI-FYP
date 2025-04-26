@@ -9,12 +9,12 @@ require_once PROJECT_ROOT . '/session.php';
             <div class="nk-menu-trigger d-xl-none ml-n1">
                 <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="sidebarMenu"><em class="icon ni ni-menu"></em></a>
             </div>
-            <div class="nk-header-brand d-xl-none">
+            <!-- <div class="nk-header-brand d-xl-none">
                 <a href="home.php" class="logo-link">
                     <span class="logo-light logo-img">Heart Disease AI</span>
-                    <!-- <span class="logo-dark logo-img">Heart Disease AI</span> -->
+                    <span class="logo-dark logo-img">Heart Disease AI</span>
                 </a>
-            </div>
+            </div> -->
             <div class="nk-sidebar-brand">
                 <a href="home.php" class="logo-link nk-sidebar-logo">
                     <span class="logo-text">Heart Disease AI</span>

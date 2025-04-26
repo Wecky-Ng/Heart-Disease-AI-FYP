@@ -1,3 +1,10 @@
+<?php
+// Include session management
+if (!defined('PROJECT_ROOT')) {
+    define('PROJECT_ROOT', __DIR__);
+}
+require_once PROJECT_ROOT . '/session.php';
+?>
 <!-- Sidebar Menu for Heart Disease Prediction Dashboard -->
 <div class="nk-sidebar nk-sidebar-fixed is-light" data-content="sidebarMenu">
     <div class="nk-sidebar-element nk-sidebar-head">
@@ -59,6 +66,7 @@
                             <span class="nk-menu-text">FAQ</span>
                         </a>
                     </li>
+                    <?php if(isLoggedIn()): ?>
                     <li class="nk-menu-heading">
                         <h6 class="overline-title text-primary-alt">Account</h6>
                     </li>
@@ -80,6 +88,7 @@
                             <span class="nk-menu-text">Settings</span>
                         </a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

@@ -1,8 +1,16 @@
 <?php
+// Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
+if (!defined('PROJECT_ROOT')) {
+    // Assuming user_input_form.php is at the project root
+    define('PROJECT_ROOT', __DIR__);
+    // If user_input_form.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
+}
 // Include session management and user functions
 require_once PROJECT_ROOT . '/session.php';
 require_once PROJECT_ROOT . '/database/get_user.php';
-require_once PROJECT_ROOT . '/database/connection.php'; // Include connection.php here as it's needed for getLastTestRecord
+// Include the file containing database functions, including getLastTestRecord
+require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Now includes getLastTestRecord
+// require_once PROJECT_ROOT . '/database/connection.php'; // connection.php is now included by get_user.php and get_user_prediction_history.php
 
 // Initialize variables for form prefill
 $genderPrefillValue = '';
@@ -10,38 +18,8 @@ $agePrefillValue = ''; // Initialize age prefill value
 $userData = null;
 $lastTestData = null;
 
-// Function to get user's last test record
-function getLastTestRecord($userId) {
-    $db = getDbConnection();
+// Removed the local getLastTestRecord function definition from here
 
-    // Using prepared statement to prevent SQL injection
-    $query = "SELECT ph.* FROM user_last_test_record ultr
-              JOIN user_prediction_history ph ON ultr.prediction_history_id = ph.id
-              WHERE ultr.user_id = ?";
-
-    $stmt = $db->prepare($query);
-    // Check if prepare was successful
-    if ($stmt === false) {
-        error_log("MySQL prepare error: " . $db->error);
-        return false;
-    }
-
-    // Bind parameter and execute
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 0) {
-        $stmt->close();
-        return false;
-    }
-
-    $lastRecord = $result->fetch_assoc();
-    $stmt->close();
-
-    return $lastRecord;
-}
 
 // Check if user is logged in
 if (isLoggedIn()) {
@@ -51,18 +29,22 @@ if (isLoggedIn()) {
     // Get user data from database
     if (isset($sessionData['user_id'])) {
         $userId = $sessionData['user_id'];
-        $userData = getUserById($userId);
+        $userData = getUserById($userId); // Assuming getUserById is in database/get_user.php
 
         // Get user's last test record if available
-        $lastTestData = getLastTestRecord($userId);
+        // Call the function from the included database file
+        $lastTestData = getLastTestRecord($userId); // Now calling the function defined in get_user_prediction_history.php
 
         // --- Prefill Logic ---
 
         // Prefill Gender: Prioritize last test data, then user profile
-        if ($lastTestData && isset($lastTestData['sex'])) {
-            $genderPrefillValue = htmlspecialchars($lastTestData['sex']);
+        // Note: The last test record stores 'sex' (0=Female, 1=Male), while user profile stores 'gender' (Male/Female/Other string)
+        if ($lastTestData && isset($lastTestData['sex']) && $lastTestData['sex'] !== null) {
+            // Map tinyint sex from last test record to string for comparison if needed,
+            // or directly use the tinyint value if your form select options match (0/1)
+            $genderPrefillValue = htmlspecialchars($lastTestData['sex']); // Use the tinyint value directly
         } elseif ($userData && !empty($userData['gender'])) {
-            // Map gender string to the tinyint value expected by the form (0 for Female, 1 for Male)
+            // Map gender string from user profile to the tinyint value expected by the form (0 for Female, 1 for Male)
             // Assuming 'Male' -> 1, 'Female' -> 0 based on your DB schema comment for user_prediction_history.sex
             $genderPrefillValue = ($userData['gender'] === 'Male') ? '1' : '0';
              // Handle 'Other' if necessary, perhaps default to empty or a specific value
@@ -70,7 +52,7 @@ if (isLoggedIn()) {
                  $genderPrefillValue = ''; // Or handle 'Other' as needed
              }
         } else {
-             $genderPreffillValue = ''; // No gender data available
+             $genderPrefillValue = ''; // No gender data available
         }
 
 
@@ -213,12 +195,12 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="race" name="race" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['race']) && $lastTestData['race'] === 0) ? 'selected' : ''; ?>>White</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['race']) && $lastTestData['race'] === 1) ? 'selected' : ''; ?>>Black</option>
-                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['race']) && $lastTestData['race'] === 2) ? 'selected' : ''; ?>>Asian</option>
-                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['race']) && $lastTestData['race'] === 3) ? 'selected' : ''; ?>>Hispanic</option>
-                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['race']) && $lastTestData['race'] === 4) ? 'selected' : ''; ?>>American Indian/Alaskan Native</option>
-                                                                            <option value="5" <?php echo ($lastTestData && isset($lastTestData['race']) && $lastTestData['race'] === 5) ? 'selected' : ''; ?>>Other</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 0) ? 'selected' : ''; ?>>White</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 1) ? 'selected' : ''; ?>>Black</option>
+                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 2) ? 'selected' : ''; ?>>Asian</option>
+                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 3) ? 'selected' : ''; ?>>Hispanic</option>
+                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 4) ? 'selected' : ''; ?>>American Indian/Alaskan Native</option>
+                                                                            <option value="5" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 5) ? 'selected' : ''; ?>>Other</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -227,7 +209,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="bmi">BMI</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="60" value="<?php echo ($lastTestData && isset($lastTestData['bmi'])) ? htmlspecialchars($lastTestData['bmi']) : ''; ?>" required>
+                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="60" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['bmi'])) ? htmlspecialchars($lastTestData['raw_data']['bmi']) : ''; ?>" required>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -241,8 +223,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="smoking" name="smoking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['smoking']) && $lastTestData['smoking'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['smoking']) && $lastTestData['smoking'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['smoking']) && $lastTestData['raw_data']['smoking'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['smoking']) && $lastTestData['raw_data']['smoking'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -253,8 +235,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="alcohol_drinking" name="alcohol_drinking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['alcohol_drinking']) && $lastTestData['alcohol_drinking'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['alcohol_drinking']) && $lastTestData['alcohol_drinking'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['alcohol_drinking']) && $lastTestData['raw_data']['alcohol_drinking'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['alcohol_drinking']) && $lastTestData['raw_data']['alcohol_drinking'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -265,8 +247,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="stroke" name="stroke" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['stroke']) && $lastTestData['stroke'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['stroke']) && $lastTestData['stroke'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['stroke']) && $lastTestData['raw_data']['stroke'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['stroke']) && $lastTestData['raw_data']['stroke'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -275,7 +257,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="physical_health">Physical Health (days)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="physical_health" name="physical_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['physical_health'])) ? htmlspecialchars($lastTestData['physical_health']) : ''; ?>" required>
+                                                                        <input type="number" step="0.1" class="form-control" id="physical_health" name="physical_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_health'])) ? htmlspecialchars($lastTestData['raw_data']['physical_health']) : ''; ?>" required>
                                                                         <small class="form-text text-muted">Number of days physical health not good (0-30)</small>
                                                                     </div>
                                                                 </div>
@@ -284,7 +266,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="mental_health">Mental Health (days)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="mental_health" name="mental_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['mental_health'])) ? htmlspecialchars($lastTestData['mental_health']) : ''; ?>" required>
+                                                                        <input type="number" step="0.1" class="form-control" id="mental_health" name="mental_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['mental_health'])) ? htmlspecialchars($lastTestData['raw_data']['mental_health']) : ''; ?>" required>
                                                                         <small class="form-text text-muted">Number of days mental health not good (0-30)</small>
                                                                     </div>
                                                                 </div>
@@ -295,8 +277,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="diff_walking" name="diff_walking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['diff_walking']) && $lastTestData['diff_walking'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['diff_walking']) && $lastTestData['diff_walking'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diff_walking']) && $lastTestData['raw_data']['diff_walking'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diff_walking']) && $lastTestData['raw_data']['diff_walking'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -311,10 +293,10 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="diabetic" name="diabetic" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && $lastTestData['diabetic'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && $lastTestData['diabetic'] === 0) ? 'selected' : ''; ?>>No</option>
-                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && $lastTestData['diabetic'] === 2) ? 'selected' : ''; ?>>No, borderline diabetes</option>
-                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && $lastTestData['diabetic'] === 3) ? 'selected' : ''; ?>>Yes (during pregnancy)</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 2) ? 'selected' : ''; ?>>No, borderline diabetes</option>
+                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 3) ? 'selected' : ''; ?>>Yes (during pregnancy)</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -325,8 +307,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="physical_activity" name="physical_activity" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['physical_activity']) && $lastTestData['physical_activity'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['physical_activity']) && $lastTestData['physical_activity'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_activity']) && $lastTestData['raw_data']['physical_activity'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_activity']) && $lastTestData['raw_data']['physical_activity'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -337,11 +319,11 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="gen_health" name="gen_health" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && $lastTestData['gen_health'] === 0) ? 'selected' : ''; ?>>Excellent</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && $lastTestData['gen_health'] === 1) ? 'selected' : ''; ?>>Very good</option>
-                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && $lastTestData['gen_health'] === 2) ? 'selected' : ''; ?>>Good</option>
-                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && $lastTestData['gen_health'] === 3) ? 'selected' : ''; ?>>Fair</option>
-                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && $lastTestData['gen_health'] === 4) ? 'selected' : ''; ?>>Poor</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 0) ? 'selected' : ''; ?>>Excellent</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 1) ? 'selected' : ''; ?>>Very good</option>
+                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 2) ? 'selected' : ''; ?>>Good</option>
+                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 3) ? 'selected' : ''; ?>>Fair</option>
+                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 4) ? 'selected' : ''; ?>>Poor</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -350,7 +332,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="sleep_time">Sleep Time (hours)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="sleep_time" name="sleep_time" min="0" max="24" value="<?php echo ($lastTestData && isset($lastTestData['sleep_time'])) ? htmlspecialchars($lastTestData['sleep_time']) : ''; ?>" required>
+                                                                        <input type="number" step="0.1" class="form-control" id="sleep_time" name="sleep_time" min="0" max="24" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['sleep_time'])) ? htmlspecialchars($lastTestData['raw_data']['sleep_time']) : ''; ?>" required>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -360,8 +342,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="asthma" name="asthma" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['asthma']) && $lastTestData['asthma'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['asthma']) && $lastTestData['asthma'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['asthma']) && $lastTestData['raw_data']['asthma'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['asthma']) && $lastTestData['raw_data']['asthma'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -372,8 +354,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="kidney_disease" name="kidney_disease" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['kidney_disease']) && $lastTestData['kidney_disease'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['kidney_disease']) && $lastTestData['kidney_disease'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['kidney_disease']) && $lastTestData['raw_data']['kidney_disease'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['kidney_disease']) && $lastTestData['raw_data']['kidney_disease'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -384,8 +366,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="skin_cancer" name="skin_cancer" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['skin_cancer']) && $lastTestData['skin_cancer'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['skin_cancer']) && $lastTestData['skin_cancer'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['skin_cancer']) && $lastTestData['raw_data']['skin_cancer'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['skin_cancer']) && $lastTestData['raw_data']['skin_cancer'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -489,28 +471,28 @@ if (isLoggedIn()) {
 
             // Prefill logic for dropdowns based on lastTestData
             // This part remains mostly the same, using the PHP variables set above
-            <?php if ($lastTestData): ?>
-                $('#race').val('<?php echo htmlspecialchars($lastTestData['race']); ?>');
-                $('#smoking').val('<?php echo htmlspecialchars($lastTestData['smoking']); ?>');
-                $('#alcohol_drinking').val('<?php echo htmlspecialchars($lastTestData['alcohol_drinking']); ?>');
-                $('#stroke').val('<?php echo htmlspecialchars($lastTestData['stroke']); ?>');
-                $('#diff_walking').val('<?php echo htmlspecialchars($lastTestData['diff_walking']); ?>');
-                $('#diabetic').val('<?php echo htmlspecialchars($lastTestData['diabetic']); ?>');
-                $('#physical_activity').val('<?php echo htmlspecialchars($lastTestData['physical_activity']); ?>');
-                $('#gen_health').val('<?php echo htmlspecialchars($lastTestData['gen_health']); ?>');
-                $('#sleep_time').val('<?php echo htmlspecialchars($lastTestData['sleep_time']); ?>'); // Added sleep_time prefill
-                $('#asthma').val('<?php echo htmlspecialchars($lastTestData['asthma']); ?>');
-                $('#kidney_disease').val('<?php echo htmlspecialchars($lastTestData['kidney_disease']); ?>');
-                $('#skin_cancer').val('<?php echo htmlspecialchars($lastTestData['skin_cancer']); ?>');
+            <?php if ($lastTestData && isset($lastTestData['raw_data'])): ?> // Check if raw_data exists
+                $('#race').val('<?php echo htmlspecialchars($lastTestData['raw_data']['race'] ?? ''); ?>');
+                $('#smoking').val('<?php echo htmlspecialchars($lastTestData['raw_data']['smoking'] ?? ''); ?>');
+                $('#alcohol_drinking').val('<?php echo htmlspecialchars($lastTestData['raw_data']['alcohol_drinking'] ?? ''); ?>');
+                $('#stroke').val('<?php echo htmlspecialchars($lastTestData['raw_data']['stroke'] ?? ''); ?>');
+                $('#diff_walking').val('<?php echo htmlspecialchars($lastTestData['raw_data']['diff_walking'] ?? ''); ?>');
+                $('#diabetic').val('<?php echo htmlspecialchars($lastTestData['raw_data']['diabetic'] ?? ''); ?>');
+                $('#physical_activity').val('<?php echo htmlspecialchars($lastTestData['raw_data']['physical_activity'] ?? ''); ?>');
+                $('#gen_health').val('<?php echo htmlspecialchars($lastTestData['raw_data']['gen_health'] ?? ''); ?>');
+                $('#sleep_time').val('<?php echo htmlspecialchars($lastTestData['raw_data']['sleep_time'] ?? ''); ?>'); // Added sleep_time prefill
+                $('#asthma').val('<?php echo htmlspecialchars($lastTestData['raw_data']['asthma'] ?? ''); ?>');
+                $('#kidney_disease').val('<?php echo htmlspecialchars($lastTestData['raw_data']['kidney_disease'] ?? ''); ?>');
+                $('#skin_cancer').val('<?php echo htmlspecialchars($lastTestData['raw_data']['skin_cancer'] ?? ''); ?>');
             <?php endif; ?>
 
              // Prefill logic for gender from user profile if no last test data
-            <?php if ($genderPrefillValue !== '' && (!isset($lastTestData['sex']) || $lastTestData['sex'] === null)): ?>
+            <?php if ($genderPrefillValue !== '' && (!isset($lastTestData['raw_data']['sex']) || $lastTestData['raw_data']['sex'] === null)): ?> // Check raw_data for sex
                  $('#sex').val('<?php echo htmlspecialchars($genderPrefillValue); ?>');
             <?php endif; ?>
 
              // Prefill logic for age from user profile if no last test data age
-            <?php if ($agePrefillValue !== '' && (!isset($lastTestData['age']) || $lastTestData['age'] === null)): ?>
+            <?php if ($agePrefillValue !== '' && (!isset($lastTestData['raw_data']['age']) || $lastTestData['raw_data']['age'] === null)): ?> // Check raw_data for age
                  $('#age').val('<?php echo htmlspecialchars($agePrefillValue); ?>');
             <?php endif; ?>
 

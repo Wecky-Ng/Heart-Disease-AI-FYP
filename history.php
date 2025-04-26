@@ -1,10 +1,12 @@
 <?php
-// Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
+// Define PROJECT_ROOT - It's recommended to define this in a central config file
+// This fallback is included in case this file is accessed directly for testing
+// or if a central definition is missing.
 if (!defined('PROJECT_ROOT')) {
-    // Assuming home.php is at the project root
+    // Define PROJECT_ROOT as the directory containing this file (history.php)
     define('PROJECT_ROOT', __DIR__);
-    // If home.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
 }
+
 // Include session management
 require_once PROJECT_ROOT . '/session.php';
 
@@ -14,15 +16,63 @@ if (!isLoggedIn()) {
     exit();
 }
 
-// Get current user data
+// Get current user data from session
 $userData = getCurrentUser();
 
+// Ensure user data is available
+if (!$userData || !isset($userData['user_id'])) {
+    // Handle case where user data is not found in session (e.g., session expired)
+    // Redirect to login or show an error message
+    header('Location: login.php'); // Redirect to login as user data is essential
+    exit();
+}
+
 // Include database connection and functions
-require_once PROJECT_ROOT . '/database/db_connect.php';
+// Ensure connection.php establishes the $db connection
+require_once PROJECT_ROOT . '/database/connection.php';
+// Ensure get_user_prediction_history.php contains the getUserPredictionHistory function
 require_once PROJECT_ROOT . '/database/get_user_prediction_history.php';
+// Include delete history functions
+require_once PROJECT_ROOT . '/database/delete_history.php';
+
+// Process delete actions if submitted
+$success_message = "";
+$error_message = "";
+
+// Handle delete single record
+if (isset($_POST['delete_record']) && isset($_POST['record_id'])) {
+    $recordId = intval($_POST['record_id']);
+    $userId = $userData['user_id'];
+    
+    if (deletePredictionRecord($recordId, $userId)) {
+        $success_message = "Record deleted successfully.";
+    } else {
+        $error_message = "Failed to delete record. Please try again.";
+    }
+}
+
+// Handle delete all records
+if (isset($_POST['delete_all_records'])) {
+    $userId = $userData['user_id'];
+    
+    if (deleteAllPredictionRecords($userId)) {
+        $success_message = "All records deleted successfully.";
+    } else {
+        $error_message = "Failed to delete records. Please try again.";
+    }
+}
 
 // Fetch the user's prediction history from the database
-$predictionHistory = getUserPredictionHistory($userData['id']);
+// Make sure getUserPredictionHistory handles database connection and queries securely
+$predictionHistory = getUserPredictionHistory($userData['user_id']);
+
+// Check if fetching history was successful (getUserPredictionHistory should return an array or empty array on success, or false/null on error)
+if ($predictionHistory === false) {
+    // Handle database error when fetching history
+    $error_message = "Error fetching prediction history. Please try again later.";
+    $predictionHistory = []; // Ensure $predictionHistory is an empty array to prevent errors in the loop
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,21 +82,17 @@ $predictionHistory = getUserPredictionHistory($userData['id']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI - Prediction History">
     <title>Prediction History - Heart Disease Prediction</title>
-    <!-- Include common stylesheets -->
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
-    
+
 </head>
 
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
-        <!-- Include the side menu component -->
         <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
 
         <div class="nk-main">
-            <!-- Include the header component -->
             <?php include PROJECT_ROOT . '/header.php'; ?>
 
-            <!-- Main content -->
             <div class="nk-content">
                 <div class="container-fluid">
                     <div class="nk-content-inner">
@@ -71,10 +117,28 @@ $predictionHistory = getUserPredictionHistory($userData['id']);
                                             </div>
                                             <div class="card-tools">
                                                 <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
+                                                <?php if (!empty($predictionHistory)): ?>
+                                                <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
+                                                    <input type="hidden" name="delete_all_records" value="1">
+                                                    <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
+                                                </form>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="card-inner">
+                                        <?php if (!empty($success_message)): ?>
+                                            <div class="alert alert-success">
+                                                <p><?php echo htmlspecialchars($success_message); ?></p>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (!empty($error_message)): ?>
+                                            <div class="alert alert-danger">
+                                                <p><?php echo htmlspecialchars($error_message); ?></p>
+                                            </div>
+                                        <?php endif; ?>
+                                        
                                         <?php if (empty($predictionHistory)): ?>
                                             <div class="alert alert-info">
                                                 <p>You haven't made any predictions yet. <a href="user_input_form.php">Make your first prediction</a>.</p>
@@ -95,20 +159,27 @@ $predictionHistory = getUserPredictionHistory($userData['id']);
                                                     <?php foreach ($predictionHistory as $index => $prediction): ?>
                                                         <tr>
                                                             <td><?php echo $index + 1; ?></td>
-                                                            <td><?php echo htmlspecialchars($prediction['date']); ?></td>
-                                                            <td>
-                                                                <?php if ($prediction['result'] === 'Low Risk'): ?>
-                                                                    <span class="badge badge-success"><?php echo htmlspecialchars($prediction['result']); ?></span>
-                                                                <?php elseif ($prediction['result'] === 'Medium Risk'): ?>
-                                                                    <span class="badge badge-warning"><?php echo htmlspecialchars($prediction['result']); ?></span>
-                                                                <?php else: ?>
-                                                                    <span class="badge badge-danger"><?php echo htmlspecialchars($prediction['result']); ?></span>
-                                                                <?php endif; ?>
+                                                            <td><?php echo htmlspecialchars($prediction['date']); ?></td> <td>
+                                                                <?php
+                                                                    // The result is already formatted in getUserPredictionHistory function
+                                                                    $result_text = $prediction['result'];
+                                                                    $badge_class = (strpos($result_text, 'High') !== false) ? 'badge-danger' : 'badge-success';
+                                                                ?>
+                                                                <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($result_text); ?></span>
                                                             </td>
-                                                            <td><?php echo htmlspecialchars($prediction['probability']); ?></td>
-                                                            <td><?php echo htmlspecialchars($prediction['details']); ?></td>
                                                             <td>
-                                                                <a href="result.php?id=<?php echo $prediction['id']; ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
+                                                                <?php echo htmlspecialchars($prediction['probability']); ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php echo htmlspecialchars($prediction['details']); ?>
+                                                            </td>
+                                                            <td>
+                                                                <a href="result.php?id=<?php echo htmlspecialchars($prediction['id']); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
+                                                                <form method="post" action="" class="d-inline ml-1">
+                                                                    <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($prediction['id']); ?>">
+                                                                    <input type="hidden" name="delete_record" value="1">
+                                                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete(<?php echo htmlspecialchars($prediction['id']); ?>)"><em class="icon ni ni-trash"></em> Delete</button>
+                                                                </form>
                                                             </td>
                                                         </tr>
                                                     <?php endforeach; ?>
@@ -127,9 +198,23 @@ $predictionHistory = getUserPredictionHistory($userData['id']);
         </div>
     </div>
 
-    <!-- Include common JavaScript -->
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
     <script>
+        // Confirmation for deleting a single record
+        function confirmDelete(recordId) {
+            if (confirm("Are you sure you want to delete this prediction record? This action cannot be undone.")) {
+                // Find the form with the matching record_id and submit it
+                $('input[name="record_id"][value="' + recordId + '"]').closest('form').submit();
+            }
+        }
+        
+        // Confirmation for deleting all records
+        function confirmDeleteAll() {
+            if (confirm("Are you sure you want to delete ALL your prediction records? This action cannot be undone.")) {
+                document.getElementById('delete-all-form').submit();
+            }
+        }
+        
         $(document).ready(function() {
             // Initialize DataTable with export options
             if ($('.datatable-init-export').length) {
