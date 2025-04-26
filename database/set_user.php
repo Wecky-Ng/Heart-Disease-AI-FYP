@@ -3,7 +3,7 @@
  * User Management Functions
  *
  * This file contains functions for user registration, authentication,
- * and profile management.
+ * and profile management, including soft deletion.
  */
 
 // Include database connection
@@ -15,30 +15,33 @@ require_once __DIR__ . '/connection.php';
  * @param string $username Username
  * @param string $email Email address
  * @param string $password Password (will be hashed)
- * @param string $role User role (default: 'user')
- * @return array Result with status and message
+ * @param string $full_name Full name (optional)
+ * @param string $date_of_birth Date of birth (optional)
+ * @param string $gender Gender (optional)
+ * @return array Result with status (bool) and message (string), plus user_id on success
  */
 function registerUser($username, $email, $password, $full_name = null, $date_of_birth = null, $gender = null) {
     $db = getDbConnection();
 
     // Check if username or email already exists
     $stmt = $db->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
-    $stmt->bind_param("ss", $username, $email); // Bind parameters
+    $stmt->bind_param("ss", $username, $email);
     $stmt->execute();
 
-    $result = $stmt->get_result(); // Get the result object
+    $result = $stmt->get_result();
 
-    // Correctly check the number of rows using num_rows
     if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc(); // Fetch the user data
-        $stmt->close(); // Close the statement
+        $user = $result->fetch_assoc();
+        $stmt->close();
+        // Close DB connection before returning
+        $db->close();
         if ($user['username'] === $username) {
             return ['status' => false, 'message' => 'Username already exists'];
         } else {
             return ['status' => false, 'message' => 'Email already exists'];
         }
     }
-    $stmt->close(); // Close the statement if no rows found
+    $stmt->close();
 
     // Hash the password
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
@@ -46,28 +49,30 @@ function registerUser($username, $email, $password, $full_name = null, $date_of_
     // Insert new user
     try {
         $stmt = $db->prepare("INSERT INTO users (username, email, password, full_name, date_of_birth, gender, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-        // Use bind_param for insert statement
         $stmt->bind_param("ssssss", $username, $email, $hashedPassword, $full_name, $date_of_birth, $gender);
         $result = $stmt->execute();
 
         if ($result) {
-             $lastInsertId = $db->insert_id; // Get the last inserted ID using mysqli
-             $stmt->close(); // Close the statement
+             $lastInsertId = $db->insert_id;
+             $stmt->close();
+             // Close DB connection before returning
+             $db->close();
              return [
                 'status' => true,
                 'message' => 'Registration successful',
                 'user_id' => $lastInsertId
             ];
         } else {
-             $stmt->close(); // Close the statement
-             // Log the error for debugging
+             $stmt->close();
+             // Close DB connection before returning
+             $db->close();
              error_log("Registration failed: " . $db->error);
              return ['status' => false, 'message' => 'Registration failed'];
         }
-    } catch (mysqli_sql_exception $e) { // Catch mysqli_sql_exception for mysqli errors
-         // Log the database error
+    } catch (mysqli_sql_exception $e) {
          error_log("Database error during registration: " . $e->getMessage());
-         // Return a generic error message to the user
+         // Close DB connection on exception
+         if (isset($db) && $db) $db->close();
          return ['status' => false, 'message' => 'Database error during registration.'];
     }
 }
@@ -77,7 +82,7 @@ function registerUser($username, $email, $password, $full_name = null, $date_of_
  *
  * @param string $username Username or email
  * @param string $password Password
- * @return array Result with status, message and user data if successful
+ * @return array Result with status (bool), message (string) and user data (array) if successful
  */
 function loginUser($username, $password) {
     $db = getDbConnection();
@@ -87,34 +92,50 @@ function loginUser($username, $password) {
 
     // Get user from database
     $stmt = $db->prepare("SELECT * FROM users WHERE $field = ?");
-    $stmt->bind_param("s", $username); // Bind parameter
+    $stmt->bind_param("s", $username);
     $stmt->execute();
 
-    $result = $stmt->get_result(); // Get the result object
+    $result = $stmt->get_result();
 
-    // Correctly check the number of rows using num_rows
     if ($result->num_rows === 0) {
-        $stmt->close(); // Close the statement
+        $stmt->close();
+        // Close DB connection before returning
+        $db->close();
         return ['status' => false, 'message' => 'User not found'];
     }
 
-    $user = $result->fetch_assoc(); // Fetch the user data
-    $stmt->close(); // Close the statement
+    $user = $result->fetch_assoc();
+    $stmt->close();
 
     // Verify password
     if (password_verify($password, $user['password'])) {
         // Check user status
-        if (isset($user['status']) && $user['status'] == 0) { // Added isset check for status
-            return ['status' => false, 'message' => 'Your account has been suspended. Please contact support.'];
-        } elseif (isset($user['status']) && $user['status'] == 2) { // Added isset check for status
-            return ['status' => false, 'message' => 'This account has been deleted.'];
+        if (isset($user['status'])) { // Check if status column exists
+            if ($user['status'] == 0) {
+                // Close DB connection before returning
+                $db->close();
+                return ['status' => false, 'message' => 'Your account has been suspended. Please contact support.'];
+            } elseif ($user['status'] == 2) {
+                 // Close DB connection before returning
+                 $db->close();
+                return ['status' => false, 'message' => 'This account has been deleted.'];
+            }
+            // If status is 1 (active), proceed with login
+        } else {
+            // If status column is missing, assume active for backward compatibility or log an error
+            error_log("User status column missing for user ID: " . $user['id']);
+            // Continue with login as if status is 1
         }
+
 
         // Update last login time by updating the updated_at timestamp
         $updateStmt = $db->prepare("UPDATE users SET updated_at = NOW() WHERE id = ?");
-        $updateStmt->bind_param("i", $user['id']); // Bind parameter
+        $updateStmt->bind_param("i", $user['id']);
         $updateStmt->execute();
-        $updateStmt->close(); // Close the update statement
+        $updateStmt->close();
+
+        // Close DB connection before returning
+        $db->close();
 
         // Remove password from user data before returning
         unset($user['password']);
@@ -125,22 +146,18 @@ function loginUser($username, $password) {
             'user' => $user
         ];
     } else {
+         // Close DB connection before returning
+        $db->close();
         return ['status' => false, 'message' => 'Invalid password'];
     }
 }
-
-// Note: The getUserById function is duplicated in get_user.php.
-// It's generally better to have user retrieval functions in one file (get_user.php)
-// and user setting/management functions in another (set_user.php).
-// I will remove the duplicate getUserById function from this file
-// and ensure the one in get_user.php is correct.
 
 /**
  * Update user profile
  *
  * @param int $userId User ID
- * @param array $data Data to update (keys: username, email, etc.)
- * @return array Result with status and message
+ * @param array $data Data to update (keys: full_name, date_of_birth, gender, password)
+ * @return array Result with status (bool) and message (string)
  */
 function updateUserProfile($userId, $data) {
     $db = getDbConnection();
@@ -148,39 +165,43 @@ function updateUserProfile($userId, $data) {
     // Build update query
     $fields = [];
     $values = [];
+    $paramTypes = '';
 
-    foreach ($data as $key => $value) {
-        // Skip password as it needs special handling
-        if ($key === 'password') continue;
+    // Define allowed fields to update
+    $allowedFields = ['full_name', 'date_of_birth', 'gender'];
 
-        // Add field to update list
-        $fields[] = "`$key` = ?"; // Enclose field name in backticks
-        $values[] = $value;
+    foreach ($allowedFields as $field) {
+        if (isset($data[$field])) {
+            $fields[] = "`$field` = ?";
+            $values[] = $data[$field];
+            $paramTypes .= 's'; // Assuming these are strings (or null)
+        }
     }
 
     // Handle password update if provided
     if (isset($data['password']) && !empty($data['password'])) {
         $fields[] = "`password` = ?";
-        $values[] = password_hash($data['password'], PASSWORD_DEFAULT);
+        $values[] = $data['password']; // Hashed password is expected here
+        $paramTypes .= 's';
     }
 
     // If no fields to update, return success (or an appropriate message)
     if (empty($fields)) {
+         // Close DB connection before returning
+         $db->close();
         return ['status' => true, 'message' => 'No data provided for update.'];
     }
 
     // Add user ID to values array for the WHERE clause
     $values[] = $userId;
+    $paramTypes .= 'i'; // User ID is an integer
 
     // Construct the full query
-    $query = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+    $query = "UPDATE users SET " . implode(', ', $fields) . ", updated_at = NOW() WHERE id = ?";
 
     // Execute update query
     try {
         $stmt = $db->prepare($query);
-
-        // Determine parameter types for bind_param
-        $paramTypes = str_repeat('s', count($values) - 1) . 'i'; // Assuming most are strings, last is integer ID
 
         // Bind parameters dynamically
         $bindParams = [$paramTypes];
@@ -194,18 +215,82 @@ function updateUserProfile($userId, $data) {
         $result = $stmt->execute();
 
         if ($result) {
-            $stmt->close(); // Close the statement
+            $stmt->close();
+            // Close DB connection before returning
+            $db->close();
             return ['status' => true, 'message' => 'Profile updated successfully'];
         } else {
-            $stmt->close(); // Close the statement
+            $stmt->close();
+            // Close DB connection before returning
+            $db->close();
             error_log("Profile update failed: " . $db->error);
             return ['status' => false, 'message' => 'Profile update failed'];
         }
     } catch (mysqli_sql_exception $e) {
         error_log("Database error during profile update: " . $e->getMessage());
+         // Close DB connection on exception
+        if (isset($db) && $db) $db->close();
         return ['status' => false, 'message' => 'Database error during profile update.'];
     }
 }
+
+/**
+ * Soft deletes a user account by updating the status to '2' (deleted).
+ *
+ * @param int $userId The ID of the user to delete.
+ * @return array Result with status (bool) and message (string).
+ */
+function deleteUserAccount($userId) {
+    $db = getDbConnection();
+
+    // Prepare the SQL query to update the user's status to 2 (deleted)
+    $query = "UPDATE users SET status = 2, updated_at = NOW() WHERE id = ?";
+
+    try {
+        $stmt = $db->prepare($query);
+
+        // Check if prepare was successful
+        if ($stmt === false) {
+            error_log("MySQL prepare error in deleteUserAccount: " . $db->error);
+            // Close DB connection before returning
+            $db->close();
+            return ['status' => false, 'message' => 'Failed to prepare delete statement.'];
+        }
+
+        // Bind the user ID parameter
+        $stmt->bind_param("i", $userId);
+
+        // Execute the update query
+        $result = $stmt->execute();
+
+        if ($result) {
+            // Check if any rows were affected (user with this ID existed)
+            if ($stmt->affected_rows > 0) {
+                 $stmt->close();
+                 // Close DB connection before returning
+                 $db->close();
+                 return ['status' => true, 'message' => 'Account marked as deleted successfully.'];
+            } else {
+                 $stmt->close();
+                 // Close DB connection before returning
+                 $db->close();
+                 return ['status' => false, 'message' => 'User not found or already deleted.'];
+            }
+        } else {
+            $stmt->close();
+            // Close DB connection before returning
+            $db->close();
+            error_log("Account deletion failed for user ID {$userId}: " . $db->error);
+            return ['status' => false, 'message' => 'Failed to delete account. Please try again.'];
+        }
+    } catch (mysqli_sql_exception $e) {
+        error_log("Database error during account deletion for user ID {$userId}: " . $e->getMessage());
+         // Close DB connection on exception
+        if (isset($db) && $db) $db->close();
+        return ['status' => false, 'message' => 'Database error during account deletion.'];
+    }
+}
+
 
 /**
  * Create users table if it doesn't exist
@@ -228,6 +313,7 @@ function createUsersTable() {
             gender ENUM('Male','Female','Other') DEFAULT NULL,
             created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            status tinyint(1) NOT NULL DEFAULT '1' COMMENT '0: suspended user; 1: active user;2: deleted user',
             PRIMARY KEY (id),
             UNIQUE KEY username (username),
             UNIQUE KEY email (email)

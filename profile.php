@@ -7,7 +7,7 @@ if (!defined('PROJECT_ROOT')) {
 }
 // Include session management and user functions
 require_once PROJECT_ROOT . '/session.php';
-require_once PROJECT_ROOT . '/database/set_user.php'; // Assuming this file handles profile updates and potentially deletion
+require_once PROJECT_ROOT . '/database/set_user.php'; // This file now contains deleteUserAccount
 require_once PROJECT_ROOT . '/database/get_user.php';
 require_once PROJECT_ROOT . '/database/connection.php'; // Include connection.php if needed by set_user.php or get_user.php
 
@@ -24,7 +24,7 @@ $sessionData = getCurrentUser();
 // Ensure getUserById is secure and uses prepared statements
 $userData = getUserById($sessionData['user_id']);
 if (!$userData) {
-    // If user not found in database, log them out
+    // If user not found in database (e.g., already deleted or a database issue), log them out
     endUserSession();
     header('Location: login.php');
     exit();
@@ -34,10 +34,10 @@ if (!$userData) {
 $success = '';
 $error = '';
 
-// Process form submission for profile update
+// Process form submission for profile update or deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if the update profile form was submitted
-    if (isset($_POST['update_profile'])) { // Added a hidden field or button name to distinguish form submissions
+    if (isset($_POST['update_profile'])) {
         // Get form data
         $full_name = trim($_POST['full_name'] ?? '');
         $date_of_birth = trim($_POST['date_of_birth'] ?? '');
@@ -68,7 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $result = $stmt->get_result();
                 $user = $result->fetch_assoc();
                 $stmt->close();
-                $db->close(); // Close the connection after use
+                // Note: Closing the DB connection here might be premature if updateUserProfile uses it.
+                // It's better to pass the connection or ensure getDbConnection() handles connections properly (e.g., persistent).
+                // For now, assuming getDbConnection() provides a new connection or manages it.
+                // $db->close(); // Removed premature close
 
                 if (!$user || !password_verify($current_password, $user['password'])) {
                     $error = 'Current password is incorrect.';
@@ -91,31 +94,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result['status']) {
                 $success = 'Profile updated successfully!';
                 // Refresh user data after successful update
+                // Re-fetch user data to reflect any changes (e.g., gender, dob)
                 $userData = getUserById($userData['id']);
             } else {
                 $error = $result['message'];
             }
         }
-    } elseif (isset($_POST['delete_account'])) { // Check if the delete account button was clicked
+    } elseif (isset($_POST['delete_account'])) {
         // --- Handle Account Deletion ---
-        // This is a simplified example. A real-world implementation should
-        // include a confirmation step (e.g., JavaScript confirm dialog)
-        // and potentially require re-entering the password for security.
-        // The actual deletion logic should be in a separate function/script
-        // (e.g., deleteUserAccount($userId)).
+        // Call the deleteUserAccount function
+        $delete_result = deleteUserAccount($userData['id']);
 
-        // Example: Call a function to delete the user account
-        // $delete_result = deleteUserAccount($userData['id']);
-
-        // For demonstration, let's assume a successful deletion redirects to logout/homepage
-        // In a real app, you would check $delete_result['status']
-        // endUserSession(); // End the user's session
-        // header('Location: index.php'); // Redirect to homepage or a confirmation page
-        // exit();
-
-        // For now, just set a message indicating the delete action was triggered
-        $error = "Account deletion feature triggered (backend logic not fully implemented here).";
-        // In a real scenario, you would perform the deletion and then redirect.
+        if ($delete_result['status']) {
+            // Account successfully marked as deleted
+            // End the user's session and redirect to logout.php
+            endUserSession(); // Assuming this function is defined in session.php
+            header('Location: logout.php?status=deleted'); // Redirect to logout page with status
+            exit();
+        } else {
+            // Failed to mark account as deleted
+            $error = $delete_result['message'];
+            // Optionally, log the error server-side as well
+            error_log("Account deletion failed for user ID {$userData['id']}: " . $delete_result['message']);
+        }
     }
 }
 ?>
@@ -284,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
     <script>
-        // You might want to add JavaScript here to confirm the deletion
+        // JavaScript to confirm the deletion
         $(document).ready(function() {
             $('button[name="delete_account"]').on('click', function(e) {
                 if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
