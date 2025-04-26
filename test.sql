@@ -86,11 +86,11 @@ CREATE TABLE IF NOT EXISTS `user_prediction_history` (
   `mental_health` float NOT NULL COMMENT 'Mental health days',
   `diff_walking` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
   `sex` tinyint(1) NOT NULL COMMENT '0 = Female, 1 = Male',
-  `age_category` varchar(20) NOT NULL COMMENT 'Age category',
-  `race` varchar(50) NOT NULL COMMENT 'Race/ethnicity',
-  `diabetic` varchar(50) NOT NULL COMMENT 'Diabetes status',
+  `age` int NOT NULL COMMENT 'Actual age', -- Changed from age_category to age, using INT
+  `race` tinyint UNSIGNED NOT NULL COMMENT 'Race/ethnicity: 0=White, 1=Black, 2=Asian, 3=Hispanic, 4=American Indian/Alaskan Native, 5=Other',
+  `diabetic` tinyint UNSIGNED NOT NULL COMMENT 'Diabetes status: 0=No, 1=Yes, 2=No, borderline diabetes, 3=Yes (during pregnancy)',
   `physical_activity` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
-  `gen_health` varchar(20) NOT NULL COMMENT 'General health',
+  `gen_health` tinyint UNSIGNED NOT NULL COMMENT 'General health: 0=Excellent, 1=Very good, 2=Good, 3=Fair, 4=Poor',
   `sleep_time` float NOT NULL COMMENT 'Sleep time in hours',
   `asthma` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
   `kidney_disease` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
@@ -102,7 +102,6 @@ CREATE TABLE IF NOT EXISTS `user_prediction_history` (
   KEY `FK_user_prediction_history_users` (`user_id`),
   CONSTRAINT `FK_user_prediction_history_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 -- Data exporting was unselected.
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
