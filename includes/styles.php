@@ -3,6 +3,7 @@
  * Common stylesheet includes for Heart Disease AI FYP
  * This file centralizes all CSS imports for easier global management
  */
+require_once PROJECT_ROOT . '/session.php';
 ?>
 <!-- Stylesheets -->
 <link rel="stylesheet" href="css/dashlite.css">

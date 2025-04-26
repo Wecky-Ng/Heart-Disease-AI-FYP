@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Include FAQ data retrieval function
-require_once 'database/get_faq.php';
+require_once PROJECT_ROOT . '/database/get_faq.php';
 
 // Get all FAQs
 $faqs = getFaqs();
@@ -19,18 +19,18 @@ $faqs = getFaqs();
     <meta name="description" content="Heart Disease Prediction using AI - Frequently Asked Questions">
     <title>FAQ - Heart Disease Prediction</title>
     <!-- Include common stylesheets -->
-    <?php include 'includes/styles.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
     <!-- Include custom CSS for FAQ page -->
     <link rel="stylesheet" href="css/customcss.css">
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <!-- Include the side menu component -->
-        <?php include 'sidemenu.php'; ?>
+        <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
         
         <div class="nk-main">
             <!-- Include the header component -->
-            <?php include 'header.php'; ?>
+            <?php include PROJECT_ROOT . '/header.php'; ?>
             
             <div class="nk-wrap">
                 <div class="nk-content">
@@ -83,7 +83,7 @@ $faqs = getFaqs();
     </div>
     
     <!-- Include common JavaScript -->
-    <?php include 'includes/scripts.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
     <script src="js/overlay-fix.js"></script>
 </body>
 </html>

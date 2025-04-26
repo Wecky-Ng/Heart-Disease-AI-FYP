@@ -35,11 +35,11 @@
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <!-- Include the side menu component -->
-        <?php include 'sidemenu.php'; ?>
+        <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
         
         <div class="nk-main">
             <!-- Include the header component -->
-            <?php include 'header.php'; ?>
+            <?php include PROJECT_ROOT . '/header.php'; ?>
             
             <div class="nk-wrap">
                 <div class="nk-content">
@@ -62,7 +62,7 @@
                                         <div class="col-lg-8">
                                             <?php
                                             // Include form preprocessing file
-                                            require_once 'form_preprocessing.php';
+                                            require_once PROJECT_ROOT . '/form_preprocessing.php';
                                             
                                             // Check if form was submitted
                                             if ($_SERVER["REQUEST_METHOD"] == "POST") {

@@ -1,6 +1,6 @@
 <?php
 // Include session management
-require_once 'session.php';
+require_once PROJECT_ROOT . '/session.php';
 
 // Destroy the session
 session_unset();

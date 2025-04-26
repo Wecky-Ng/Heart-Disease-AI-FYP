@@ -31,6 +31,9 @@ switch ($request_path) {
     case '/home.php':
     case '/user_input_form.php':
     case '/result.php':
+    case '/faq.php':
+    case '/login.php':
+    case '/register.php':
     case '/session.php':
         // Route direct requests for these top-level PHP files
         $target_file = ltrim($request_path, '/'); // Remove leading slash

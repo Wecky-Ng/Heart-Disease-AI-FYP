@@ -8,7 +8,7 @@
  */
 
 // Include necessary files
-require_once 'database/form_validation_preprocessing.php'; // Assuming this file exists and is updated
+require_once PROJECT_ROOT . '/database/form_validation_preprocessing.php'; // Assuming this file exists and is updated
 
 /**
  * Process form data for the heart disease prediction API

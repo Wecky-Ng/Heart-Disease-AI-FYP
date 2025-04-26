@@ -1,8 +1,8 @@
 <?php
 // Include session management and user functions
-require_once 'session.php';
-require_once 'database/get_user.php';
-require_once 'database/connection.php'; // Include connection.php here as it's needed for getLastTestRecord
+require_once PROJECT_ROOT . '/session.php';
+require_once PROJECT_ROOT . '/database/get_user.php';
+require_once PROJECT_ROOT . '/database/connection.php'; // Include connection.php here as it's needed for getLastTestRecord
 
 // Initialize variables for form prefill
 $gender = '';
@@ -78,7 +78,7 @@ if (isLoggedIn()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI">
     <title>Heart Disease Prediction</title>
-    <?php include 'includes/styles.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
     <style>
         .card-prediction {
             transition: all 0.3s ease;
@@ -117,10 +117,10 @@ if (isLoggedIn()) {
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
-        <?php include 'sidemenu.php'; ?>
+        <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
 
         <div class="nk-main">
-            <?php include 'header.php'; ?>
+            <?php include PROJECT_ROOT . '/header.php'; ?>
 
             <div class="nk-wrap">
                 <div class="nk-content">
@@ -416,12 +416,12 @@ if (isLoggedIn()) {
                     </div>
                 </div>
 
-                <?php include 'footer.php'; ?>
+                <?php include PROJECT_ROOT . '/footer.php'; ?>
             </div>
         </div>
     </div>
 
-    <?php include 'includes/scripts.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 
     <script>
         $(document).ready(function() {

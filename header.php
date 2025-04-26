@@ -1,6 +1,6 @@
 <?php
 // Include session management
-require_once 'session.php';
+require_once PROJECT_ROOT . '/session.php';
 ?>
 <!-- Header for Heart Disease Prediction Dashboard -->
 <div class="nk-header nk-header-fixed is-light">

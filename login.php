@@ -1,6 +1,6 @@
 <?php
 // Include session management
-require_once 'session.php';
+require_once PROJECT_ROOT . '/session.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter both email and password';
     } else {
         // Include user functions
-        require_once 'database/set_user.php';
+        require_once PROJECT_ROOT . '/database/set_user.php';
         
         // Authenticate user
         $result = loginUser($email, $password);

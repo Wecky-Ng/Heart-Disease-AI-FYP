@@ -1,7 +1,7 @@
 <?php
 // Include session management and user functions
-require_once 'session.php';
-require_once 'database/set_user.php';
+require_once PROJECT_ROOT . '/session.php';
+require_once PROJECT_ROOT . '/database/set_user.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {

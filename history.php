@@ -1,6 +1,6 @@
 <?php
 // Include session management
-require_once 'session.php';
+require_once PROJECT_ROOT . '/session.php';
 
 // Redirect if not logged in
 if (!isLoggedIn()) {
@@ -45,16 +45,16 @@ $predictionHistory = [
     <meta name="description" content="Heart Disease Prediction using AI - Prediction History">
     <title>Prediction History - Heart Disease Prediction</title>
     <!-- Include common stylesheets -->
-    <?php include 'includes/styles.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <!-- Include the side menu component -->
-        <?php include 'sidemenu.php'; ?>
+        <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
         
         <div class="nk-main">
             <!-- Include the header component -->
-            <?php include 'header.php'; ?>
+            <?php include PROJECT_ROOT . '/header.php'; ?>
             
             <!-- Main content -->
             <div class="nk-content">
@@ -136,6 +136,6 @@ $predictionHistory = [
     </div>
     
     <!-- Include common JavaScript -->
-    <?php include 'includes/scripts.php'; ?>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>
 </html>
