@@ -4,13 +4,14 @@
 
 // Define the project root directory.
 // __DIR__ is the directory of the current file (api/index.php).
-// If api/index.php is located at the root of your project, this correctly
-// defines PROJECT_ROOT as the absolute path to the project root.
-define('PROJECT_ROOT', __DIR__);
+// dirname(__DIR__) goes up one directory level from the current file's directory.
+// If api/index.php is located in an 'api' subdirectory at the project root,
+// dirname(__DIR__) correctly defines PROJECT_ROOT as the absolute path to the project root.
+define('PROJECT_ROOT', dirname(__DIR__)); // Corrected definition of PROJECT_ROOT
 
 // Include the Composer autoloader using the defined PROJECT_ROOT.
 // This assumes your vendor directory is directly under the project root.
-require_once PROJECT_ROOT . '/vendor/autoload.php';
+require_once PROJECT_ROOT . '/vendor/autoload.php'; // This line is now correct
 
 // Basic routing logic based on the request URI.
 // This determines which main application file to execute.
