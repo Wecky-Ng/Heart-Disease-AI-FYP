@@ -34,6 +34,9 @@ cp api/index.php "$API_FUNC_DIR/index.php"
 # Copy other files needed by the api handler if any (assuming api/* needed)
 # cp -r api/* "$API_FUNC_DIR/" # This might copy index.php again, be careful
 
+# Copy php.ini for API function
+if [ -f "api/php.ini" ]; then cp api/php.ini "$API_FUNC_DIR/"; fi
+
 # Create .vc-config.json for the API function
 echo '{"runtime": "vercel-php@0.7.3", "handler": "index.php"}' > "$API_FUNC_DIR/.vc-config.json"
 
@@ -47,6 +50,9 @@ cp *.php "$INDEX_FUNC_DIR/"
 if [ -d "database" ]; then cp -r database "$INDEX_FUNC_DIR/"; fi
 if [ -d "includes" ]; then cp -r includes "$INDEX_FUNC_DIR/"; fi
 if [ -f ".htaccess" ]; then cp .htaccess "$INDEX_FUNC_DIR/"; fi
+
+# Copy php.ini for Index function
+if [ -f "api/php.ini" ]; then cp api/php.ini "$INDEX_FUNC_DIR/"; fi
 
 # Create .vc-config.json for the Index function
 echo '{"runtime": "vercel-php@0.7.3", "handler": "index.php"}' > "$INDEX_FUNC_DIR/.vc-config.json"
