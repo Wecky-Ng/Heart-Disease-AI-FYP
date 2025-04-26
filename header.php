@@ -15,15 +15,10 @@ require_once PROJECT_ROOT . '/session.php';
                     <span class="logo-dark logo-img">Heart Disease AI</span>
                 </a>
             </div>
-            <div class="nk-header-search ml-3 ml-xl-0">
-                <form action="#" class="form-inline">
-                    <div class="form-wrap" style="width: 300px;">
-                        <div class="form-icon form-icon-left" style="left: 10px;">
-                            <em class="icon ni ni-search"></em>
-                        </div>
-                        <input type="text" class="form-control form-control-sm" placeholder="Search for health information" style="padding-left: 40px;">
-                    </div>
-                </form>
+            <div class="nk-sidebar-brand">
+                <a href="home.php" class="logo-link nk-sidebar-logo">
+                    <span class="logo-text">Heart Disease AI</span>
+                </a>
             </div>
             <div class="nk-header-tools">
                 <ul class="nk-quick-nav">

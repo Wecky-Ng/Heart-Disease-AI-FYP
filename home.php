@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <title>Heart Disease Prediction - Dashboard</title>
     <?php require_once PROJECT_ROOT . '/includes/styles.php'; ?>
 </head>
+
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <?php require_once PROJECT_ROOT . '/sidemenu.php'; ?>
@@ -61,11 +63,12 @@
                             </div>
                         </div>
                     </div>
-                                </div>
+                </div>
             </div>
         </div>
     </div>
 
     <?php require_once PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>
+
 </html>

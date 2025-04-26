@@ -11,31 +11,12 @@ if (!isLoggedIn()) {
 // Get current user data
 $userData = getCurrentUser();
 
-// In a real application, you would fetch the user's prediction history from the database
-// For demonstration purposes, we'll create some sample data
-$predictionHistory = [
-    [
-        'id' => 1,
-        'date' => '2023-11-15',
-        'result' => 'Low Risk',
-        'probability' => '15%',
-        'details' => 'Age: 45, BP: 120/80, Cholesterol: 180'
-    ],
-    [
-        'id' => 2,
-        'date' => '2023-11-10',
-        'result' => 'Medium Risk',
-        'probability' => '45%',
-        'details' => 'Age: 45, BP: 130/85, Cholesterol: 210'
-    ],
-    [
-        'id' => 3,
-        'date' => '2023-11-05',
-        'result' => 'Low Risk',
-        'probability' => '20%',
-        'details' => 'Age: 45, BP: 125/82, Cholesterol: 190'
-    ]
-];
+// Include database connection and functions
+require_once PROJECT_ROOT . '/database/db_connect.php';
+require_once PROJECT_ROOT . '/database/get_user_prediction_history.php';
+
+// Fetch the user's prediction history from the database
+$predictionHistory = getUserPredictionHistory($userData['id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,6 +27,8 @@ $predictionHistory = [
     <title>Prediction History - Heart Disease Prediction</title>
     <!-- Include common stylesheets -->
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
+    <!-- DataTable CSS -->
+    <link rel="stylesheet" href="./assets/css/dataTables.bootstrap4.min.css">
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
@@ -73,14 +56,24 @@ $predictionHistory = [
                             </div>
                             
                             <div class="nk-block">
-                                <div class="card">
+                                <div class="card card-bordered card-stretch">
+                                    <div class="card-inner card-inner-bordered">
+                                        <div class="card-title-group">
+                                            <div class="card-title">
+                                                <h5 class="title">Your Prediction Records</h5>
+                                            </div>
+                                            <div class="card-tools">
+                                                <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="card-inner">
                                         <?php if (empty($predictionHistory)): ?>
                                         <div class="alert alert-info">
                                             <p>You haven't made any predictions yet. <a href="user_input_form.php">Make your first prediction</a>.</p>
                                         </div>
                                         <?php else: ?>
-                                        <table class="table table-hover">
+                                        <table class="table table-hover datatable-init-export">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
@@ -108,7 +101,7 @@ $predictionHistory = [
                                                     <td><?php echo htmlspecialchars($prediction['probability']); ?></td>
                                                     <td><?php echo htmlspecialchars($prediction['details']); ?></td>
                                                     <td>
-                                                        <a href="result.php?id=<?php echo $prediction['id']; ?>" class="btn btn-sm btn-primary">View Details</a>
+                                                        <a href="result.php?id=<?php echo $prediction['id']; ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
                                                     </td>
                                                 </tr>
                                                 <?php endforeach; ?>
@@ -137,5 +130,29 @@ $predictionHistory = [
     
     <!-- Include common JavaScript -->
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+    <!-- DataTables JS -->
+    <script src="./assets/js/libs/datatable-btns.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable with export options
+            if ($('.datatable-init-export').length) {
+                $('.datatable-init-export').DataTable({
+                    dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
+                    buttons: [
+                        { extend: 'copy', className: 'btn-sm' },
+                        { extend: 'csv', className: 'btn-sm' },
+                        { extend: 'excel', className: 'btn-sm' },
+                        { extend: 'pdf', className: 'btn-sm' },
+                        { extend: 'print', className: 'btn-sm' }
+                    ],
+                    responsive: true,
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Search Predictions"
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

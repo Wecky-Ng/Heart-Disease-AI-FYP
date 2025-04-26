@@ -25,8 +25,7 @@ CREATE TABLE IF NOT EXISTS `faq` (
   `faq_title` varchar(100) DEFAULT NULL,
   `detail` varchar(200) DEFAULT NULL,
   `faq_index` tinyint NOT NULL DEFAULT '1' COMMENT 'arrange by this',
-  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '0: not available(do not display); 
-1: available to display',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '0: not available(do not display); \r\n1: available to display',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -37,6 +36,8 @@ CREATE TABLE IF NOT EXISTS `health_information` (
   `id` tinyint NOT NULL AUTO_INCREMENT,
   `title` varchar(100) DEFAULT NULL,
   `detail` varchar(200) DEFAULT NULL,
+  `category` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Categories which this health information is for. 1: Heart Disease Facts. 2: Prevention Tips. 3: Treatment Option',
+  `index` tinyint NOT NULL DEFAULT '1' COMMENT 'arrange by this',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -86,11 +87,11 @@ CREATE TABLE IF NOT EXISTS `user_prediction_history` (
   `mental_health` float NOT NULL COMMENT 'Mental health days',
   `diff_walking` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
   `sex` tinyint(1) NOT NULL COMMENT '0 = Female, 1 = Male',
-  `age` int NOT NULL COMMENT 'Actual age', -- Changed from age_category to age, using INT
-  `race` tinyint UNSIGNED NOT NULL COMMENT 'Race/ethnicity: 0=White, 1=Black, 2=Asian, 3=Hispanic, 4=American Indian/Alaskan Native, 5=Other',
-  `diabetic` tinyint UNSIGNED NOT NULL COMMENT 'Diabetes status: 0=No, 1=Yes, 2=No, borderline diabetes, 3=Yes (during pregnancy)',
+  `age` int NOT NULL COMMENT 'Actual age',
+  `race` tinyint unsigned NOT NULL COMMENT 'Race/ethnicity: 0=White, 1=Black, 2=Asian, 3=Hispanic, 4=American Indian/Alaskan Native, 5=Other',
+  `diabetic` tinyint unsigned NOT NULL COMMENT 'Diabetes status: 0=No, 1=Yes, 2=No, borderline diabetes, 3=Yes (during pregnancy)',
   `physical_activity` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
-  `gen_health` tinyint UNSIGNED NOT NULL COMMENT 'General health: 0=Excellent, 1=Very good, 2=Good, 3=Fair, 4=Poor',
+  `gen_health` tinyint unsigned NOT NULL COMMENT 'General health: 0=Excellent, 1=Very good, 2=Good, 3=Fair, 4=Poor',
   `sleep_time` float NOT NULL COMMENT 'Sleep time in hours',
   `asthma` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
   `kidney_disease` tinyint(1) NOT NULL COMMENT '0 = No, 1 = Yes',
@@ -102,6 +103,7 @@ CREATE TABLE IF NOT EXISTS `user_prediction_history` (
   KEY `FK_user_prediction_history_users` (`user_id`),
   CONSTRAINT `FK_user_prediction_history_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 -- Data exporting was unselected.
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
