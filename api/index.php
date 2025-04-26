@@ -1,79 +1,49 @@
-<?php
-// This file serves as the API entry point for Vercel
-// Forward all requests to the appropriate PHP file
+// Vercel Serverless Function Handler (api/index.php)
+// This script routes requests within the Vercel function environment.
 
-// Get the requested path
+// Set default content type
+header('Content-Type: text/html; charset=UTF-8');
+
+// Get the requested path relative to the domain root
 $request_uri = $_SERVER['REQUEST_URI'];
 $path = parse_url($request_uri, PHP_URL_PATH);
 
-// Remove '/api' prefix if present
-if (strpos($path, '/api') === 0) {
-    $path = substr($path, 4);
-}
+// Determine the target PHP file based on the path
+// Note: Static assets should be handled by Vercel's routing (`filesystem` handle)
 
-// Handle static files (CSS, JS, images, fonts)
-$static_extensions = ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'ttf', 'woff', 'woff2'];
-$path_info = pathinfo($path);
-$extension = isset($path_info['extension']) ? strtolower($path_info['extension']) : '';
+// Default to home.php if path is empty or root
+if (empty($path) || $path === '/') {
+    $target_file = 'home.php';
+} else {
+    // Remove leading slash
+    $target_file = ltrim($path, '/');
 
-if (in_array($extension, $static_extensions)) {
-    $file_path = __DIR__ . '/..' . $path;
-    if (file_exists($file_path)) {
-        // Set appropriate content type
-        switch ($extension) {
-            case 'css':
-                header('Content-Type: text/css');
-                break;
-            case 'js':
-                header('Content-Type: application/javascript');
-                break;
-            case 'jpg':
-            case 'jpeg':
-                header('Content-Type: image/jpeg');
-                break;
-            case 'png':
-                header('Content-Type: image/png');
-                break;
-            case 'gif':
-                header('Content-Type: image/gif');
-                break;
-            case 'svg':
-                header('Content-Type: image/svg+xml');
-                break;
-            case 'ttf':
-                header('Content-Type: font/ttf');
-                break;
-            case 'woff':
-                header('Content-Type: font/woff');
-                break;
-            case 'woff2':
-                header('Content-Type: font/woff2');
-                break;
-        }
-        readfile($file_path);
-        exit();
+    // If the path doesn't have an extension, assume .php
+    if (!pathinfo($target_file, PATHINFO_EXTENSION)) {
+        $target_file .= '.php';
     }
 }
 
-// If path is empty or just '/', redirect to home
-if (empty($path) || $path === '/') {
-    require __DIR__ . '/../home.php';
-    exit();
-}
+// Construct the full path to the target file within the function's directory
+// Assumes the build script copies necessary files (like home.php, login.php, etc.)
+// into the function's root directory alongside this handler (index.php).
+$file_path = __DIR__ . '/' . $target_file;
 
-// Check if the path has a .php extension
-if (substr($path, -4) !== '.php') {
-    // If no extension, append .php
-    $path .= '.php';
-}
-
-// Include the requested PHP file
-$file_path = __DIR__ . '/..' . $path;
+// Include the target file if it exists, otherwise fallback to home.php
 if (file_exists($file_path)) {
-    // Set content type for PHP files
-    header('Content-Type: text/html; charset=UTF-8');
     require $file_path;
 } else {
-    // Fallback to home if file doesn't exist
-    require __DIR__ . '/../home.php';
+    // Log missing file for debugging (optional)
+    // error_log("Target file not found: " . $file_path . " | Falling back to home.php");
+    
+    // Fallback to home.php if the specific file doesn't exist
+    $fallback_path = __DIR__ . '/home.php';
+    if (file_exists($fallback_path)) {
+        require $fallback_path;
+    } else {
+        // Critical error: home.php is missing
+        http_response_code(500);
+        echo "Error: Application files not found.";
+        error_log("Critical Error: home.php not found at " . $fallback_path);
+    }
 }

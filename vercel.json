@@ -1,16 +1,15 @@
 {
+  "version": 2,
+  "functions": {
+    "api/index.php": { "runtime": "vercel-php@0.6.2" }
+  },
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)", "dest": "/api/index.php" },
+    { "src": "/(.*)", "dest": "/api/index.php" }
+  ],
   "buildCommand": "chmod +x ./vercel-build.sh && ./vercel-build.sh",
   "outputDirectory": ".vercel/output",
-  "routes": [
-    { "src": "/css/(.*)", "dest": "/css/$1" },
-    { "src": "/js/(.*)", "dest": "/js/$1" },
-    { "src": "/img/(.*)", "dest": "/img/$1" },
-    { "src": "/fonts/(.*)", "dest": "/fonts/$1" },
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)\\.php$", "dest": "/index" },
-    { "src": "/", "dest": "/index" },
-    { "src": "/(.*)", "dest": "/index" }
-  ],
   "build": {
     "env": {
       "NOW_PHP_DEBUG": "1"
