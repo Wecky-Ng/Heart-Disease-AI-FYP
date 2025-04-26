@@ -35,7 +35,7 @@ cp api/index.php "$API_FUNC_DIR/index.php"
 # cp -r api/* "$API_FUNC_DIR/" # This might copy index.php again, be careful
 
 # Create .vc-config.json for the API function
-echo '{"runtime": "vercel-php@0.6.2", "handler": "index.php"}' > "$API_FUNC_DIR/.vc-config.json"
+echo '{"runtime": "vercel-php@0.7.3", "handler": "index.php"}' > "$API_FUNC_DIR/.vc-config.json"
 
 # --- Index Function (Fallback/Root) --- 
 echo "Setting up Index function..."
@@ -49,7 +49,7 @@ if [ -d "includes" ]; then cp -r includes "$INDEX_FUNC_DIR/"; fi
 if [ -f ".htaccess" ]; then cp .htaccess "$INDEX_FUNC_DIR/"; fi
 
 # Create .vc-config.json for the Index function
-echo '{"runtime": "vercel-php@0.6.2", "handler": "index.php"}' > "$INDEX_FUNC_DIR/.vc-config.json"
+echo '{"runtime": "vercel-php@0.7.3", "handler": "index.php"}' > "$INDEX_FUNC_DIR/.vc-config.json"
 
 # --- Output Config --- 
 echo "Creating output config.json..."
