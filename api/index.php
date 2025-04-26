@@ -1,36 +1,69 @@
 <?php
-// api/index.php - Router for Vercel deployment
+// This file serves as the single entry point for all PHP requests
+// routed by the vercel.json configuration.
 
-// Get the requested URI
-$uri = $_SERVER['REQUEST_URI'];
+// Define the project root directory.
+// __DIR__ is the directory of the current file (api/index.php).
+// If api/index.php is located at the root of your project, this correctly
+// defines PROJECT_ROOT as the absolute path to the project root.
+define('PROJECT_ROOT', __DIR__);
 
-// Remove query string
-$uri = strtok($uri, '?');
+// Include the Composer autoloader using the defined PROJECT_ROOT.
+// This assumes your vendor directory is directly under the project root.
+require_once PROJECT_ROOT . '/vendor/autoload.php';
 
-// Remove trailing slash if it exists
-$uri = rtrim($uri, '/');
+// Basic routing logic based on the request URI.
+// This determines which main application file to execute.
+$request_uri = $_SERVER['REQUEST_URI'];
 
-// Default to home.php if the URI is empty or root
-if ($uri == '' || $uri == '/') {
-    $uri = '/home.php';
-}
+// Remove query string for routing purposes
+$request_path = strtok($request_uri, '?');
 
-// Check if the file exists in the public directory
-$file_path = __DIR__ . '/../public' . $uri;
+// Simple routing: require the corresponding file based on the request path.
+// You can expand this logic for more complex routing needs or integrate a framework router.
+$target_file = '';
+switch ($request_path) {
+    case '/':
+        // Route the root path to home.php
+        $target_file = 'home.php';
+        break;
+    case '/home.php':
+    case '/user_input_form.php':
+    case '/result.php':
+    case '/session.php':
+        // Route direct requests for these top-level PHP files
+        $target_file = ltrim($request_path, '/'); // Remove leading slash
+        break;
+    // Add cases for other top-level PHP files if you have them (e.g., /login.php, /register.php)
 
-if (file_exists($file_path)) {
-    // Include the file
-    include $file_path;
-} else {
-    // Check if it's a PHP file without the .php extension
-    $php_file_path = $file_path . '.php';
-    
-    if (file_exists($php_file_path)) {
-        include $php_file_path;
-    } else {
-        // File not found, return 404
+    // Note: Requests for files in subdirectories like /database/connection.php
+    // are also routed here by vercel.json. However, these files are typically
+    // included by other PHP files and not accessed directly via URL.
+    // The requires within those files (using PROJECT_ROOT) will work correctly
+    // once they are included by a file that was routed through api/index.php.
+    // If you need to handle direct access to certain subdirectory PHP files,
+    // you would add specific cases here.
+
+    default:
+        // If no specific route matches, return a 404 Not Found response.
         http_response_code(404);
-        echo "<h1>404 Not Found</h1>";
-        echo "<p>The requested file could not be found.</p>";
-    }
+        echo "404 Not Found";
+        exit; // Stop execution
 }
+
+// Construct the full path to the target file
+$target_file_path = PROJECT_ROOT . '/' . $target_file;
+
+// Check if the target file exists before requiring it
+if (file_exists($target_file_path)) {
+    // Require the target file.
+    // This is where the code from home.php (or other files) will be executed.
+    // Since PROJECT_ROOT is defined here, it will be available in the required file.
+    require $target_file_path;
+} else {
+    // If the target file doesn't exist, return a 404.
+    http_response_code(404);
+    echo "404 Not Found: " . htmlspecialchars($request_path); // Show requested path
+}
+
+?>
