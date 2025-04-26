@@ -1,6 +1,7 @@
 <?php
-// Start the session
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Function to check if user is logged in
 function isLoggedIn() {

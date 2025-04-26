@@ -1,7 +1,8 @@
 <?php
 // This file serves as the single entry point for all PHP requests
-// routed by the vercel.json configuration.
-
+// Start the session as the very first action.
+// This must happen before any output is sent to the browser.
+session_start();
 // Define the project root directory.
 // __DIR__ is the directory of the current file (api/index.php).
 // dirname(__DIR__) goes up one directory level from the current file's directory.
@@ -35,7 +36,7 @@ switch ($request_path) {
     case '/faq.php':
     case '/login.php':
     case '/register.php':
-    case '/user_profile.php':
+    case '/profile.php':
     case '/history.php':
     case '/account_setting.php':
     case '/session.php':
