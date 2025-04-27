@@ -108,7 +108,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                             </ul>
                                                         </div>
                                                     </div>
-                                                    
+                                                    <br>
                                                     <p>This dataset is particularly valuable for heart disease prediction as it captures a wide range of demographic, lifestyle, and health factors known to influence cardiovascular health. You can explore the original dataset on <a href="https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease" target="_blank">Kaggle</a>.</p>
                                                 </div>
                                             </div>
@@ -118,11 +118,11 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                 <div class="card-inner">
                                                     <h5 class="card-title">Model Training Process</h5>
                                                     <p>Our heart disease prediction system uses <strong>CatBoost</strong>, a gradient boosting algorithm developed by Yandex that excels at handling categorical features and imbalanced datasets.</p>
-                                                    
+                                                    <div class="nk-tb-item">
                                                     <!-- Training Process Image -->
                                                     <div class="text-center my-3">
-                                                        <img src="./images/training_placeholder.svg" alt="Training Process" style="max-width: 80%; height: auto;">
-                                                        <p class="text-soft mt-1">[CatBoost training pipeline visualization]</p>
+                                                        <img src="./images/feature_importance.png" alt="Feature Importance" style="max-width: 80%; height: auto;">
+                                                        <p class="text-soft mt-1">[Feature Importance by catboost. This visualization shows the most important features in predicting heart disease. Higher values indicate stronger influence on the model's predictions.]</p>
                                                     </div>
                                                     
                                                     <h6>Training Pipeline:</h6>
@@ -201,19 +201,9 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                     
                                                     <!-- Image Carousel -->
                                                     <div class="nk-tb-list is-separate mb-3">
-                                                        <!-- Fixed height container for slider to prevent resizing -->
-                                                        <div class="slider-container" style="min-height: 550px;">
+                                                        <!-- Fixed height container for slider -->
+                                                        <div class="slider-container" style="height: 550px; overflow: hidden;"> <!-- Applied fixed height and overflow hidden -->
                                                             <div class="slider-init" data-slick='{"slidesToShow": 1, "slidesToScroll": 1, "dots": true, "arrows": true, "adaptiveHeight": false, "responsive":[{"breakpoint": 992,"settings":{"slidesToShow": 1}}]}'>
-                                                                <!-- Feature Importance -->
-                                                                <div class="slider-item">
-                                                                    <div class="nk-tb-item">
-                                                                        <div class="text-center w-100 p-3">
-                                                                            <h6 class="mb-3">Feature Importance</h6>
-                                                                            <img src="./img/feature_importance.png" alt="Feature Importance" class="img-fluid rounded" style="max-height: 400px;">
-                                                                            <p class="text-soft mt-2">This visualization shows the most important features in predicting heart disease. Higher values indicate stronger influence on the model's predictions.</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
                                                                 <!-- Confusion Matrix -->
                                                                 <div class="slider-item">
                                                                     <div class="nk-tb-item">
@@ -329,12 +319,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                 return false; // Prevent page scroll
             });
             
-            // Fix slider height issues by ensuring consistent height
-            $slickSlider.on('beforeChange', function() {
-                // Store the current container height before slide changes
-                var currentHeight = $('.slider-container').height();
-                $('.slider-container').css('min-height', currentHeight);
-            });
+            // Removed custom height adjustment logic as fixed height is now applied via CSS
         });
     </script>
 </body>
