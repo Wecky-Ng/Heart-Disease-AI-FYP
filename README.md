@@ -42,3 +42,8 @@ This project uses environment variables to manage database configuration and oth
 
 - Never commit the `.env` file with real credentials to version control
 - For production, ensure you set up proper database credentials with limited permissions
+
+
+## Active Host
+
+This project is hosted on the following link: https://heart-disease-ai-fyp.vercel.app/
