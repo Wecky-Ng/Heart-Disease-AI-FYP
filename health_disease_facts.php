@@ -4,7 +4,7 @@ if (!defined('PROJECT_ROOT')) {
     define('PROJECT_ROOT', __DIR__);
 }
 require_once PROJECT_ROOT . '/includes/styles.php';
-require_once PROJECT_ROOT . '/header.php';
+
 require_once PROJECT_ROOT . '/database/get_health_recomend.php';
 
 // Get category from URL parameter (default to 1 if not specified)
@@ -29,72 +29,18 @@ $categoryTitles = [
 $currentCategoryTitle = $categoryTitles[$category];
 ?>
 
-<div class="nk-app-root">
-    <!-- main @s -->
-    <div class="nk-main">
+<body class="nk-body bg-lighter">
+    <div class="nk-app-root">
         <!-- sidebar @s -->
-        <?php include 'sidemenu.php'; ?>
+        <?php require_once PROJECT_ROOT . '/sidemenu.php'; ?>
         <!-- sidebar @e -->
+        <!-- main @s -->
+        <div class="nk-main">
+            <?php include PROJECT_ROOT . '/header.php'; ?>
 
-        <!-- wrap @s -->
-        <div class="nk-wrap">
-            <!-- main header @s -->
-            <div class="nk-header nk-header-fixed is-light">
-                <div class="container-fluid">
-                    <div class="nk-header-wrap">
-                        <div class="nk-header-brand">
-                            <a href="home.php" class="logo-link">
-                                <span class="logo-text">Heart Disease AI</span>
-                            </a>
-                        </div>
-                        <div class="nk-header-tools">
-                            <ul class="nk-quick-nav">
-                                <?php if(isLoggedIn()): ?>
-                                <li class="dropdown user-dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                        <div class="user-toggle">
-                                            <div class="user-avatar sm">
-                                                <em class="icon ni ni-user-alt"></em>
-                                            </div>
-                                            <div class="user-info d-none d-md-block">
-                                                <div class="user-name"><?php echo htmlspecialchars($_SESSION['username']); ?></div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-md dropdown-menu-right dropdown-menu-s1">
-                                        <div class="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
-                                            <div class="user-card">
-                                                <div class="user-avatar">
-                                                    <em class="icon ni ni-user-alt"></em>
-                                                </div>
-                                                <div class="user-info">
-                                                    <span class="lead-text"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-inner">
-                                            <ul class="link-list">
-                                                <li><a href="profile.php"><em class="icon ni ni-user-alt"></em><span>View Profile</span></a></li>
-                                                <li><a href="account_setting.php"><em class="icon ni ni-setting-alt"></em><span>Account Setting</span></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="dropdown-inner">
-                                            <ul class="link-list">
-                                                <li><a href="logout.php"><em class="icon ni ni-signout"></em><span>Sign out</span></a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </li>
-                                <?php else: ?>
-                                <li>
-                                    <a href="login.php" class="btn btn-primary"><em class="icon ni ni-signin"></em><span>Sign in</span></a>
-                                </li>
-                                <?php endif; ?>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- wrap @s -->
+            <div class="nk-wrap">
+                <?php require_once PROJECT_ROOT . '/header.php'; ?>
             <!-- main header @e -->
 
             <!-- content @s -->
@@ -112,7 +58,7 @@ $currentCategoryTitle = $categoryTitles[$category];
                                             <div class="toggle-expand-content">
                                                 <ul class="nk-block-tools g-3">
                                                     <li>
-                                                        <div class="drodown">
+                                                        <div class="dropdown">
                                                             <a href="#" class="dropdown-toggle btn btn-white btn-dim btn-outline-light" data-toggle="dropdown"><span>Category</span><em class="icon ni ni-chevron-down"></em></a>
                                                             <div class="dropdown-menu dropdown-menu-right">
                                                                 <ul class="link-list-opt no-bdr">
@@ -175,5 +121,6 @@ $currentCategoryTitle = $categoryTitles[$category];
     </div>
     <!-- main @e -->
 </div>
+</body>
 
 <?php require_once PROJECT_ROOT . '/includes/scripts.php'; ?>

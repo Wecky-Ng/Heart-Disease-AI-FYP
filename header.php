@@ -42,7 +42,7 @@ require_once PROJECT_ROOT . '/session.php';
                                     </div>
                                     <div class="user-info">
                                         <span class="lead-text"><?php echo $_SESSION['username'] ?? 'Guest User'; ?></span>
-                                        <span class="sub-text"><?php echo $_SESSION['email'] ?? 'guest@example.com'; ?></span>
+                                        <span class="sub-text"><?php echo $_SESSION['email'] ?? 'Guest Mode'; ?></span>
                                     </div>
                                 </div>
                             </div>

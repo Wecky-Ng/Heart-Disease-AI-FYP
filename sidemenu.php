@@ -39,7 +39,15 @@ require_once PROJECT_ROOT . '/session.php';
                             <span class="nk-menu-text">Heart Disease Prediction</span>
                         </a>
                     </li>
-                    
+                    <li class="nk-menu-heading">
+                        <h6 class="overline-title text-primary-alt">About</h6>
+                    </li>
+                    <li class="nk-menu-item">
+                        <a href="model_details.php" class="nk-menu-link">
+                            <span class="nk-menu-icon"><em class="icon ni ni-info"></em></span>
+                            <span class="nk-menu-text">Model Details</span>
+                        </a>
+                    </li>
                     <li class="nk-menu-heading">
                         <h6 class="overline-title text-primary-alt">Health Resources</h6>
                     </li>

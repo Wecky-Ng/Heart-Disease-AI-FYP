@@ -209,7 +209,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="bmi">BMI</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="60" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['bmi'])) ? htmlspecialchars($lastTestData['raw_data']['bmi']) : ''; ?>" required>
+                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="60" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['bmi'])) ? htmlspecialchars($lastTestData['raw_data']['bmi']) : ''; ?>" required maxlength="50">
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -257,7 +257,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="physical_health">Physical Health (days)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="physical_health" name="physical_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_health'])) ? htmlspecialchars($lastTestData['raw_data']['physical_health']) : ''; ?>" required>
+                                                                        <input type="number" step="0.1" class="form-control" id="physical_health" name="physical_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_health'])) ? htmlspecialchars($lastTestData['raw_data']['physical_health']) : ''; ?>" required maxlength="50">
                                                                         <small class="form-text text-muted">Number of days physical health not good (0-30)</small>
                                                                     </div>
                                                                 </div>
@@ -266,7 +266,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="mental_health">Mental Health (days)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="mental_health" name="mental_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['mental_health'])) ? htmlspecialchars($lastTestData['raw_data']['mental_health']) : ''; ?>" required>
+                                                                        <input type="number" step="0.1" class="form-control" id="mental_health" name="mental_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['mental_health'])) ? htmlspecialchars($lastTestData['raw_data']['mental_health']) : ''; ?>" required maxlength="50">
                                                                         <small class="form-text text-muted">Number of days mental health not good (0-30)</small>
                                                                     </div>
                                                                 </div>
@@ -332,7 +332,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="sleep_time">Sleep Time (hours)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="sleep_time" name="sleep_time" min="0" max="24" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['sleep_time'])) ? htmlspecialchars($lastTestData['raw_data']['sleep_time']) : ''; ?>" required>
+                                                                        <input type="number" step="0.1" class="form-control" id="sleep_time" name="sleep_time" min="0" max="24" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['sleep_time'])) ? htmlspecialchars($lastTestData['raw_data']['sleep_time']) : ''; ?>" required maxlength="50">
                                                                     </div>
                                                                 </div>
                                                             </div>

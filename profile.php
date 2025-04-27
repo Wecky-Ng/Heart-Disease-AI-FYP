@@ -77,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'Current password is incorrect.';
                 } elseif ($new_password !== $confirm_password) {
                     $error = 'New passwords do not match.';
-                } elseif (strlen($new_password) < 6) {
-                    $error = 'New password must be at least 6 characters long.';
+                } elseif (strlen($new_password) < 8) {
+                    $error = 'New password must be at least 8 characters long.';
                 } else {
                     // Add hashed new password to update data
                     $updateData['password'] = password_hash($new_password, PASSWORD_DEFAULT);
@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                     <div class="form-group">
                                                         <label class="form-label" for="full_name">Full Name</label>
                                                         <div class="form-control-wrap">
-                                                            <input type="text" class="form-control" id="full_name" name="full_name" value="<?php echo htmlspecialchars($userData['full_name'] ?? ''); ?>">
+                                                            <input type="text" class="form-control" id="full_name" name="full_name" value="<?php echo htmlspecialchars($userData['full_name'] ?? ''); ?>" maxlength="50">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -245,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                                         <div class="form-group">
                                                                             <label class="form-label" for="new_password">New Password</label>
                                                                             <div class="form-control-wrap">
-                                                                                <input type="password" class="form-control" id="new_password" name="new_password">
+                                                                                <input type="password" class="form-control" id="new_password" name="new_password" minlength="8">
                                                                             </div>
                                                                         </div>
                                                                     </div>

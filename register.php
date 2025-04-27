@@ -41,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in all required fields';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password must be at least 6 characters long';
+    } elseif (strlen($password) < 8) {
+        $error = 'Password must be at least 8 characters long';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
     } elseif (strlen($username) < 3 || strlen($username) > 50) {
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="nk-main">
             <div class="nk-wrap nk-wrap-nosidebar">
                 <div class="nk-content">
-                    <div class="nk-block nk-block-middle nk-auth-body wide-xs">
+                    <div class="nk-block nk-block-middle nk-auth-body wide-xs mx-auto">
                         <div class="brand-logo pb-4 text-center">
                             <a href="home.php" class="logo-link">
                                 <h2>Heart Disease AI</h2>
@@ -120,19 +120,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="form-group">
                                         <label class="form-label" for="username">Username</label>
                                         <div class="form-control-wrap">
-                                            <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="Enter your username" value="<?php echo htmlspecialchars($username); ?>" required>
+                                            <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="Enter your username" value="<?php echo htmlspecialchars($username); ?>" required maxlength="50">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="email">Email</label>
                                         <div class="form-control-wrap">
-                                            <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Enter your email address" value="<?php echo htmlspecialchars($email); ?>" required>
+                                            <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Enter your email address" value="<?php echo htmlspecialchars($email); ?>" required maxlength="50">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="full_name">Full Name</label>
                                         <div class="form-control-wrap">
-                                            <input type="text" class="form-control form-control-lg" id="full_name" name="full_name" placeholder="Enter your full name" value="<?php echo htmlspecialchars($full_name); ?>">
+                                            <input type="text" class="form-control form-control-lg" id="full_name" name="full_name" placeholder="Enter your full name" value="<?php echo htmlspecialchars($full_name); ?>" maxlength="50">
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="form-group">
                                         <label class="form-label" for="password">Password</label>
                                         <div class="form-control-wrap">
-                                            <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Enter your password" required>
+                                            <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Enter your password" required minlength="8">
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -167,7 +167,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="form-group">
                                         <div class="custom-control custom-control-xs custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="terms" name="terms" required>
-                                            <label class="custom-control-label" for="terms">I agree to the <a href="#">Terms & Conditions</a></label>
+                                            <label class="custom-control-label" for="terms">I agree to the <a href="javascript:void(0);" id="terms-link">Terms & Conditions</a></label>
+                                        </div>
+                                        <!-- Hidden div for Terms & Conditions content -->
+                                        <div id="terms-content" style="display: none;">
+                                            <h4>Terms and Conditions</h4>
+                                            <p>Welcome to Heart Disease AI!</p>
+                                            <p>These terms and conditions outline the rules and regulations for the use of Heart Disease AI's Website.</p>
+                                            <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use Heart Disease AI if you do not agree to take all of the terms and conditions stated on this page.</p>
+                                            <p><strong>Cookies:</strong><br>We employ the use of cookies. By accessing Heart Disease AI, you agreed to use cookies in agreement with the Heart Disease AI's Privacy Policy.</p>
+                                            <p><strong>License:</strong><br>Unless otherwise stated, Heart Disease AI and/or its licensors own the intellectual property rights for all material on Heart Disease AI. All intellectual property rights are reserved. You may access this from Heart Disease AI for your own personal use subjected to restrictions set in these terms and conditions.</p>
+                                            <p>You must not:</p>
+                                            <ul>
+                                                <li>Republish material from Heart Disease AI</li>
+                                                <li>Sell, rent or sub-license material from Heart Disease AI</li>
+                                                <li>Reproduce, duplicate or copy material from Heart Disease AI</li>
+                                                <li>Redistribute content from Heart Disease AI</li>
+                                            </ul>
+                                            <p>This Agreement shall begin on the date hereof.</p>
+                                            <p><strong>Disclaimer:</strong><br>The predictions provided by this tool are for informational purposes only and should not be considered a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.</p>
+                                            <!-- Add more terms as needed -->
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -186,6 +205,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <!-- JavaScript -->
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Terms & Conditions Popup
+        const termsLink = document.getElementById('terms-link');
+        const termsContent = document.getElementById('terms-content');
+
+        if (termsLink && termsContent) {
+            termsLink.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                Swal.fire({
+                    title: 'Terms & Conditions',
+                    html: termsContent.innerHTML, // Use the content from the hidden div
+                    icon: 'info',
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#6576ff',
+                    width: '80%', // Adjust width as needed
+                    textAlign: 'left', // Explicitly set text alignment to left
+                    customClass: {
+                        htmlContainer: 'text-left' // Keep this for good measure
+                    }
+                });
+            });
+        }
+    });
+    </script>
 
     
     <?php if (!empty($error)): ?>
