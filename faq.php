@@ -25,8 +25,7 @@ $faqs = getFaqs();
     <title>FAQ - Heart Disease Prediction</title>
     <!-- Include common stylesheets -->
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
-    <!-- Include custom CSS for FAQ page -->
-    <link rel="stylesheet" href="css/customcss.css">
+
 </head>
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
