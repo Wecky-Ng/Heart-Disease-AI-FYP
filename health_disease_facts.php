@@ -3,6 +3,7 @@
 if (!defined('PROJECT_ROOT')) {
     define('PROJECT_ROOT', __DIR__);
 }
+require_once PROJECT_ROOT . '/includes/styles.php';
 require_once PROJECT_ROOT . '/header.php';
 require_once PROJECT_ROOT . '/database/get_health_recomend.php';
 
