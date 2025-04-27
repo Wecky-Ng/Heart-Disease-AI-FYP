@@ -47,3 +47,4 @@ This project uses environment variables to manage database configuration and oth
 ## Active Host
 
 This project is hosted on the following link: https://heart-disease-ai-fyp.vercel.app/
+Powered by Vercel.
