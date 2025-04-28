@@ -118,8 +118,35 @@
                                                     $validatedData = $validationResult['data'];
 
                                                     // 2. Prepare data for Python API (ensure keys match API expectations)
-                                                    // The validation function already uses the correct keys based on the form/DB
-                                                    $apiData = $validatedData;
+                                                    // Map PHP keys (lowercase_snake) to Python API keys (PascalCase)
+                                                    $keyMapping = [
+                                                        'bmi' => 'BMI',
+                                                        'smoking' => 'Smoking',
+                                                        'alcohol_drinking' => 'AlcoholDrinking',
+                                                        'stroke' => 'Stroke',
+                                                        'physical_health' => 'PhysicalHealth',
+                                                        'mental_health' => 'MentalHealth',
+                                                        'diff_walking' => 'DiffWalking',
+                                                        'sex' => 'Sex',
+                                                        'age' => 'Age', // Sending Age, assuming API handles AgeCategory derivation if needed
+                                                        'race' => 'Race',
+                                                        'diabetic' => 'Diabetic',
+                                                        'physical_activity' => 'PhysicalActivity',
+                                                        'gen_health' => 'GenHealth',
+                                                        'sleep_time' => 'SleepTime',
+                                                        'asthma' => 'Asthma',
+                                                        'kidney_disease' => 'KidneyDisease',
+                                                        'skin_cancer' => 'SkinCancer'
+                                                    ];
+
+                                                    $apiData = [];
+                                                    foreach ($keyMapping as $phpKey => $apiKey) {
+                                                        if (isset($validatedData[$phpKey])) {
+                                                            $apiData[$apiKey] = $validatedData[$phpKey];
+                                                        }
+                                                        // Note: If a key is missing in $validatedData but required by API,
+                                                        // the API should handle it (as it currently does with .get(feature, 0))
+                                                    }
 
                                                     // 3. Call Python Prediction API
                                                     $apiUrl = $_ENV['PREDICTION_API_URL'] ?? 'http://127.0.0.1:5000/predict'; // Default to localhost if not set
