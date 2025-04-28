@@ -20,6 +20,25 @@ require_once __DIR__ . '/connection.php';
 function deletePredictionRecord($db, $recordId, $userId) {
     // $db = getDbConnection(); // Connection is now passed as a parameter
     
+    // First, delete the corresponding record from user_last_test_record if it exists
+    $sql_last_record = "DELETE FROM user_last_test_record WHERE prediction_history_id = ? AND user_id = ?";
+    $stmt_last = $db->prepare($sql_last_record);
+    if ($stmt_last === false) {
+        error_log("MySQL prepare error in deletePredictionRecord (last_record): " . $db->error);
+        // $db->close(); // Let caller manage connection
+        return false;
+    }
+    $stmt_last->bind_param("ii", $recordId, $userId);
+    $execute_last_success = $stmt_last->execute();
+    if ($execute_last_success === false) {
+        error_log("MySQL execute error in deletePredictionRecord (last_record): " . $stmt_last->error);
+        $stmt_last->close();
+        // $db->close(); // Let caller manage connection
+        return false;
+    }
+    $stmt_last->close();
+
+    // Now, delete the main prediction history record
     // Prepare the SQL query with user_id check for security
     // This ensures users can only delete their own records
     $sql = "DELETE FROM user_prediction_history WHERE id = ? AND user_id = ?";
