@@ -126,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI - User Profile">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>User Profile - Heart Disease Prediction</title>
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
     <style>

@@ -13,6 +13,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Details about the Heart Disease Prediction Model">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Heart Disease Prediction - Model Details</title>
 
 </head>
@@ -48,13 +49,13 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                             <div class="card card-bordered h-100">
                                                 <div class="card-inner">
                                                     <h5 class="card-title">Prediction Model</h5>
-                                                    <p>The heart disease prediction is powered by a Machine Learning model. Specifically, a <strong>RandomForestClassifier</strong> algorithm from the scikit-learn library is utilized. This model is trained to identify patterns in patient data that correlate with the presence or absence of heart disease.</p>
-                                                    <!-- Placeholder for Model Image -->
+                                                    <p>The heart disease prediction is powered by an advanced <strong>Stacking Ensemble Machine Learning model</strong>. This ensemble combines the strengths of two powerful gradient boosting algorithms, <strong>CatBoost</strong> and <strong>LightGBM</strong>, with a <strong>Logistic Regression</strong> model acting as the meta-learner. This approach leverages multiple models to improve prediction accuracy and robustness.</p>
+                                                    <!-- Model Performance Visualization -->
                                                     <div class="text-center my-3">
-                                                        <img src="./images/model_placeholder.svg" alt="Model Diagram Placeholder" style="max-width: 100%; height: auto;">
-                                                        <p class="text-soft mt-1">[Diagram/Image explaining the model architecture]</p>
+                                                        <img src="./img/roc_curve.png" alt="ROC Curve" style="max-width: 80%; height: auto;">
+                                                        <p class="text-soft mt-1">[Receiver Operating Characteristic (ROC) Curve showing the trade-off between true positive rate and false positive rate for the ensemble model.]</p>
                                                     </div>
-                                                    <p>The model is hosted externally via a Flask API. When you submit your data through the prediction form, it is securely sent to this API, which processes the information using the trained model and returns the prediction result (risk level and probability).</p>
+                                                    <p>The final trained ensemble model is used by the backend Flask API. When you submit your data through the prediction form, it is securely sent to this API, which processes the information using the ensemble model and returns the prediction result (risk level and probability).</p>
                                                     <h6 class="card-title mt-3">API Interaction</h6>
                                                     <p>The prediction functionality relies on an external API built with Flask. This separation allows for independent scaling and updating of the prediction model without affecting the main web application. The communication happens over HTTPS to ensure data security.</p>
                                                 </div>
@@ -66,10 +67,10 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                     <h5 class="card-title">Dataset Information</h5>
                                                     <p>The model was trained on the <strong>heart_2020_cleaned.csv</strong> dataset from the CDC's Behavioral Risk Factor Surveillance System (BRFSS) 2020. This comprehensive dataset contains responses from over 400,000 telephone surveys conducted across the United States, focusing on health-related risk behaviors and chronic health conditions.</p>
                                                     
-                                                    <!-- Dataset Visualization -->
+                                                    <!-- Model Performance Visualization -->
                                                     <div class="text-center my-3">
-                                                        <img src="./images/dataset_placeholder.svg" alt="Dataset Visualization" style="max-width: 100%; height: auto;">
-                                                        <p class="text-soft mt-1">[Class distribution visualization from the dataset]</p>
+                                                        <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" style="max-width: 80%; height: auto;">
+                                                        <p class="text-soft mt-1">[Precision-Recall Curve illustrating the trade-off between precision and recall for different thresholds, particularly useful for imbalanced datasets.]</p>
                                                     </div>
                                                     
                                                     <h6>Dataset Statistics:</h6>
@@ -117,183 +118,63 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                             <div class="card card-bordered">
                                                 <div class="card-inner">
                                                     <h5 class="card-title">Model Training Process</h5>
-                                                    <p>Our heart disease prediction system uses <strong>CatBoost</strong>, a gradient boosting algorithm developed by Yandex that excels at handling categorical features and imbalanced datasets.</p>
+                                                    <p>Our heart disease prediction system utilizes a sophisticated <strong>Stacking Ensemble</strong> approach, combining <strong>CatBoost</strong> and <strong>LightGBM</strong> as base learners, with <strong>Logistic Regression</strong> as the meta-learner. This method aims to capture complex patterns by leveraging the diverse strengths of each model.</p>
                                                     <div class="nk-tb-item">
-                                                    <!-- Training Process Image -->
+                                                    <!-- Feature Importance Image -->
                                                     <div class="text-center my-3">
-                                                        <img src="./images/feature_importance.png" alt="Feature Importance" style="max-width: 80%; height: auto;">
-                                                        <p class="text-soft mt-1">[Feature Importance by catboost. This visualization shows the most important features in predicting heart disease. Higher values indicate stronger influence on the model's predictions.]</p>
+                                                        <img src="./img/feature_importance.png" alt="Feature Importance" style="max-width: 80%; height: auto;">
+                                                        <p class="text-soft mt-1">[Feature Importance. This visualization likely shows the aggregated or individual importance of features from one of the base models (e.g., CatBoost), indicating key predictors.]</p>
                                                     </div>
-                                                    
+
                                                     <h6>Training Pipeline:</h6>
                                                     <ol>
-                                                        <li><strong>Data Loading & Cleaning:</strong> The heart_2020_cleaned.csv dataset was loaded and analyzed for missing values, outliers, and inconsistencies.</li>
-                                                        
-                                                        <li><strong>Feature Engineering:</strong> 
+                                                        <li><strong>Data Loading & Preparation:</strong> The <code>heart_2020_cleaned.csv</code> dataset was loaded. The target variable 'HeartDisease' was label encoded ('No': 0, 'Yes': 1).</li>
+                                                        <li><strong>Train-Test Split:</strong> Data was split into 80% training and 20% testing sets using stratification to maintain the original class distribution.</li>
+                                                        <li><strong>Preprocessing:</strong>
                                                             <ul>
-                                                                <li>Categorical features were identified and prepared for CatBoost's native categorical feature handling</li>
-                                                                <li>Numerical features were analyzed for distribution and outliers</li>
-                                                                <li>Target variable (HeartDisease) was encoded from 'Yes'/'No' to binary values</li>
+                                                                <li>Numerical features: Missing values imputed with the median, then scaled using StandardScaler.</li>
+                                                                <li>Categorical features: Missing values imputed with the most frequent value, then one-hot encoded (dropping the first category).</li>
                                                             </ul>
                                                         </li>
-                                                        
-                                                        <li><strong>Data Preprocessing:</strong>
+                                                        <li><strong>Base Model Hyperparameter Tuning:</strong>
                                                             <ul>
-                                                                <li>Missing values were imputed using median for numerical features and most frequent value for categorical features</li>
-                                                                <li>Numerical features were standardized using StandardScaler</li>
-                                                                <li>SMOTETomek was applied to address class imbalance (8.6% positive cases)</li>
+                                                                <li><strong>CatBoost & LightGBM:</strong> RandomizedSearchCV (with 50 iterations and 3-fold stratified cross-validation) was used to find the optimal hyperparameters for both base models independently, optimizing for the 'f1_weighted' score. Search spaces covered parameters like learning rate, tree depth/leaves, regularization, and bagging/subsampling.</li>
                                                             </ul>
                                                         </li>
-                                                        
-                                                        <li><strong>Train-Test Split:</strong> Data was split into 80% training and 20% testing sets, with stratification to maintain class distribution.</li>
-                                                        
-                                                        <li><strong>Model Training:</strong> CatBoost classifier was trained with the following optimized hyperparameters:
+                                                        <li><strong>Stacking Ensemble Construction:</strong>
                                                             <ul>
-                                                                <li>Learning rate: 0.01</li>
-                                                                <li>L2 regularization: 7</li>
-                                                                <li>Iterations: 1500</li>
-                                                                <li>Depth: 6</li>
-                                                                <li>Border count: 64</li>
-                                                                <li>Bagging temperature: 0.2</li>
-                                                                <li>Early stopping rounds: 50</li>
+                                                                <li>The tuned CatBoost and LightGBM models were used as base estimators.</li>
+                                                                <li>A Logistic Regression model (with balanced class weights and 'liblinear' solver) was chosen as the meta-learner.</li>
                                                             </ul>
                                                         </li>
-                                                        
-                                                        <li><strong>Threshold Optimization:</strong> The probability threshold was optimized to 0.70 to maximize F1 score, balancing precision and recall.</li>
-                                                        
-                                                        <li><strong>Evaluation:</strong> The model was evaluated using:
+                                                        <li><strong>Meta-Learner Tuning:</strong> RandomizedSearchCV (20 iterations) was used to tune the regularization parameter (C) of the final Logistic Regression meta-learner within the stacking framework, again optimizing for 'f1_weighted'.</li>
+                                                        <li><strong>Threshold Optimization:</strong> After training the final ensemble, the prediction probability threshold was optimized on the test set to maximize the F1 score, balancing precision and recall effectively for the imbalanced dataset. The optimal threshold was found to be approximately <strong>0.2168</strong>.</li>
+                                                        <li><strong>Evaluation (on Test Set @ Optimal Threshold):</strong> The final tuned ensemble model achieved the following performance:
                                                             <ul>
-                                                                <li>Accuracy: 92.3%</li>
-                                                                <li>Precision: 89.7%</li>
-                                                                <li>Recall: 86.5%</li>
-                                                                <li>F1 Score: 88.1%</li>
-                                                                <li>AUC-ROC: 0.94</li>
-                                                                <li>AUC-PR: 0.91</li>
+                                                                <li><strong>AUC-ROC:</strong> ~0.9046 (Overall discrimination ability)</li>
+                                                                <li><strong>Accuracy:</strong> ~0.8514</li>
+                                                                <li><strong>Precision (for 'Yes'):</strong> ~0.40</li>
+                                                                <li><strong>Recall (for 'Yes'):</strong> ~0.88</li>
+                                                                <li><strong>F1 Score (for 'Yes'):</strong> ~0.55</li>
+                                                                <li><em>(Note: Specific metrics depend on the exact tuning results and the optimal threshold chosen)</em></li>
                                                             </ul>
                                                         </li>
-                                                        
-                                                        <li><strong>Feature Importance Analysis:</strong> CatBoost's built-in feature importance was used to identify the most predictive factors for heart disease.</li>
-                                                        
-                                                        <li><strong>Deployment:</strong> The trained model was serialized and deployed via a Flask API for real-time predictions.</li>
+                                                        <li><strong>Deployment:</strong> The fully trained and tuned stacking ensemble model was serialized using joblib (<code>tuned_ensemble_cat_lgbm_v4.pkl</code>) for deployment via the Flask API.</li>
                                                     </ol>
-                                                    
-                                                    <h6>Why CatBoost?</h6>
-                                                    <p>CatBoost was selected for this project due to several advantages:</p>
+
+                                                    <h6>Why Stacking Ensemble?</h6>
+                                                    <p>A stacking ensemble was chosen to:</p>
                                                     <ul>
-                                                        <li>Superior handling of categorical features without extensive preprocessing</li>
-                                                        <li>Built-in mechanisms to prevent overfitting</li>
-                                                        <li>Excellent performance on imbalanced datasets</li>
-                                                        <li>Fast inference time for real-time predictions</li>
-                                                        <li>Robust to outliers and missing values</li>
+                                                        <li>Combine the predictive power of different high-performing models (CatBoost's categorical handling, LightGBM's speed).</li>
+                                                        <li>Improve generalization by having a meta-learner combine the base model predictions.</li>
+                                                        <li>Potentially achieve better performance than any single model alone, especially on complex datasets.</li>
                                                     </ul>
-                                                    
-                                                    <p>The model's performance metrics demonstrate its effectiveness in identifying individuals at risk of heart disease based on their health indicators and demographic information.</p>
+
+                                                    <p>The rigorous tuning process for both base models and the meta-learner, along with threshold optimization, ensures the model is well-suited for identifying individuals at risk of heart disease based on the available health indicators.</p>
                                                 </div>
                                             </div>
                                         </div>
-                                        
-                                        <!-- Model Evaluation Metrics Visualization Section -->
-                                        <div class="col-lg-12 mt-4">
-                                            <div class="card card-bordered">
-                                                <div class="card-inner">
-                                                    <h5 class="card-title">Model Evaluation Visualizations</h5>
-                                                    <p>The following visualizations demonstrate the performance and characteristics of our heart disease prediction model:</p>
-                                                    
-                                                    <!-- Image Carousel -->
-                                                    <div class="nk-tb-list is-separate mb-3">
-                                                        <!-- Slider container -->
-                                                        <div class="slider-container">
-                                                            <div class="slider-init" data-slick='{"slidesToShow": 1, "slidesToScroll": 1, "dots": true, "arrows": true, "adaptiveHeight": false, "responsive":[{"breakpoint": 992,"settings":{"slidesToShow": 1}}]}'>
-                                                                <!-- Confusion Matrix -->
-                                                                <div class="slider-item">
-                                                                    <div class="nk-tb-item">
-                                                                        <div class="text-center w-100 p-3">
-                                                                            <h6 class="mb-3">Confusion Matrix</h6>
-                                                                            <img src="./img/confusion_matrix_optimal.png" alt="Confusion Matrix" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
-                                                                            <p class="text-soft mt-2">The confusion matrix shows the model's prediction accuracy, displaying true positives, false positives, true negatives, and false negatives.</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- ROC Curve -->
-                                                                <div class="slider-item">
-                                                                    <div class="nk-tb-item">
-                                                                        <div class="text-center w-100 p-3">
-                                                                            <h6 class="mb-3">ROC Curve</h6>
-                                                                            <img src="./img/roc_curve.png" alt="ROC Curve" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
-                                                                            <p class="text-soft mt-2">The ROC curve illustrates the diagnostic ability of the model. The AUC of 0.94 indicates excellent discriminative power.</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Precision-Recall Curve -->
-                                                                <div class="slider-item">
-                                                                    <div class="nk-tb-item">
-                                                                        <div class="text-center w-100 p-3">
-                                                                            <h6 class="mb-3">Precision-Recall Curve</h6>
-                                                                            <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
-                                                                            <p class="text-soft mt-2">This curve shows the trade-off between precision and recall at different threshold settings, particularly important for imbalanced datasets.</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Correlation Matrix -->
-                                                                <div class="slider-item">
-                                                                    <div class="nk-tb-item">
-                                                                        <div class="text-center w-100 p-3">
-                                                                            <h6 class="mb-3">Feature Correlation Matrix</h6>
-                                                                            <img src="./img/correlation_matrix.png" alt="Correlation Matrix" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
-                                                                            <p class="text-soft mt-2">The correlation matrix shows relationships between different features, helping identify which factors are related to each other.</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- PCA Plot -->
-                                                                <div class="slider-item">
-                                                                    <div class="nk-tb-item">
-                                                                        <div class="text-center w-100 p-3">
-                                                                            <h6 class="mb-3">PCA Dimensionality Reduction</h6>
-                                                                            <img src="./img/pca_plot.png" alt="PCA Plot" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
-                                                                            <p class="text-soft mt-2">This visualization shows the data projected onto its principal components, revealing how well the classes can be separated in lower dimensions.</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Thumbnail Navigation -->
-                                                    <div class="row g-3 mt-2">
-                                                        <div class="col-4 col-sm-2">
-                                                            <a href="javascript:void(0);" class="thumb-nav" data-slide="0">
-                                                                <img src="./img/feature_importance.png" alt="Feature Importance" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
-                                                            </a>
-                                                        </div>
-                                                        <div class="col-4 col-sm-2">
-                                                            <a href="javascript:void(0);" class="thumb-nav" data-slide="1">
-                                                                <img src="./img/confusion_matrix_optimal.png" alt="Confusion Matrix" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
-                                                            </a>
-                                                        </div>
-                                                        <div class="col-4 col-sm-2">
-                                                            <a href="javascript:void(0);" class="thumb-nav" data-slide="2">
-                                                                <img src="./img/roc_curve.png" alt="ROC Curve" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
-                                                            </a>
-                                                        </div>
-                                                        <div class="col-4 col-sm-2">
-                                                            <a href="javascript:void(0);" class="thumb-nav" data-slide="3">
-                                                                <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
-                                                            </a>
-                                                        </div>
-                                                        <div class="col-4 col-sm-2">
-                                                            <a href="javascript:void(0);" class="thumb-nav" data-slide="4">
-                                                                <img src="./img/correlation_matrix.png" alt="Correlation Matrix" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
-                                                            </a>
-                                                        </div>
-                                                        <div class="col-4 col-sm-2">
-                                                            <a href="javascript:void(0);" class="thumb-nav" data-slide="5">
-                                                                <img src="./img/pca_plot.png" alt="PCA Plot" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                                              
                                     </div>
                                 </div>
                             </div>

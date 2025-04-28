@@ -15,6 +15,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Heart Disease Prediction - Dashboard</title>
 
 </head>
@@ -61,10 +62,10 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                             <div class="card card-bordered h-100">
                                                 <div class="card-inner">
                                                     <div class="card-head">
-                                                        <h5 class="card-title">Health Information</h5>
+                                                        <h5 class="card-title">If you have questions regarding our system</h5>
                                                     </div>
-                                                    <p>Learn about heart disease risk factors and prevention strategies.</p>
-                                                    <a href="#" class="btn btn-outline-primary">Learn More</a>
+                                                    <p>You may go to the FAQs section to know more.</p>
+                                                    <a href="faq.php" class="btn btn-outline-primary">Learn More</a>
                                                 </div>
                                             </div>
                                         </div>

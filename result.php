@@ -5,11 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction Result">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Heart Disease Prediction - Result</title>
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/dashlite.css">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
     <style>
         .result-box {
             border-radius: 5px;
@@ -257,8 +256,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="js/bundle.js"></script>
-    <script src="js/scripts.js"></script>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>
 
 </html>

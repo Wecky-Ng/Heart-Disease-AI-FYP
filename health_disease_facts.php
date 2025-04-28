@@ -3,8 +3,8 @@
 if (!defined('PROJECT_ROOT')) {
     define('PROJECT_ROOT', __DIR__);
 }
+require_once PROJECT_ROOT . '/session.php';
 require_once PROJECT_ROOT . '/includes/styles.php';
-
 require_once PROJECT_ROOT . '/database/get_health_recomend.php';
 
 // Get category from URL parameter (default to 1 if not specified)
@@ -28,20 +28,33 @@ $categoryTitles = [
 // Current category title
 $currentCategoryTitle = $categoryTitles[$category];
 ?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Heart Disease Information and Facts">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Heart Disease - <?php echo htmlspecialchars($currentCategoryTitle); ?></title>
+</head>
 
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <!-- sidebar @s -->
         <?php require_once PROJECT_ROOT . '/sidemenu.php'; ?>
         <!-- sidebar @e -->
+        
+        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
+        
         <!-- main @s -->
         <div class="nk-main">
+            <!-- main header @s -->
             <?php include PROJECT_ROOT . '/header.php'; ?>
+            <!-- main header @e -->
 
             <!-- wrap @s -->
             <div class="nk-wrap">
-                <?php require_once PROJECT_ROOT . '/header.php'; ?>
-            <!-- main header @e -->
 
             <!-- content @s -->
             <div class="nk-content">

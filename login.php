@@ -55,10 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Heart Disease Prediction using AI - Login">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Login - Heart Disease Prediction</title>
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/dashlite.css">
-    <link rel="stylesheet" href="css/theme.css">
+    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
 </head>
 
 <body class="nk-body bg-white npc-default pg-auth">
@@ -128,8 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <!-- JavaScript -->
-    <script src="js/bundle.js"></script>
-    <script src="js/scripts.js"></script>
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>
 
 </html>
