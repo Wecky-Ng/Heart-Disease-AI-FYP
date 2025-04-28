@@ -34,12 +34,12 @@ CREATE TABLE IF NOT EXISTS `faq` (
 -- Dumping structure for table fyp_heart_disease_prediction.health_information
 CREATE TABLE IF NOT EXISTS `health_information` (
   `id` tinyint NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) DEFAULT NULL,
-  `detail` varchar(200) DEFAULT NULL,
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `detail` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `category` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Categories which this health information is for. 1: Heart Disease Facts. 2: Prevention Tips. 3: Treatment Option',
   `index` tinyint NOT NULL DEFAULT '1' COMMENT 'arrange by this',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 

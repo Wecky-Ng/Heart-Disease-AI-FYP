@@ -1,0 +1,6 @@
+flask
+joblib
+pandas
+numpy
+mysql-connector-python
+python-dotenv

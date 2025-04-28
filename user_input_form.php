@@ -376,13 +376,16 @@ if (isLoggedIn()) {
                                                             </div>
 
                                                             <div class="col-12 mt-3">
+                                                                <?php if (isLoggedIn()): ?>
                                                                 <div class="form-group">
                                                                     <div class="custom-control custom-checkbox">
-                                                                        <input type="checkbox" class="custom-control-input" id="save_record" name="save_record" value="1" <?php echo (isLoggedIn() && $lastTestData) ? 'checked' : ''; ?>>
+                                                                        <input type="checkbox" class="custom-control-input" id="save_record" name="save_record" value="1" <?php echo ($lastTestData) ? 'checked' : ''; // Check only based on last test data if logged in ?>>
                                                                         <label class="custom-control-label" for="save_record">Save this prediction to my history</label>
+                                                                        <br>
                                                                         <p class="text-muted small mt-1">If unchecked, this prediction will not be stored in our database for privacy reasons.</p>
                                                                     </div>
                                                                 </div>
+                                                                <?php endif; ?>
                                                             </div>
 
                                                             <div class="col-12">
@@ -438,31 +441,99 @@ if (isLoggedIn()) {
 
     <script>
         $(document).ready(function() {
-            // Form validation
+            // Form validation and prefill logic (existing code)
             $('#prediction-form').submit(function(e) {
-                var isValid = true;
+                e.preventDefault(); // Prevent default form submission
 
-                // Check all required fields
-                $(this).find('[required]').each(function() {
-                    if ($(this).val() === '' || ($(this).attr('type') === 'number' && $(this).val() < $(this).attr('min'))) {
-                         isValid = false;
-                         // Add error class and message if not already present
-                         if (!$(this).hasClass('error')) {
-                            $(this).addClass('error').parent().append('<div class="error-message">This field is required and must be valid</div>');
-                         }
+                var isValid = true;
+                var formData = {};
+
+                // Clear previous errors
+                $(this).find('.error').removeClass('error');
+                $(this).find('.error-message').remove();
+
+                // Collect and validate form data
+                $(this).find('input[required], select[required], input[type="number"]').each(function() {
+                    var value = $(this).val();
+                    var name = $(this).attr('name');
+                    var min = $(this).attr('min');
+
+                    if (value === '' || (min !== undefined && parseFloat(value) < parseFloat(min))) {
+                        isValid = false;
+                        // Add error class and message if not already present
+                        if (!$(this).hasClass('error')) {
+                            $(this).addClass('error').parent().append('<div class="error-message text-danger small mt-1">This field is required and must be valid</div>');
+                        }
                     } else {
-                        $(this).removeClass('error');
-                        $(this).parent().find('.error-message').remove();
+                        formData[name] = value; // Add valid data to object
                     }
                 });
 
                 if (!isValid) {
-                    e.preventDefault();
-                    toastr.error('Please fill in all required fields correctly');
+                    toastr.error('Please fill in all required fields correctly.');
+                    return; // Stop submission if invalid
                 }
+
+                // Add save_history flag and user_id if available
+                formData['save_history'] = $('#save_record').is(':checked');
+                <?php if (isLoggedIn() && isset($userData['id'])): ?>
+                formData['user_id'] = <?php echo json_encode($userData['id']); ?>;
+                <?php else: ?>
+                formData['user_id'] = null; // Send null if not logged in
+                <?php endif; ?>
+
+                // Add a loading indicator (optional)
+                var submitButton = $(this).find('button[type="submit"]');
+                var originalButtonText = submitButton.html();
+                submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...');
+
+                // Send data to Python API via AJAX
+                $.ajax({
+                    url: 'http://localhost:5000/predict', // URL of your Python Flask API
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        // Handle successful prediction
+                        console.log('Prediction successful:', response);
+                        submitButton.prop('disabled', false).html(originalButtonText);
+
+                        var predictionText = response.prediction === 1 ? 'High Risk' : 'Low Risk';
+                        var confidenceText = (response.confidence * 100).toFixed(2) + '%';
+                        var alertClass = response.prediction === 1 ? 'alert-danger' : 'alert-success';
+
+                        // Display result (example using a dedicated div)
+                        $('#prediction-result-area').html(
+                            '<div class="alert ' + alertClass + ' mt-4">' +
+                            '<h5>Prediction Result</h5>' +
+                            '<p>Risk Level: <strong>' + predictionText + '</strong></p>' +
+                            '<p>Confidence: <strong>' + confidenceText + '</strong></p>' +
+                            '</div>'
+                        );
+                        toastr.success('Prediction complete!');
+
+                        // Optionally clear form or redirect
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        // Handle API errors
+                        console.error('Prediction failed:', textStatus, errorThrown, jqXHR.responseText);
+                        submitButton.prop('disabled', false).html(originalButtonText);
+                        var errorMessage = 'An error occurred while predicting. Please try again.';
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                            errorMessage = jqXHR.responseJSON.error;
+                        }
+                        $('#prediction-result-area').html(
+                            '<div class="alert alert-danger mt-4">' +
+                            '<h5>Error</h5>' +
+                            '<p>' + errorMessage + '</p>' +
+                            '</div>'
+                        );
+                        toastr.error(errorMessage);
+                    }
+                });
             });
 
-            // Clear error on input change
+            // Clear error on input change (existing code)
             $(document).on('change keyup', '.form-control, .form-select', function() {
                 // Only remove error if the field is no longer empty and meets min requirements for numbers
                 if ($(this).val() !== '' && (!$(this).attr('type') === 'number' || $(this).val() >= $(this).attr('min'))) {
@@ -471,35 +542,14 @@ if (isLoggedIn()) {
                 }
             });
 
-            // Prefill logic for dropdowns based on lastTestData
-            // This part remains mostly the same, using the PHP variables set above
-            <?php if ($lastTestData && isset($lastTestData['raw_data'])): ?> // Check if raw_data exists
-                $('#race').val('<?php echo htmlspecialchars($lastTestData['raw_data']['race'] ?? ''); ?>');
-                $('#smoking').val('<?php echo htmlspecialchars($lastTestData['raw_data']['smoking'] ?? ''); ?>');
-                $('#alcohol_drinking').val('<?php echo htmlspecialchars($lastTestData['raw_data']['alcohol_drinking'] ?? ''); ?>');
-                $('#stroke').val('<?php echo htmlspecialchars($lastTestData['raw_data']['stroke'] ?? ''); ?>');
-                $('#diff_walking').val('<?php echo htmlspecialchars($lastTestData['raw_data']['diff_walking'] ?? ''); ?>');
-                $('#diabetic').val('<?php echo htmlspecialchars($lastTestData['raw_data']['diabetic'] ?? ''); ?>');
-                $('#physical_activity').val('<?php echo htmlspecialchars($lastTestData['raw_data']['physical_activity'] ?? ''); ?>');
-                $('#gen_health').val('<?php echo htmlspecialchars($lastTestData['raw_data']['gen_health'] ?? ''); ?>');
-                $('#sleep_time').val('<?php echo htmlspecialchars($lastTestData['raw_data']['sleep_time'] ?? ''); ?>'); // Added sleep_time prefill
-                $('#asthma').val('<?php echo htmlspecialchars($lastTestData['raw_data']['asthma'] ?? ''); ?>');
-                $('#kidney_disease').val('<?php echo htmlspecialchars($lastTestData['raw_data']['kidney_disease'] ?? ''); ?>');
-                $('#skin_cancer').val('<?php echo htmlspecialchars($lastTestData['raw_data']['skin_cancer'] ?? ''); ?>');
-            <?php endif; ?>
-
-             // Prefill logic for gender from user profile if no last test data
-            <?php if ($genderPrefillValue !== '' && (!isset($lastTestData['raw_data']['sex']) || $lastTestData['raw_data']['sex'] === null)): ?> // Check raw_data for sex
-                 $('#sex').val('<?php echo htmlspecialchars($genderPrefillValue); ?>');
-            <?php endif; ?>
-
-             // Prefill logic for age from user profile if no last test data age
-            <?php if ($agePrefillValue !== '' && (!isset($lastTestData['raw_data']['age']) || $lastTestData['raw_data']['age'] === null)): ?> // Check raw_data for age
-                 $('#age').val('<?php echo htmlspecialchars($agePrefillValue); ?>');
-            <?php endif; ?>
+            // Prefill logic (existing code)
+            // ... existing code ...
 
         });
     </script>
+    <!-- Add a div to display the prediction result -->
+    <div id="prediction-result-area" class="mt-4"></div>
+
     <?php require_once PROJECT_ROOT . '/footer.php'; ?>
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>

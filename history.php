@@ -43,8 +43,8 @@ $error_message = "";
 if (isset($_POST['delete_record']) && isset($_POST['record_id'])) {
     $recordId = intval($_POST['record_id']);
     $userId = $userData['user_id'];
-    
-    if (deletePredictionRecord($recordId, $userId)) {
+    $db = getDbConnection(); // Get DB connection
+    if ($db && deletePredictionRecord($db, $recordId, $userId)) { // Pass $db
         $success_message = "Record deleted successfully.";
     } else {
         $error_message = "Failed to delete record. Please try again.";
@@ -54,8 +54,8 @@ if (isset($_POST['delete_record']) && isset($_POST['record_id'])) {
 // Handle delete all records
 if (isset($_POST['delete_all_records'])) {
     $userId = $userData['user_id'];
-    
-    if (deleteAllPredictionRecords($userId)) {
+    $db = getDbConnection(); // Get DB connection
+    if ($db && deleteAllPredictionRecords($db, $userId)) { // Pass $db
         $success_message = "All records deleted successfully.";
     } else {
         $error_message = "Failed to delete records. Please try again.";

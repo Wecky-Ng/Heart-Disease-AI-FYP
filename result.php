@@ -73,152 +73,249 @@
                                     <div class="row g-gs">
                                         <div class="col-lg-8">
                                             <?php
-                                            // Include form preprocessing file
-                                            require_once PROJECT_ROOT . '/form_preprocessing.php';
+                                            // Include necessary files
+                                            require_once PROJECT_ROOT . '/session.php'; // Start session
+                                            require_once PROJECT_ROOT . '/database/form_validation_preprocessing.php';
+                                            require_once PROJECT_ROOT . '/database/set_user_prediction_record.php'; // Includes connection.php
+                                            require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Includes getPredictionRecordById
+                                            require_once PROJECT_ROOT . '/database/connection.php'; // Ensure connection is available
 
-                                            // Check if form was submitted
-                                            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                                                // Process form data and call prediction API
-                                                $predictionResult = processAndPredict($_POST);
+                                            // Get current user ID
+                                            $userId = $_SESSION['user_id'] ?? null;
 
-                                                if ($predictionResult['success']) {
-                                                    // API call successful, get the result
-                                                    $result = $predictionResult['result'];
-                                                    $data = $_POST; // Original form data for display
+                                            // --- Display Logic ---
+                                            $displayData = null;
+                                            $displayError = null;
 
-                                                    // Get risk level and probability from API result
-                                                    $riskLevel = ucfirst($result['risk_level']);
-                                                    $probability = $result['probability'];
-                                                    $factors = $result['factors'];
+                                            // Check if viewing a specific history record via GET request
+                                            if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
+                                                $recordId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-                                                    // Set risk class and description based on risk level
-                                                    if ($riskLevel == "High") {
-                                                        $riskClass = "result-high";
-                                                        $riskDescription = "Based on the provided parameters, you have a high risk of heart disease. Please consult with a healthcare professional as soon as possible.";
-                                                    } elseif ($riskLevel == "Medium") {
-                                                        $riskClass = "result-medium";
-                                                        $riskDescription = "Based on the provided parameters, you have a moderate risk of heart disease. Consider lifestyle changes and regular check-ups.";
+                                                if ($recordId && $userId) {
+                                                    $record = getPredictionRecordById($recordId, $userId);
+                                                    if ($record) {
+                                                        // Prepare data for display (similar structure to POST result)
+                                                        $displayData = [
+                                                            'riskLevel' => $record['result'], // Already formatted as 'High Risk' or 'Low Risk'
+                                                            'probabilityPercent' => $record['probability'], // Already formatted as 'XX.XX%'
+                                                            'riskClass' => ($record['prediction'] == 1) ? 'result-high' : 'result-low',
+                                                            'riskDescription' => ($record['prediction'] == 1) ? "This record indicates a high risk of heart disease. Please consult with a healthcare professional." : "This record indicates a low risk of heart disease. Maintain a healthy lifestyle.",
+                                                            'parameters' => $record // Pass the whole record for parameter display
+                                                        ];
                                                     } else {
-                                                        $riskClass = "result-low";
-                                                        $riskDescription = "Based on the provided parameters, you have a low risk of heart disease. Maintain a healthy lifestyle to keep it that way.";
+                                                        $displayError = "Could not find the specified prediction record or you do not have permission to view it.";
                                                     }
-
-                                                    // Display the result
-                                                    echo "<div class='card card-bordered'>";
-                                                    echo "<div class='card-inner'>";
-                                                    echo "<div class='card-head'>";
-                                                    echo "<h5 class='card-title'>Prediction Result</h5>";
-                                                    echo "</div>";
-                                                    echo "<div class='result-box {$riskClass}'>";
-                                                    echo "<h4>Heart Disease Risk: {$riskLevel}</h4>";
-                                                    echo "<p>Probability: {$probability}%</p>";
-                                                    echo "<p>{$riskDescription}</p>";
-
-                                                    // Display contributing factors
-                                                    if (!empty($factors)) {
-                                                        echo "<div class='mt-3'>";
-                                                        echo "<h6>Contributing Factors:</h6>";
-                                                        echo "<ul class='list'>";
-                                                        foreach ($factors as $factor) {
-                                                            echo "<li>{$factor}</li>";
-                                                        }
-                                                        echo "</ul>";
-                                                        echo "</div>";
-                                                    }
-
-                                                    echo "</div>";
-                                                    echo "<div class='mt-4'>";
-                                                    echo "<h6>Your Health Parameters</h6>";
-                                                    echo "<div class='table-responsive'>";
-                                                    echo "<table class='table table-bordered parameter-table'>";
-                                                    echo "<tbody>";
-
-                                                    // Display all parameters
-                                                    $parameterLabels = [
-                                                        'age' => 'Age',
-                                                        'gender' => 'Gender',
-                                                        'bmi' => 'BMI',
-                                                        'blood_pressure' => 'Blood Pressure',
-                                                        'cholesterol_level' => 'Cholesterol Level',
-                                                        'exercise_habits' => 'Exercise Habits',
-                                                        'smoking' => 'Smoking',
-                                                        'family_heart_disease' => 'Family Heart Disease',
-                                                        'diabetes' => 'Diabetes',
-                                                        'high_blood_pressure' => 'High Blood Pressure',
-                                                        'low_hdl_cholesterol' => 'Low HDL Cholesterol',
-                                                        'high_ldl_cholesterol' => 'High LDL Cholesterol',
-                                                        'alcohol_consumption' => 'Alcohol Consumption',
-                                                        'stress_level' => 'Stress Level',
-                                                        'sleep_hours' => 'Sleep Hours',
-                                                        'sugar_consumption' => 'Sugar Consumption',
-                                                        'triglyceride_level' => 'Triglyceride Level',
-                                                        'fasting_blood_sugar' => 'Fasting Blood Sugar',
-                                                        'crp_level' => 'CRP Level',
-                                                        'homocysteine_level' => 'Homocysteine Level'
-                                                    ];
-
-                                                    foreach ($parameterLabels as $key => $label) {
-                                                        if (isset($data[$key])) {
-                                                            echo "<tr>";
-                                                            echo "<th>{$label}</th>";
-                                                            echo "<td>{$data[$key]}</td>";
-                                                            echo "</tr>";
-                                                        }
-                                                    }
-
-                                                    echo "</tbody>";
-                                                    echo "</table>";
-                                                    echo "</div>";
-                                                    echo "</div>";
-                                                    echo "<div class='mt-4'>";
-                                                    echo "<a href='user_input_form.php' class='btn btn-outline-primary'>Make Another Prediction</a>";
-                                                    echo "</div>";
-                                                    echo "</div>";
-                                                    echo "</div>";
                                                 } else {
-                                                    // API call failed or validation errors
-                                                    echo "<div class='card card-bordered'>";
-                                                    echo "<div class='card-inner'>";
-                                                    echo "<div class='card-head'>";
+                                                    $displayError = "Invalid record ID specified or you are not logged in.";
+                                                }
+                                            }
+                                            // Check if form was submitted via POST
+                                            elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
+                                                // 1. Validate form data
+                                                $validationResult = validateAndPreprocessFormData($_POST);
 
-                                                    if (isset($predictionResult['errors']) && !empty($predictionResult['errors'])) {
-                                                        // Display validation errors
-                                                        echo "<h5 class='card-title'>Validation Error</h5>";
-                                                        echo "</div>";
-                                                        echo "<div class='alert alert-danger'>";
-                                                        echo "<p>There were errors in your submission:</p>";
-                                                        echo "<ul>";
-                                                        foreach ($predictionResult['errors'] as $error) {
-                                                            echo "<li>{$error}</li>";
-                                                        }
-                                                        echo "</ul>";
+                                                if ($validationResult['isValid']) {
+                                                    $validatedData = $validationResult['data'];
+
+                                                    // 2. Prepare data for Python API (ensure keys match API expectations)
+                                                    // The validation function already uses the correct keys based on the form/DB
+                                                    $apiData = $validatedData;
+
+                                                    // 3. Call Python Prediction API
+                                                    $apiUrl = $_ENV['PREDICTION_API_URL'] ?? 'http://127.0.0.1:5000/predict'; // Default to localhost if not set
+                                                    $ch = curl_init($apiUrl);
+                                                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                                    curl_setopt($ch, CURLOPT_POST, true);
+                                                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($apiData));
+                                                    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                                                        'Content-Type: application/json',
+                                                        'Accept: application/json'
+                                                    ]);
+                                                    curl_setopt($ch, CURLOPT_TIMEOUT, 30); // 30 seconds timeout
+
+                                                    $apiResponseJson = curl_exec($ch);
+                                                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                                                    $curlError = curl_error($ch);
+                                                    curl_close($ch);
+
+                                                    $apiResult = null;
+                                                    $apiError = null;
+
+                                                    if ($curlError) {
+                                                        $apiError = "API request failed (cURL error): " . $curlError;
+                                                        error_log($apiError);
+                                                    } elseif ($httpCode != 200) {
+                                                        $apiError = "API request failed with HTTP status code: " . $httpCode . ". Response: " . $apiResponseJson;
+                                                        error_log($apiError);
                                                     } else {
-                                                        // Display API error
+                                                        $apiResult = json_decode($apiResponseJson, true);
+                                                        if (json_last_error() !== JSON_ERROR_NONE) {
+                                                            $apiError = "Failed to decode API response: " . json_last_error_msg() . ". Response: " . $apiResponseJson;
+                                                            error_log($apiError);
+                                                            $apiResult = null; // Ensure result is null on decode error
+                                                        }
+                                                    }
+
+                                                    // 4. Process API Response and Save to DB (if applicable)
+                                                    if ($apiResult && isset($apiResult['prediction']) && isset($apiResult['confidence'])) {
+                                                        $prediction = (int)$apiResult['prediction']; // 0 or 1
+                                                        $confidence = (float)$apiResult['confidence']; // Probability
+                                                        $riskLevel = $prediction == 1 ? 'High' : 'Low'; // Simplified risk level
+                                                        $probabilityPercent = round($confidence * 100, 2);
+
+                                                        // Set risk class and description based on prediction
+                                                        if ($prediction == 1) {
+                                                            $riskClass = "result-high";
+                                                            $riskDescription = "Based on the provided parameters, you have a high risk of heart disease. Please consult with a healthcare professional as soon as possible.";
+                                                        } else {
+                                                            $riskClass = "result-low";
+                                                            $riskDescription = "Based on the provided parameters, you have a low risk of heart disease. Maintain a healthy lifestyle to keep it that way.";
+                                                        }
+
+                                                        // 5. Save to Database if user logged in and checkbox checked
+                                                        $saveHistory = isset($_POST['save_history']) && $_POST['save_history'] == 'on';
+                                                        $userId = $_SESSION['user_id'] ?? null;
+                                                        $dbSaveSuccess = null;
+                                                        $dbSaveError = null;
+
+                                                        if ($userId && $saveHistory) {
+                                                            $conn = getDbConnection();
+                                                            if ($conn) {
+                                                                $historyId = savePredictionHistory($conn, $userId, $validatedData, $prediction, $confidence);
+                                                                if ($historyId) {
+                                                                    $lastTestSuccess = updateLastTestRecord($conn, $userId, $historyId);
+                                                                    if ($lastTestSuccess) {
+                                                                        $dbSaveSuccess = "Prediction saved to your history.";
+                                                                    } else {
+                                                                        $dbSaveError = "Failed to update last test record. History entry was created (ID: {$historyId}) but may not be linked correctly.";
+                                                                        error_log("DB Error: Failed to update last test record for user {$userId}, history ID {$historyId}");
+                                                                    }
+                                                                } else {
+                                                                    $dbSaveError = "Failed to save prediction history to the database.";
+                                                                    error_log("DB Error: Failed to save prediction history for user {$userId}");
+                                                                }
+                                                                $conn->close();
+                                                            } else {
+                                                                $dbSaveError = "Failed to connect to the database to save history.";
+                                                                error_log("DB Error: Failed to get DB connection in result.php");
+                                                            }
+                                                        }
+
+                                                        // 6. Display Result
+                                                        echo "<div class='card card-bordered'>";
+                                                        echo "<div class='card-inner'>";
+                                                        echo "<div class='card-head'>";
+                                                        echo "<h5 class='card-title'>Prediction Result</h5>";
+                                                        echo "</div>";
+
+                                                        // Display DB save status if attempted
+                                                        if ($dbSaveSuccess) {
+                                                            echo "<div class='alert alert-success'>{$dbSaveSuccess}</div>";
+                                                        } elseif ($dbSaveError) {
+                                                            echo "<div class='alert alert-danger'>{$dbSaveError}</div>";
+                                                        }
+
+                                                        echo "<div class='result-box {$riskClass}'>";
+                                                        echo "<h4>Heart Disease Risk: {$riskLevel}</h4>";
+                                                        echo "<p>Confidence: {$probabilityPercent}%</p>";
+                                                        echo "<p>{$riskDescription}</p>";
+                                                        // Note: 'factors' are not returned by the simplified Python API anymore
+                                                        echo "</div>";
+
+                                                        // Display Input Parameters
+                                                        echo "<div class='mt-4'>";
+                                                        echo "<h6>Your Health Parameters</h6>";
+                                                        echo "<div class='table-responsive'>";
+                                                        echo "<table class='table table-bordered parameter-table'>";
+                                                        echo "<tbody>";
+
+                                                        // Map validated data keys to user-friendly labels
+                                                        $parameterLabels = [
+                                                            'bmi' => 'BMI',
+                                                            'smoking' => 'Smoking Status (0=No, 1=Yes)',
+                                                            'alcohol_drinking' => 'Alcohol Drinking (0=No, 1=Yes)',
+                                                            'stroke' => 'Stroke History (0=No, 1=Yes)',
+                                                            'physical_health' => 'Physical Health (days bad/month)',
+                                                            'mental_health' => 'Mental Health (days bad/month)',
+                                                            'diff_walking' => 'Difficulty Walking (0=No, 1=Yes)',
+                                                            'sex' => 'Sex (0=Female, 1=Male)',
+                                                            'age' => 'Age',
+                                                            'race' => 'Race (0:White, 1:Black, 2:Asian, 3:Hispanic, 4:AmInd/AlNat, 5:Other)',
+                                                            'diabetic' => 'Diabetic Status (0:No, 1:Yes, 2:Borderline, 3:Yes/Pregnancy)',
+                                                            'physical_activity' => 'Physical Activity (0=No, 1=Yes)',
+                                                            'gen_health' => 'General Health (0:Excellent, 1:V.Good, 2:Good, 3:Fair, 4:Poor)',
+                                                            'sleep_time' => 'Sleep Time (hours)',
+                                                            'asthma' => 'Asthma (0=No, 1=Yes)',
+                                                            'kidney_disease' => 'Kidney Disease (0=No, 1=Yes)',
+                                                            'skin_cancer' => 'Skin Cancer (0=No, 1=Yes)'
+                                                        ];
+
+                                                        foreach ($parameterLabels as $key => $label) {
+                                                            if (isset($validatedData[$key])) {
+                                                                $displayValue = $validatedData[$key];
+                                                                // You might want to map integer values back to text for display here if needed
+                                                                // e.g., for 'sex', 'smoking', etc.
+                                                                echo "<tr>";
+                                                                echo "<th>{$label}</th>";
+                                                                echo "<td>{$displayValue}</td>";
+                                                                echo "</tr>";
+                                                            }
+                                                        }
+
+                                                        echo "</tbody>";
+                                                        echo "</table>";
+                                                        echo "</div>";
+                                                        echo "</div>";
+                                                        echo "<div class='mt-4'>";
+                                                        echo "<a href='user_input_form.php' class='btn btn-outline-primary'>Make Another Prediction</a>";
+                                                        echo "</div>";
+                                                        echo "</div>"; // card-inner
+                                                        echo "</div>"; // card
+
+                                                    } else {
+                                                        // API call failed or returned invalid data
+                                                        echo "<div class='card card-bordered'>";
+                                                        echo "<div class='card-inner'>";
+                                                        echo "<div class='card-head'>";
                                                         echo "<h5 class='card-title'>Prediction Error</h5>";
                                                         echo "</div>";
                                                         echo "<div class='alert alert-danger'>";
-                                                        echo "<p>" . $predictionResult['error'] . "</p>";
-                                                        echo "<p>The prediction service might be unavailable. Please try again later.</p>";
+                                                        echo "<p>Could not get a prediction result from the analysis service.</p>";
+                                                        if ($apiError) {
+                                                            echo "<p>Error details: {$apiError}</p>"; // Display logged error
+                                                        }
+                                                        echo "</div>";
+                                                        echo "<div class='mt-3'>";
+                                                        echo "<a href='user_input_form.php' class='btn btn-outline-primary'>Go Back to Form</a>";
+                                                        echo "</div>";
+                                                        echo "</div>"; // card-inner
+                                                        echo "</div>"; // card
                                                     }
+
+                                                } else {
+                                                    // Validation failed
+                                                    echo "<div class='card card-bordered'>";
+                                                    echo "<div class='card-inner'>";
+                                                    echo "<div class='card-head'>";
+                                                    echo "<h5 class='card-title'>Validation Error</h5>";
                                                     echo "</div>";
-                                                    echo "<div class='mt-4'>";
-                                                    echo "<a href='user_input_form.php' class='btn btn-outline-primary'>Go Back</a>";
+                                                    echo "<div class='alert alert-danger'>";
+                                                    echo "<p>There were errors in your submission:</p>";
+                                                    echo "<ul>";
+                                                    foreach ($validationResult['errors'] as $error) {
+                                                        echo "<li>{$error}</li>";
+                                                    }
+                                                    echo "</ul>";
+                                                    echo "</div>"; // Close alert
+                                                    echo "<div class='mt-3'>";
+                                                    echo "<a href='user_input_form.php' class='btn btn-outline-primary'>Go Back to Form</a>";
                                                     echo "</div>";
-                                                    echo "</div>";
-                                                    echo "</div>";
+                                                    echo "</div>"; // Close card-inner
+                                                    echo "</div>"; // Close card
                                                 }
                                             } else {
-                                                // If accessed directly without form submission
-                                                echo "<div class='card card-bordered'>";
-                                                echo "<div class='card-inner'>";
-                                                echo "<div class='alert alert-info'>";
-                                                echo "<p>Please submit the prediction form to see results.</p>";
-                                                echo "</div>";
-                                                echo "<div class='mt-4'>";
-                                                echo "<a href='user_input_form.php' class='btn btn-primary'>Go to Prediction Form</a>";
-                                                echo "</div>";
-                                                echo "</div>";
-                                                echo "</div>";
+                                                // If not a POST request, redirect or show an error
+                                                echo "<div class='alert alert-warning'>No data submitted. Please use the prediction form.</div>";
                                             }
                                             ?>
                                         </div>
@@ -260,3 +357,68 @@
 </body>
 
 </html>
+
+                                            // --- Display GET Result or Error ---
+                                            elseif ($displayData) {
+                                                echo "<div class='card card-bordered'>";
+                                                echo "<div class='card-inner'>";
+                                                echo "<div class='card-head'>";
+                                                echo "<h5 class='card-title'>Prediction Result from History</h5>";
+                                                echo "</div>";
+
+                                                echo "<div class='result-box {$displayData['riskClass']}'>";
+                                                echo "<h4>Heart Disease Risk: {$displayData['riskLevel']}</h4>";
+                                                echo "<p>Confidence: {$displayData['probabilityPercent']}</p>";
+                                                echo "<p>{$displayData['riskDescription']}</p>";
+                                                echo "</div>";
+
+                                                // Display Input Parameters from History
+                                                echo "<div class='mt-4'>";
+                                                echo "<h6>Health Parameters Recorded</h6>";
+                                                echo "<div class='table-responsive'>";
+                                                echo "<table class='table table-bordered parameter-table'>";
+                                                echo "<tbody>";
+                                                $parameterLabels = [
+                                                    'age' => 'Age',
+                                                    'sex' => 'Sex (1=Male, 0=Female)',
+                                                    'cp' => 'Chest Pain Type',
+                                                    'trestbps' => 'Resting Blood Pressure (mm Hg)',
+                                                    'chol' => 'Serum Cholesterol (mg/dl)',
+                                                    'fbs' => 'Fasting Blood Sugar > 120 mg/dl (1=True, 0=False)',
+                                                    'restecg' => 'Resting Electrocardiographic Results',
+                                                    'thalach' => 'Maximum Heart Rate Achieved',
+                                                    'exang' => 'Exercise Induced Angina (1=Yes, 0=No)',
+                                                    'oldpeak' => 'ST Depression Induced by Exercise Relative to Rest',
+                                                    'slope' => 'Slope of the Peak Exercise ST Segment',
+                                                    'ca' => 'Number of Major Vessels Colored by Fluoroscopy',
+                                                    'thal' => 'Thalassemia'
+                                                ];
+                                                foreach ($parameterLabels as $key => $label) {
+                                                    // Check if the key exists in the fetched record data
+                                                    if (isset($displayData['parameters'][$key])) {
+                                                        echo "<tr><th>{$label}</th><td>" . htmlspecialchars($displayData['parameters'][$key]) . "</td></tr>";
+                                                    }
+                                                }
+                                                echo "</tbody>";
+                                                echo "</table>";
+                                                echo "</div>"; // end table-responsive
+                                                echo "</div>"; // end mt-4
+
+                                                echo "</div>"; // end card-inner
+                                                echo "</div>"; // end card
+                                            }
+                                            elseif ($displayError) {
+                                                // Display Error for GET request
+                                                echo "<div class='alert alert-danger'>";
+                                                echo "<h4>Error</h4>";
+                                                echo "<p>" . htmlspecialchars($displayError) . "</p>";
+                                                echo "</div>";
+                                            }
+                                            else {
+                                                 // Default message if neither POST nor valid GET with ID
+                                                 if ($_SERVER["REQUEST_METHOD"] != "POST") { // Avoid showing this if POST failed validation
+                                                     echo "<div class='alert alert-info'>No prediction data available. Please submit the form or provide a valid history ID via the history page.</div>";
+                                                 }
+                                            }
+                                            ?>
+                                        </div>

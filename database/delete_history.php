@@ -12,11 +12,13 @@ require_once __DIR__ . '/connection.php';
  * Delete a specific prediction history record
  *
  * @param int $recordId The ID of the prediction history record to delete
+ * @param mysqli $db The database connection object
+ * @param int $recordId The ID of the prediction history record to delete
  * @param int $userId The ID of the user who owns the record (for security verification)
  * @return bool True on successful deletion, false otherwise
  */
-function deletePredictionRecord($recordId, $userId) {
-    $db = getDbConnection();
+function deletePredictionRecord($db, $recordId, $userId) {
+    // $db = getDbConnection(); // Connection is now passed as a parameter
     
     // Prepare the SQL query with user_id check for security
     // This ensures users can only delete their own records
@@ -43,7 +45,7 @@ function deletePredictionRecord($recordId, $userId) {
     $affected_rows = $stmt->affected_rows;
     
     $stmt->close();
-    $db->close();
+    // $db->close(); // Do not close the connection here; let the caller manage it
     
     return ($affected_rows > 0);
 }
@@ -51,11 +53,12 @@ function deletePredictionRecord($recordId, $userId) {
 /**
  * Delete all prediction history records for a specific user
  *
+ * @param mysqli $db The database connection object
  * @param int $userId The ID of the user whose prediction history to delete
  * @return bool True on successful deletion, false otherwise
  */
-function deleteAllPredictionRecords($userId) {
-    $db = getDbConnection();
+function deleteAllPredictionRecords($db, $userId) {
+    // $db = getDbConnection(); // Connection is now passed as a parameter
     
     // Prepare the SQL query
     $sql = "DELETE FROM user_prediction_history WHERE user_id = ?";
@@ -78,7 +81,7 @@ function deleteAllPredictionRecords($userId) {
     }
     
     $stmt->close();
-    $db->close();
+    // $db->close(); // Do not close the connection here; let the caller manage it
     
     return true;
 }

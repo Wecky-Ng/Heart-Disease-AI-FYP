@@ -155,3 +155,56 @@ function getLastTestRecord($userId) {
 
     return $lastRecord;
 }
+
+/**
+ * Fetch a specific prediction history record by its ID for a specific user.
+ *
+ * @param int $recordId The ID of the prediction history record to fetch.
+ * @param int $userId The ID of the user who owns the record.
+ * @return array|null An associative array containing the record details if found and owned by the user, null otherwise.
+ */
+function getPredictionRecordById($recordId, $userId) {
+    $db = getDbConnection();
+    if (!$db) {
+        error_log("Database connection failed in getPredictionRecordById");
+        return null;
+    }
+
+    // Prepare the SQL query to fetch the specific record, ensuring it belongs to the user
+    $sql = "SELECT * FROM user_prediction_history WHERE id = ? AND user_id = ?";
+
+    $stmt = $db->prepare($sql);
+    if ($stmt === false) {
+        error_log("MySQL prepare error in getPredictionRecordById: " . $db->error);
+        $db->close();
+        return null;
+    }
+
+    $stmt->bind_param("ii", $recordId, $userId);
+    $execute_success = $stmt->execute();
+
+    if ($execute_success === false) {
+        error_log("MySQL execute error in getPredictionRecordById: " . $stmt->error);
+        $stmt->close();
+        $db->close();
+        return null;
+    }
+
+    $result = $stmt->get_result();
+    $record = $result->fetch_assoc(); // Fetch the single record
+
+    $stmt->close();
+    $db->close();
+
+    if ($record) {
+        // Format the result and probability for display consistency
+        $record['result'] = ($record['prediction'] == 1) ? 'High Risk' : 'Low Risk';
+        $record['probability'] = round($record['confidence'] * 100, 2) . '%';
+        // You might want to format the date here as well if needed
+        // $record['date'] = date("Y-m-d H:i:s", strtotime($record['prediction_time']));
+    }
+
+    return $record; // Returns the record array or null if not found/not owned
+}
+
+?>
