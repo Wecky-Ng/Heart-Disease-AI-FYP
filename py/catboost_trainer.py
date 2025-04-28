@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
 from sklearn.metrics import roc_auc_score, classification_report, precision_recall_curve, make_scorer, f1_score
 from sklearn.preprocessing import LabelEncoder
-from sklearn.pipeline import Pipeline
+from imblearn.pipeline import Pipeline # Use imblearn pipeline for SMOTE integration
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -15,6 +15,7 @@ from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import StackingClassifier
+from imblearn.over_sampling import SMOTE # Import SMOTE
 import joblib
 from scipy.stats import uniform, randint
 
@@ -26,7 +27,7 @@ RANDOM_STATE = 42
 N_ITER_SEARCH = 50 # Increased iterations for more thorough hyperparameter search.
 CV_FOLDS = 3 # Number of cross-validation folds.
 SCORING_METRIC = 'f1_weighted' # Metric to optimize during search ('roc_auc', 'f1_weighted', 'accuracy')
-SAVE_MODEL_PATH = 'tuned_ensemble_cat_lgbm_v4.pkl' # Updated save path for new tuning run
+SAVE_MODEL_PATH = 'tuned_ensemble_cat_lgbm_v6.pkl' # Updated save path for v6 with SMOTE
 
 # --- Load & Prepare Data ---
 print(f"Loading data from: {DATA_FILE}")
@@ -72,7 +73,11 @@ preprocessor = ColumnTransformer([
 # --- Define Base Models and Parameter Search Spaces ---
 
 # CatBoost
-cb_pipeline = Pipeline([('prep', preprocessor), ('clf', CatBoostClassifier(random_seed=RANDOM_STATE, verbose=0, loss_function='Logloss', eval_metric='AUC'))])
+cb_pipeline = Pipeline([
+    ('prep', preprocessor),
+    ('smote', SMOTE(random_state=RANDOM_STATE)), # Add SMOTE step
+    ('clf', CatBoostClassifier(random_seed=RANDOM_STATE, verbose=0, loss_function='Logloss', eval_metric='AUC'))
+])
 cb_param_dist = {
     'clf__iterations': randint(800, 3000), # Further expanded range
     'clf__learning_rate': uniform(0.003, 0.15), # Slightly wider range (loc=0.003, scale=0.147)
@@ -84,7 +89,11 @@ cb_param_dist = {
 }
 
 # LightGBM
-lgb_pipeline = Pipeline([('prep', preprocessor), ('clf', LGBMClassifier(random_state=RANDOM_STATE, class_weight='balanced'))])
+lgb_pipeline = Pipeline([
+    ('prep', preprocessor),
+    ('smote', SMOTE(random_state=RANDOM_STATE)), # Add SMOTE step
+    ('clf', LGBMClassifier(random_state=RANDOM_STATE, class_weight='balanced')) # Keep class_weight='balanced' as well
+])
 lgb_param_dist = {
     'clf__n_estimators': randint(800, 3000), # Further expanded range
     'clf__learning_rate': uniform(0.003, 0.15), # Slightly wider range (loc=0.003, scale=0.147)
@@ -201,6 +210,6 @@ print(classification_report(y_test, pred, target_names=['No','Yes']))
 
 # --- Save Tuned Ensemble Model ---
 joblib.dump(best_stack, SAVE_MODEL_PATH)
-print(f"\nSaved tuned ensemble model to '{SAVE_MODEL_PATH}'")
+print(f"\nSaved tuned ensemble model (with SMOTE) to '{SAVE_MODEL_PATH}'")
 
 print("\nScript finished.")
