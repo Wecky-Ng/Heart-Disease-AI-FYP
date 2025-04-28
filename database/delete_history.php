@@ -46,7 +46,8 @@ function deletePredictionRecord($db, $recordId, $userId) {
     $stmt = $db->prepare($sql);
     if ($stmt === false) {
         error_log("MySQL prepare error in deletePredictionRecord: " . $db->error);
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
         return false;
     }
     
@@ -85,7 +86,8 @@ function deleteAllPredictionRecords($db, $userId) {
     $stmt = $db->prepare($sql);
     if ($stmt === false) {
         error_log("MySQL prepare error in deleteAllPredictionRecords: " . $db->error);
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
         return false;
     }
     
@@ -95,7 +97,8 @@ function deleteAllPredictionRecords($db, $userId) {
     if ($execute_success === false) {
         error_log("MySQL execute error in deleteAllPredictionRecords: " . $stmt->error);
         $stmt->close();
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
         return false;
     }
     

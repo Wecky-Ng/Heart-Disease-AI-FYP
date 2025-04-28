@@ -33,8 +33,8 @@ function registerUser($username, $email, $password, $full_name = null, $date_of_
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
         $stmt->close();
-        // Close DB connection before returning
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close(); 
         if ($user['username'] === $username) {
             return ['status' => false, 'message' => 'Username already exists'];
         } else {
@@ -55,8 +55,8 @@ function registerUser($username, $email, $password, $full_name = null, $date_of_
         if ($result) {
              $lastInsertId = $db->insert_id;
              $stmt->close();
-             // Close DB connection before returning
-             $db->close();
+             // Connection is managed globally, do not close here
+             // $db->close();
              return [
                 'status' => true,
                 'message' => 'Registration successful',
@@ -64,15 +64,15 @@ function registerUser($username, $email, $password, $full_name = null, $date_of_
             ];
         } else {
              $stmt->close();
-             // Close DB connection before returning
-             $db->close();
+             // Connection is managed globally, do not close here
+             // $db->close();
              error_log("Registration failed: " . $db->error);
              return ['status' => false, 'message' => 'Registration failed'];
         }
     } catch (mysqli_sql_exception $e) {
          error_log("Database error during registration: " . $e->getMessage());
-         // Close DB connection on exception
-         if (isset($db) && $db) $db->close();
+         // Connection is managed globally, do not close here
+         // if (isset($db) && $db) $db->close();
          return ['status' => false, 'message' => 'Database error during registration.'];
     }
 }
@@ -99,8 +99,8 @@ function loginUser($username, $password) {
 
     if ($result->num_rows === 0) {
         $stmt->close();
-        // Close DB connection before returning
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
         return ['status' => false, 'message' => 'User not found'];
     }
 
@@ -112,12 +112,12 @@ function loginUser($username, $password) {
         // Check user status
         if (isset($user['status'])) { // Check if status column exists
             if ($user['status'] == 0) {
-                // Close DB connection before returning
-                $db->close();
+                // Connection is managed globally, do not close here
+                // $db->close();
                 return ['status' => false, 'message' => 'Your account has been suspended. Please contact support.'];
             } elseif ($user['status'] == 2) {
-                 // Close DB connection before returning
-                 $db->close();
+                 // Connection is managed globally, do not close here
+                 // $db->close();
                 return ['status' => false, 'message' => 'This account has been deleted.'];
             }
             // If status is 1 (active), proceed with login
@@ -134,8 +134,8 @@ function loginUser($username, $password) {
         $updateStmt->execute();
         $updateStmt->close();
 
-        // Close DB connection before returning
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
 
         // Remove password from user data before returning
         unset($user['password']);
@@ -146,8 +146,8 @@ function loginUser($username, $password) {
             'user' => $user
         ];
     } else {
-         // Close DB connection before returning
-        $db->close();
+         // Connection is managed globally, do not close here
+        // $db->close();
         return ['status' => false, 'message' => 'Invalid password'];
     }
 }
@@ -187,8 +187,8 @@ function updateUserProfile($userId, $data) {
 
     // If no fields to update, return success (or an appropriate message)
     if (empty($fields)) {
-         // Close DB connection before returning
-         $db->close();
+         // Connection is managed globally, do not close here
+         // $db->close();
         return ['status' => true, 'message' => 'No data provided for update.'];
     }
 
@@ -216,20 +216,20 @@ function updateUserProfile($userId, $data) {
 
         if ($result) {
             $stmt->close();
-            // Close DB connection before returning
-            $db->close();
+            // Connection is managed globally, do not close here
+            // $db->close();
             return ['status' => true, 'message' => 'Profile updated successfully'];
         } else {
             $stmt->close();
-            // Close DB connection before returning
-            $db->close();
+            // Connection is managed globally, do not close here
+            // $db->close();
             error_log("Profile update failed: " . $db->error);
             return ['status' => false, 'message' => 'Profile update failed'];
         }
     } catch (mysqli_sql_exception $e) {
         error_log("Database error during profile update: " . $e->getMessage());
-         // Close DB connection on exception
-        if (isset($db) && $db) $db->close();
+         // Connection is managed globally, do not close here
+        // if (isset($db) && $db) $db->close();
         return ['status' => false, 'message' => 'Database error during profile update.'];
     }
 }

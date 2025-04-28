@@ -26,8 +26,8 @@ function getUserPredictionHistory($userId) {
     // Check if prepare was successful
     if ($stmt === false) {
         error_log("MySQL prepare error in getUserPredictionHistory: " . $db->error);
-        // Close the database connection before returning false on error
-        $db->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
         return false;
     }
 
@@ -38,7 +38,8 @@ function getUserPredictionHistory($userId) {
     if ($execute_success === false) {
          error_log("MySQL execute error in getUserPredictionHistory: " . $stmt->error);
          $stmt->close();
-         $db->close();
+         // Connection is managed globally, do not close here
+         // $db->close();
          return false;
     }
 

@@ -94,14 +94,15 @@
                                                 if ($recordId && $userId) {
                                                     $record = getPredictionRecordById($recordId, $userId);
                                                     if ($record) {
-                                                        // Prepare data for display (similar structure to POST result)
+                                                        // Prepare data for display using the formatted data from getPredictionRecordById
                                                         $displayData = [
-                                                            'riskLevel' => $record['result'], // Already formatted as 'High Risk' or 'Low Risk'
-                                                            'probabilityPercent' => $record['probability'], // Already formatted as 'XX.XX%'
-                                                            'riskClass' => ($record['prediction'] == 1) ? 'result-high' : 'result-low',
-                                                            'riskDescription' => ($record['prediction'] == 1) ? "This record indicates a high risk of heart disease. Please consult with a healthcare professional." : "This record indicates a low risk of heart disease. Maintain a healthy lifestyle.",
-                                                            'parameters' => $record // Pass the whole record for parameter display
+                                                            'riskLevel' => $record['result'], // Formatted 'High Risk' or 'Low Risk'
+                                                            'probabilityPercent' => $record['probability'], // Formatted 'XX.XX%'
+                                                            'riskClass' => ($record['prediction_result'] == 1) ? 'result-high' : 'result-low', // Use prediction_result from DB
+                                                            'riskDescription' => ($record['prediction_result'] == 1) ? "This record indicates a high risk of heart disease. Please consult with a healthcare professional." : "This record indicates a low risk of heart disease. Maintain a healthy lifestyle.",
+                                                            'parameters' => $record // Pass the whole record which includes all parameters
                                                         ];
+                                                        // No need for array_merge if 'parameters' holds the full record
                                                     } else {
                                                         $displayError = "Could not find the specified prediction record or you do not have permission to view it.";
                                                     }
@@ -344,6 +345,90 @@
                                                 // If not a POST request, redirect or show an error
                                                 echo "<div class='alert alert-warning'>No data submitted. Please use the prediction form.</div>";
                                             }
+                                            // --- Display GET Result or Error ---
+                                            elseif ($displayData) {
+                                                echo "<div class='card card-bordered'>";
+                                                echo "<div class='card-inner'>";
+                                                echo "<div class='card-head'>";
+                                                echo "<h5 class='card-title'>Prediction Result from History</h5>";
+                                                echo "</div>";
+
+                                                echo "<div class='result-box {$displayData['riskClass']}'>";
+                                                echo "<h4>Heart Disease Risk: {$displayData['riskLevel']}</h4>";
+                                                echo "<p>Confidence: {$displayData['probabilityPercent']}</p>";
+                                                echo "<p>{$displayData['riskDescription']}</p>";
+                                                echo "</div>";
+
+                                                // Display Input Parameters from History
+                                                echo "<div class='mt-4'>";
+                                                echo "<h6>Health Parameters Recorded</h6>";
+                                                echo "<div class='table-responsive'>";
+                                                echo "<table class='table table-bordered parameter-table'>";
+                                                echo "<tbody>";
+                                                // Use the same labels as the POST request for consistency
+                                                $parameterLabels = [
+                                                    'bmi' => 'BMI',
+                                                    'smoking' => 'Smoking Status (0=No, 1=Yes)',
+                                                    'alcohol_drinking' => 'Alcohol Drinking (0=No, 1=Yes)',
+                                                    'stroke' => 'Stroke History (0=No, 1=Yes)',
+                                                    'physical_health' => 'Physical Health (days bad/month)',
+                                                    'mental_health' => 'Mental Health (days bad/month)',
+                                                    'diff_walking' => 'Difficulty Walking (0=No, 1=Yes)',
+                                                    'sex' => 'Sex (0=Female, 1=Male)',
+                                                    'age' => 'Age',
+                                                    'race' => 'Race (0:White, 1:Black, 2:Asian, 3:Hispanic, 4:AmInd/AlNat, 5:Other)',
+                                                    'diabetic' => 'Diabetic Status (0:No, 1:Yes, 2:Borderline, 3:Yes/Pregnancy)',
+                                                    'physical_activity' => 'Physical Activity (0=No, 1=Yes)',
+                                                    'gen_health' => 'General Health (0:Excellent, 1:V.Good, 2:Good, 3:Fair, 4:Poor)',
+                                                    'sleep_time' => 'Sleep Time (hours)',
+                                                    'asthma' => 'Asthma (0=No, 1=Yes)',
+                                                    'kidney_disease' => 'Kidney Disease (0=No, 1=Yes)',
+                                                    'skin_cancer' => 'Skin Cancer (0=No, 1=Yes)'
+                                                ];
+                                                foreach ($parameterLabels as $key => $label) {
+                                                    // Access data from the 'parameters' sub-array which holds the full record
+                                                    if (isset($displayData['parameters'][$key])) {
+                                                        $displayValue = htmlspecialchars($displayData['parameters'][$key]);
+                                                        // Add mapping for boolean/numeric values to text if desired
+                                                        echo "<tr>";
+                                                        echo "<th>{$label}</th>";
+                                                        echo "<td>{$displayValue}</td>";
+                                                        echo "</tr>";
+                                                    }
+                                                }
+                                                echo "</tbody>";
+                                                echo "</table>";
+                                                echo "</div>"; // end table-responsive
+                                                echo "</div>"; // end mt-4
+
+                                                echo "<div class='mt-4'>";
+                                                echo "<a href='history.php' class='btn btn-outline-primary'>Back to History</a>";
+                                                echo "</div>";
+
+                                                echo "</div>"; // end card-inner
+                                                echo "</div>"; // end card
+                                            }
+                                            elseif ($displayError) {
+                                                // Display Error (covers both GET and POST errors if structured correctly)
+                                                echo "<div class='card card-bordered'>";
+                                                echo "<div class='card-inner'>";
+                                                echo "<div class='card-head'>";
+                                                echo "<h5 class='card-title'>Error</h5>";
+                                                echo "</div>";
+                                                echo "<div class='alert alert-danger'>";
+                                                echo "<p>" . htmlspecialchars($displayError) . "</p>";
+                                                echo "</div>";
+                                                echo "<div class='mt-3'>";
+                                                echo "<a href='history.php' class='btn btn-outline-primary'>Back to History</a>";
+                                                echo "</div>";
+                                                echo "</div>"; // card-inner
+                                                echo "</div>"; // card
+                                            }
+                                            else {
+                                                 // Default message if neither POST nor valid GET with ID
+                                                 // This case should ideally only be hit if the page is accessed directly without POST data or GET ID
+                                                 echo "<div class='alert alert-info'>Invalid request. Please submit the prediction form or view results from the history page.</div>";
+                                            }
                                             ?>
                                         </div>
                                         <div class="col-lg-4">
@@ -384,68 +469,3 @@
 </body>
 
 </html>
-
-                                            // --- Display GET Result or Error ---
-                                            elseif ($displayData) {
-                                                echo "<div class='card card-bordered'>";
-                                                echo "<div class='card-inner'>";
-                                                echo "<div class='card-head'>";
-                                                echo "<h5 class='card-title'>Prediction Result from History</h5>";
-                                                echo "</div>";
-
-                                                echo "<div class='result-box {$displayData['riskClass']}'>";
-                                                echo "<h4>Heart Disease Risk: {$displayData['riskLevel']}</h4>";
-                                                echo "<p>Confidence: {$displayData['probabilityPercent']}</p>";
-                                                echo "<p>{$displayData['riskDescription']}</p>";
-                                                echo "</div>";
-
-                                                // Display Input Parameters from History
-                                                echo "<div class='mt-4'>";
-                                                echo "<h6>Health Parameters Recorded</h6>";
-                                                echo "<div class='table-responsive'>";
-                                                echo "<table class='table table-bordered parameter-table'>";
-                                                echo "<tbody>";
-                                                $parameterLabels = [
-                                                    'age' => 'Age',
-                                                    'sex' => 'Sex (1=Male, 0=Female)',
-                                                    'cp' => 'Chest Pain Type',
-                                                    'trestbps' => 'Resting Blood Pressure (mm Hg)',
-                                                    'chol' => 'Serum Cholesterol (mg/dl)',
-                                                    'fbs' => 'Fasting Blood Sugar > 120 mg/dl (1=True, 0=False)',
-                                                    'restecg' => 'Resting Electrocardiographic Results',
-                                                    'thalach' => 'Maximum Heart Rate Achieved',
-                                                    'exang' => 'Exercise Induced Angina (1=Yes, 0=No)',
-                                                    'oldpeak' => 'ST Depression Induced by Exercise Relative to Rest',
-                                                    'slope' => 'Slope of the Peak Exercise ST Segment',
-                                                    'ca' => 'Number of Major Vessels Colored by Fluoroscopy',
-                                                    'thal' => 'Thalassemia'
-                                                ];
-                                                foreach ($parameterLabels as $key => $label) {
-                                                    // Check if the key exists in the fetched record data
-                                                    if (isset($displayData['parameters'][$key])) {
-                                                        echo "<tr><th>{$label}</th><td>" . htmlspecialchars($displayData['parameters'][$key]) . "</td></tr>";
-                                                    }
-                                                }
-                                                echo "</tbody>";
-                                                echo "</table>";
-                                                echo "</div>"; // end table-responsive
-                                                echo "</div>"; // end mt-4
-
-                                                echo "</div>"; // end card-inner
-                                                echo "</div>"; // end card
-                                            }
-                                            elseif ($displayError) {
-                                                // Display Error for GET request
-                                                echo "<div class='alert alert-danger'>";
-                                                echo "<h4>Error</h4>";
-                                                echo "<p>" . htmlspecialchars($displayError) . "</p>";
-                                                echo "</div>";
-                                            }
-                                            else {
-                                                 // Default message if neither POST nor valid GET with ID
-                                                 if ($_SERVER["REQUEST_METHOD"] != "POST") { // Avoid showing this if POST failed validation
-                                                     echo "<div class='alert alert-info'>No prediction data available. Please submit the form or provide a valid history ID via the history page.</div>";
-                                                 }
-                                            }
-                                            ?>
-                                        </div>
