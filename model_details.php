@@ -201,15 +201,15 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                     
                                                     <!-- Image Carousel -->
                                                     <div class="nk-tb-list is-separate mb-3">
-                                                        <!-- Fixed height container for slider -->
-                                                        <div class="slider-container" style="height: 550px; overflow: hidden;"> <!-- Applied fixed height and overflow hidden -->
+                                                        <!-- Slider container -->
+                                                        <div class="slider-container">
                                                             <div class="slider-init" data-slick='{"slidesToShow": 1, "slidesToScroll": 1, "dots": true, "arrows": true, "adaptiveHeight": false, "responsive":[{"breakpoint": 992,"settings":{"slidesToShow": 1}}]}'>
                                                                 <!-- Confusion Matrix -->
                                                                 <div class="slider-item">
                                                                     <div class="nk-tb-item">
                                                                         <div class="text-center w-100 p-3">
                                                                             <h6 class="mb-3">Confusion Matrix</h6>
-                                                                            <img src="./img/confusion_matrix_optimal.png" alt="Confusion Matrix" class="img-fluid rounded" style="max-height: 400px;">
+                                                                            <img src="./img/confusion_matrix_optimal.png" alt="Confusion Matrix" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
                                                                             <p class="text-soft mt-2">The confusion matrix shows the model's prediction accuracy, displaying true positives, false positives, true negatives, and false negatives.</p>
                                                                         </div>
                                                                     </div>
@@ -219,7 +219,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                                     <div class="nk-tb-item">
                                                                         <div class="text-center w-100 p-3">
                                                                             <h6 class="mb-3">ROC Curve</h6>
-                                                                            <img src="./img/roc_curve.png" alt="ROC Curve" class="img-fluid rounded" style="max-height: 400px;">
+                                                                            <img src="./img/roc_curve.png" alt="ROC Curve" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
                                                                             <p class="text-soft mt-2">The ROC curve illustrates the diagnostic ability of the model. The AUC of 0.94 indicates excellent discriminative power.</p>
                                                                         </div>
                                                                     </div>
@@ -229,7 +229,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                                     <div class="nk-tb-item">
                                                                         <div class="text-center w-100 p-3">
                                                                             <h6 class="mb-3">Precision-Recall Curve</h6>
-                                                                            <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" class="img-fluid rounded" style="max-height: 400px;">
+                                                                            <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
                                                                             <p class="text-soft mt-2">This curve shows the trade-off between precision and recall at different threshold settings, particularly important for imbalanced datasets.</p>
                                                                         </div>
                                                                     </div>
@@ -239,7 +239,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                                     <div class="nk-tb-item">
                                                                         <div class="text-center w-100 p-3">
                                                                             <h6 class="mb-3">Feature Correlation Matrix</h6>
-                                                                            <img src="./img/correlation_matrix.png" alt="Correlation Matrix" class="img-fluid rounded" style="max-height: 400px;">
+                                                                            <img src="./img/correlation_matrix.png" alt="Correlation Matrix" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
                                                                             <p class="text-soft mt-2">The correlation matrix shows relationships between different features, helping identify which factors are related to each other.</p>
                                                                         </div>
                                                                     </div>
@@ -249,7 +249,7 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                                     <div class="nk-tb-item">
                                                                         <div class="text-center w-100 p-3">
                                                                             <h6 class="mb-3">PCA Dimensionality Reduction</h6>
-                                                                            <img src="./img/pca_plot.png" alt="PCA Plot" class="img-fluid rounded" style="max-height: 400px;">
+                                                                            <img src="./img/pca_plot.png" alt="PCA Plot" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: contain;">
                                                                             <p class="text-soft mt-2">This visualization shows the data projected onto its principal components, revealing how well the classes can be separated in lower dimensions.</p>
                                                                         </div>
                                                                     </div>
@@ -262,32 +262,32 @@ require_once PROJECT_ROOT . '/includes/styles.php';
                                                     <div class="row g-3 mt-2">
                                                         <div class="col-4 col-sm-2">
                                                             <a href="javascript:void(0);" class="thumb-nav" data-slide="0">
-                                                                <img src="./img/feature_importance.png" alt="Feature Importance" class="img-fluid rounded">
+                                                                <img src="./img/feature_importance.png" alt="Feature Importance" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
                                                             </a>
                                                         </div>
                                                         <div class="col-4 col-sm-2">
                                                             <a href="javascript:void(0);" class="thumb-nav" data-slide="1">
-                                                                <img src="./img/confusion_matrix_optimal.png" alt="Confusion Matrix" class="img-fluid rounded">
+                                                                <img src="./img/confusion_matrix_optimal.png" alt="Confusion Matrix" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
                                                             </a>
                                                         </div>
                                                         <div class="col-4 col-sm-2">
                                                             <a href="javascript:void(0);" class="thumb-nav" data-slide="2">
-                                                                <img src="./img/roc_curve.png" alt="ROC Curve" class="img-fluid rounded">
+                                                                <img src="./img/roc_curve.png" alt="ROC Curve" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
                                                             </a>
                                                         </div>
                                                         <div class="col-4 col-sm-2">
                                                             <a href="javascript:void(0);" class="thumb-nav" data-slide="3">
-                                                                <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" class="img-fluid rounded">
+                                                                <img src="./img/precision_recall_curve.png" alt="Precision-Recall Curve" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
                                                             </a>
                                                         </div>
                                                         <div class="col-4 col-sm-2">
                                                             <a href="javascript:void(0);" class="thumb-nav" data-slide="4">
-                                                                <img src="./img/correlation_matrix.png" alt="Correlation Matrix" class="img-fluid rounded">
+                                                                <img src="./img/correlation_matrix.png" alt="Correlation Matrix" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
                                                             </a>
                                                         </div>
                                                         <div class="col-4 col-sm-2">
                                                             <a href="javascript:void(0);" class="thumb-nav" data-slide="5">
-                                                                <img src="./img/pca_plot.png" alt="PCA Plot" class="img-fluid rounded">
+                                                                <img src="./img/pca_plot.png" alt="PCA Plot" class="img-fluid rounded w-100" style="object-fit: cover; height: 50px;">
                                                             </a>
                                                         </div>
                                                     </div>

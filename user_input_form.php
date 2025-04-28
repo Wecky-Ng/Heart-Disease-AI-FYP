@@ -130,6 +130,8 @@ if (isLoggedIn()) {
     <div class="nk-app-root">
         <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
 
+        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
+
         <div class="nk-main">
             <?php include PROJECT_ROOT . '/header.php'; ?>
 
