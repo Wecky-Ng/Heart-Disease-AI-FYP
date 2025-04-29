@@ -200,8 +200,8 @@ function getPredictionRecordById($recordId, $userId) {
 
     if ($record) {
         // Format the result and probability for display consistency
-        $record['result'] = ($record['prediction'] == 1) ? 'High Risk' : 'Low Risk';
-        $record['probability'] = round($record['confidence'] * 100, 2) . '%';
+        $record['result'] = ($record['prediction_result'] == 1) ? 'High Risk' : 'Low Risk';
+        $record['probability'] = round($record['prediction_confidence'] * 100, 2) . '%';
         // You might want to format the date here as well if needed
         // $record['date'] = date("Y-m-d H:i:s", strtotime($record['prediction_time']));
     }
