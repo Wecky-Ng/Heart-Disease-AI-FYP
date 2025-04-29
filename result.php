@@ -185,7 +185,7 @@
                 }
 
                 // 3. Call Python Prediction API
-                $apiUrl = $_ENV['PREDICTION_API_URL'] ?? 'http://127.0.0.1:5000/predict'; // Default to localhost if not set
+                $apiUrl = $_ENV['PREDICTION_API_URL'] ?? 'https://heart-disease-prediction-api-84fu.onrender.com/predict'; // Default to localhost if not set
                 $ch = curl_init($apiUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_POST, true);

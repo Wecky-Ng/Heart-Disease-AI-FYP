@@ -491,7 +491,7 @@ if (isLoggedIn()) {
 
                 // Send data to Python API via AJAX
                 $.ajax({
-                    url: 'http://localhost:5000/predict', // URL of your Python Flask API
+                    url: 'https://heart-disease-prediction-api-84fu.onrender.com/predict', // URL of your Python Flask API
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(formData),
