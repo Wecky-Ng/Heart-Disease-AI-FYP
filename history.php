@@ -97,7 +97,7 @@ if ($predictionHistory === false) {
             <div class="nk-content">
                 <div class="container-fluid">
                     <div class="nk-content-inner">
-                        <div class="nk-content-body">
+                        <div class="nk-content-body history-content-body">
                             <div class="nk-block-head nk-block-head-sm">
                                 <div class="nk-block-between">
                                     <div class="nk-block-head-content">
@@ -275,12 +275,16 @@ if ($predictionHistory === false) {
             });
         }
         
+        var dataTableInitialized = false; // Flag to track initialization
         $(document).ready(function() {
-            // Initialize DataTable with export options
-            if ($('.datatable-init-export').length) {
+            // Initialize DataTable with export options, only if not already initialized
+            if ($('.datatable-init-export').length && !dataTableInitialized) {
                 $('.datatable-init-export').DataTable({
-                    // Simplified configuration - remove custom dom and buttons
+                    // destroy: true, // Using flag instead
                     responsive: true,
+                    initComplete: function(settings, json) {
+                        dataTableInitialized = true; // Set flag after successful initialization
+                    }
                     language: {
                         search: "",
                         searchPlaceholder: "Search Predictions"

@@ -40,3 +40,22 @@
 .faq-detail {
     color: #526484;
 }
+
+/* History Page Layout Fix */
+/* Ensure content body on history page respects the sidebar */
+@media (min-width: 992px) { /* Apply only when sidebar is fixed */
+    .history-content-body {
+        /* Adjust padding/margin if necessary, assuming nk-main already has margin */
+        /* If nk-main doesn't handle the margin correctly, add it here: */
+        /* padding-left: 280px; */ 
+        /* Or ensure nk-main has the correct margin/width as attempted before */
+        /* Let's ensure the container within nk-main behaves */
+        width: 100%; /* Ensure it tries to fill the available space within nk-main */
+        box-sizing: border-box;
+    }
+    
+    /* Target the card specifically if needed */
+    .history-content-body .card {
+        /* Add specific styles if the card itself is causing overflow */
+    }
+}
