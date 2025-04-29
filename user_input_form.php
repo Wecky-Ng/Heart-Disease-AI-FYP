@@ -10,7 +10,13 @@ require_once PROJECT_ROOT . '/session.php';
 require_once PROJECT_ROOT . '/database/get_user.php';
 // Include the file containing database functions, including getLastTestRecord
 require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Now includes getLastTestRecord
-// require_once PROJECT_ROOT . '/database/connection.php'; // connection.php is now included by get_user.php and get_user_prediction_history.php
+
+// Check for session error messages
+$session_error = '';
+if (isset($_SESSION['error'])) {
+    $session_error = $_SESSION['error'];
+    unset($_SESSION['error']); // Clear the error message after retrieving it
+}
 
 // Initialize variables for form prefill
 $genderPrefillValue = '';
@@ -150,6 +156,9 @@ if (isLoggedIn()) {
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Display Session Error using a hidden input for JS -->
+                                <input type="hidden" id="session-error-message" value="<?php echo htmlspecialchars($session_error); ?>">
 
                                 <div class="nk-block">
                                     <div class="row g-gs">
@@ -404,25 +413,15 @@ if (isLoggedIn()) {
                                             <div class="card card-bordered h-100">
                                                 <div class="card-inner">
                                                     <div class="card-head">
-                                                        <h5 class="card-title">About This Prediction</h5>
+                                                        <h5 class="card-title">Prediction Result</h5>
                                                     </div>
-                                                    <p>This heart disease prediction tool uses a machine learning model trained on the CDC's 2020 heart disease dataset. The model analyzes various health parameters to estimate your risk of heart disease.</p>
-
-                                                    <h6 class="overline-title text-primary mt-4">Key Risk Factors</h6>
-                                                    <ul class="list list-sm list-checked">
-                                                        <li>BMI (Body Mass Index)</li>
-                                                        <li>Smoking and alcohol consumption</li>
-                                                        <li>Previous stroke history</li>
-                                                        <li>Physical and mental health</li>
-                                                        <li>Diabetes status</li>
-                                                        <li>Physical activity level</li>
-                                                        <li>Sleep patterns</li>
-                                                        <li>Other medical conditions</li>
-                                                    </ul>
-
-                                                    <div class="alert alert-warning mt-4">
-                                                        <div class="alert-icon"><em class="icon ni ni-alert-circle"></em></div>
-                                                        <div class="alert-text">This tool provides an estimate only and should not replace professional medical advice. Always consult with a healthcare provider for proper diagnosis and treatment.</div>
+                                                    <!-- Result will be shown via SweetAlert, this section can be removed or repurposed -->
+                                                    <div id="prediction-result-display" style="display: none;"> 
+                                                        <!-- Content will be dynamically added by JS or removed -->
+                                                    </div>
+                                                    <div class="alert alert-warning mt-3">
+                                                        <div class="alert-icon"><em class="icon ni ni-alert-circle-fill"></em></div>
+                                                        <strong>Disclaimer:</strong> This tool provides an estimate only and should not replace professional medical advice. Always consult with a healthcare provider for proper diagnosis and treatment.
                                                     </div>
                                                 </div>
                                             </div>
@@ -433,126 +432,207 @@ if (isLoggedIn()) {
                         </div>
                     </div>
                 </div>
-
-                <?php include PROJECT_ROOT . '/footer.php'; ?>
             </div>
+
+            <?php include PROJECT_ROOT . '/footer.php'; ?>
         </div>
     </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+    <!-- Include SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function() {
-            // Form validation and prefill logic (existing code)
-            $('#prediction-form').submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('prediction-form');
+            const resultDisplay = document.getElementById('prediction-result-display');
+            const submitButton = form.querySelector('button[type="submit"]');
+            const spinner = submitButton.querySelector('.spinner-border');
+            const buttonText = submitButton.querySelector('.button-text');
+            const sessionErrorMessage = document.getElementById('session-error-message').value;
 
-                var isValid = true;
-                var formData = {};
+            // Display session error if present
+            if (sessionErrorMessage) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: sessionErrorMessage,
+                    confirmButtonColor: '#5a62c8'
+                });
+            }
 
-                // Clear previous errors
-                $(this).find('.error').removeClass('error');
-                $(this).find('.error-message').remove();
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
 
-                // Collect and validate form data
-                $(this).find('input[required], select[required], input[type="number"]').each(function() {
-                    var value = $(this).val();
-                    var name = $(this).attr('name');
-                    var min = $(this).attr('min');
+                // Show spinner and disable button
+                spinner.style.display = 'inline-block';
+                buttonText.textContent = 'Predicting...';
+                submitButton.disabled = true;
+                resultDisplay.style.display = 'none'; // Hide previous results
+                resultDisplay.innerHTML = ''; // Clear previous results
 
-                    if (value === '' || (min !== undefined && parseFloat(value) < parseFloat(min))) {
-                        isValid = false;
-                        // Add error class and message if not already present
-                        if (!$(this).hasClass('error')) {
-                            $(this).addClass('error').parent().append('<div class="error-message text-danger small mt-1">This field is required and must be valid</div>');
-                        }
+                const formData = new FormData(form);
+                const formObject = {};
+                formData.forEach((value, key) => {
+                    // Convert numeric string fields to numbers where appropriate
+                    // Adjust this list based on your actual numeric fields
+                    if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
+                        formObject[key] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0 or null
+                    } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
+                        formObject[key] = parseInt(value, 10); // Ensure integer for categorical/binary
                     } else {
-                        formData[name] = value; // Add valid data to object
+                        formObject[key] = value;
                     }
                 });
 
-                if (!isValid) {
-                    toastr.error('Please fill in all required fields correctly.');
-                    return; // Stop submission if invalid
-                }
-
-                // Add save_history flag and user_id if available
-                formData['save_history'] = $('#save_record').is(':checked');
-                <?php if (isLoggedIn() && isset($userData['id'])): ?>
-                formData['user_id'] = <?php echo json_encode($userData['id']); ?>;
-                <?php else: ?>
-                formData['user_id'] = null; // Send null if not logged in
-                <?php endif; ?>
-
-                // Add a loading indicator (optional)
-                var submitButton = $(this).find('button[type="submit"]');
-                var originalButtonText = submitButton.html();
-                submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...');
-
-                // Send data to Python API via AJAX
-                $.ajax({
-                    url: 'https://heart-disease-prediction-api-84fu.onrender.com/predict', // URL of your Python Flask API
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(formData),
-                    success: function(response) {
-                        // Handle successful prediction
-                        console.log('Prediction successful:', response);
-                        submitButton.prop('disabled', false).html(originalButtonText);
-
-                        var predictionText = response.prediction === 1 ? 'High Risk' : 'Low Risk';
-                        var confidenceText = (response.confidence * 100).toFixed(2) + '%';
-                        var alertClass = response.prediction === 1 ? 'alert-danger' : 'alert-success';
-
-                        // Display result (example using a dedicated div)
-                        $('#prediction-result-area').html(
-                            '<div class="alert ' + alertClass + ' mt-4">' +
-                            '<h5>Prediction Result</h5>' +
-                            '<p>Risk Level: <strong>' + predictionText + '</strong></p>' +
-                            '<p>Confidence: <strong>' + confidenceText + '</strong></p>' +
-                            '</div>'
-                        );
-                        toastr.success('Prediction complete!');
-
-                        // Optionally clear form or redirect
+                // Call the Vercel prediction API
+                fetch('/api/predict', { // Use relative path for Vercel deployment
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
                     },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        // Handle API errors
-                        console.error('Prediction failed:', textStatus, errorThrown, jqXHR.responseText);
-                        submitButton.prop('disabled', false).html(originalButtonText);
-                        var errorMessage = 'An error occurred while predicting. Please try again.';
-                        if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-                            errorMessage = jqXHR.responseJSON.error;
-                        }
-                        $('#prediction-result-area').html(
-                            '<div class="alert alert-danger mt-4">' +
-                            '<h5>Error</h5>' +
-                            '<p>' + errorMessage + '</p>' +
-                            '</div>'
-                        );
-                        toastr.error(errorMessage);
+                    body: JSON.stringify(formObject)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Network response was not ok'); });
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    // --- NEW LOGIC: Save prediction then show SweetAlert & Redirect ---
+                    const predictionResult = data.prediction; // 0 or 1
+                    const confidenceScore = data.confidence;
+
+                    // Prepare data for saving
+                    const saveData = {
+                        inputs: formObject, // Send the processed form data
+                        prediction: predictionResult,
+                        confidence: confidenceScore
+                    };
+
+                    // 1. Asynchronously save the prediction
+                    fetch('/database/save_prediction.php', { // Call the new PHP endpoint
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(saveData)
+                    })
+                    .then(saveResponse => saveResponse.json())
+                    .then(saveResult => {
+                        if (saveResult.success) {
+                            console.log('Prediction saved successfully.');
+                            // 2. Show SweetAlert with result
+                            const riskLevel = predictionResult === 1 ? 'High Risk' : 'Low Risk';
+                            const confidencePercent = (confidenceScore * 100).toFixed(2);
+                            const alertIcon = predictionResult === 1 ? 'warning' : 'success';
+                            const alertTitle = `Prediction: ${riskLevel}`;
+                            const alertText = `Confidence: ${confidencePercent}%. Click OK to view details.`;
+
+                            Swal.fire({
+                                icon: alertIcon,
+                                title: alertTitle,
+                                text: alertText,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#5a62c8'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // 3. Redirect to result.php via POST
+                                    const postForm = document.createElement('form');
+                                    postForm.method = 'POST';
+                                    postForm.action = 'result.php';
+                                    postForm.style.display = 'none'; // Hide the form
+
+                                    // Add original form data as hidden inputs
+                                    for (const key in formObject) {
+                                        if (formObject.hasOwnProperty(key)) {
+                                            const input = document.createElement('input');
+                                            input.type = 'hidden';
+                                            input.name = key;
+                                            input.value = formObject[key];
+                                            postForm.appendChild(input);
+                                        }
+                                    }
+
+                                    // Add prediction results as hidden inputs
+                                    const predictionInput = document.createElement('input');
+                                    predictionInput.type = 'hidden';
+                                    predictionInput.name = 'prediction_result';
+                                    predictionInput.value = predictionResult;
+                                    postForm.appendChild(predictionInput);
+
+                                    const confidenceInput = document.createElement('input');
+                                    confidenceInput.type = 'hidden';
+                                    confidenceInput.name = 'prediction_confidence';
+                                    confidenceInput.value = confidenceScore;
+                                    postForm.appendChild(confidenceInput);
+
+                                    document.body.appendChild(postForm);
+                                    postForm.submit();
+                                }
+                            });
+                        } else {
+                            // Saving failed
+                            console.error('Failed to save prediction:', saveResult.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Save Error',
+                                text: 'Could not save the prediction result. Please try again. ' + (saveResult.message || ''),
+                                confirmButtonColor: '#e74c3c'
+                            });
+                        }
+                    })
+                    .catch(saveError => {
+                        console.error('Error saving prediction:', saveError);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Save Error',
+                            text: 'An error occurred while trying to save the prediction result: ' + saveError.message,
+                            confirmButtonColor: '#e74c3c'
+                        });
+                    })
+                    .finally(() => {
+                         // Re-enable button regardless of save outcome, but only after save attempt
+                         resetButton();
+                    });
+                    // --- END NEW LOGIC ---
+
+                    // --- OLD LOGIC (Remove/Comment Out) ---
+                    /*
+                    const riskLevel = data.prediction === 1 ? 'High Risk' : 'Low Risk';
+                    const confidencePercent = (data.confidence * 100).toFixed(2);
+                    const resultClass = data.prediction === 1 ? 'result-high' : 'result-low';
+
+                    resultDisplay.innerHTML = `
+                        <div class="result-box ${resultClass}">
+                            <h6 class="title">Risk Level: ${riskLevel}</h6>
+                            <p>Confidence: ${confidencePercent}%</p>
+                        </div>
+                    `;
+                    resultDisplay.style.display = 'block';
+                    */
+                    // --- END OLD LOGIC ---
+                })
+                .catch(error => {
+                    console.error('Error during prediction fetch:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Prediction Error',
+                        text: 'Failed to get prediction: ' + error.message,
+                        confirmButtonColor: '#e74c3c'
+                    });
+                    resetButton(); // Reset button on fetch error
                 });
+                // Note: resetButton() is now called within the save promise chain's finally block or catch block
             });
 
-            // Clear error on input change (existing code)
-            $(document).on('change keyup', '.form-control, .form-select', function() {
-                // Only remove error if the field is no longer empty and meets min requirements for numbers
-                if ($(this).val() !== '' && (!$(this).attr('type') === 'number' || $(this).val() >= $(this).attr('min'))) {
-                    $(this).removeClass('error');
-                    $(this).parent().find('.error-message').remove();
-                }
-            });
-
-            // Prefill logic (existing code)
-            // ... existing code ...
-
+            function resetButton() {
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Predict';
+                submitButton.disabled = false;
+            }
         });
     </script>
-    <!-- Add a div to display the prediction result -->
-    <div id="prediction-result-area" class="mt-4"></div>
-
-    <?php require_once PROJECT_ROOT . '/footer.php'; ?>
-    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 </body>
 </html>
