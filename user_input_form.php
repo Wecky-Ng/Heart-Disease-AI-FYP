@@ -195,7 +195,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="age">Age</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" class="form-control" id="age" name="age" min="1" max="120" value="<?php echo htmlspecialchars($agePrefillValue); ?>" required>
+                                                                        <input type="number" class="form-control" id="age" name="age" min="18" max="120" value="<?php echo htmlspecialchars($agePrefillValue); ?>" required>
                                                                         <small class="form-text text-muted">Enter your age in years (e.g., 45)</small>
                                                                     </div>
                                                                 </div>
@@ -415,10 +415,23 @@ if (isLoggedIn()) {
                                                     <div class="card-head">
                                                         <h5 class="card-title">Prediction Result</h5>
                                                     </div>
-                                                    <!-- Result will be shown via SweetAlert, this section can be removed or repurposed -->
-                                                    <div id="prediction-result-display" style="display: none;"> 
-                                                        <!-- Content will be dynamically added by JS or removed -->
+                                                    <!-- Prediction result will now be shown via SweetAlert -->
+                                                    <div class="card-head">
+                                                        <h5 class="card-title">About This Prediction</h5>
                                                     </div>
+                                                    <p>This heart disease prediction tool uses a machine learning model trained on the CDC's 2020 heart disease dataset. The model analyzes various health parameters to estimate your risk of heart disease.</p>
+
+                                                    <h6 class="overline-title text-primary mt-4">Key Risk Factors</h6>
+                                                    <ul class="list list-sm list-checked">
+                                                        <li>BMI (Body Mass Index)</li>
+                                                        <li>Smoking and alcohol consumption</li>
+                                                        <li>Previous stroke history</li>
+                                                        <li>Physical and mental health</li>
+                                                        <li>Diabetes status</li>
+                                                        <li>Physical activity level</li>
+                                                        <li>Sleep patterns</li>
+                                                        <li>Other medical conditions</li>
+                                                    </ul>
                                                     <div class="alert alert-warning mt-3">
                                                         <div class="alert-icon"><em class="icon ni ni-alert-circle-fill"></em></div>
                                                         <strong>Disclaimer:</strong> This tool provides an estimate only and should not replace professional medical advice. Always consult with a healthcare provider for proper diagnosis and treatment.
@@ -439,16 +452,17 @@ if (isLoggedIn()) {
     </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
-    <!-- Include SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('prediction-form');
-            const resultDisplay = document.getElementById('prediction-result-display');
+            // const resultDisplay = document.getElementById('prediction-result-display'); // Removed as we use SweetAlert
             const submitButton = form.querySelector('button[type="submit"]');
-            const spinner = submitButton.querySelector('.spinner-border');
-            const buttonText = submitButton.querySelector('.button-text');
+            // Assuming the button structure might change, let's select elements robustly
+            // const spinner = submitButton.querySelector('.spinner-border');
+            // const buttonText = submitButton.querySelector('.button-text');
+            const originalButtonHTML = submitButton.innerHTML; // Store original button content
+            const formElements = form.elements;
             const sessionErrorMessage = document.getElementById('session-error-message').value;
 
             // Display session error if present
@@ -462,6 +476,105 @@ if (isLoggedIn()) {
             }
 
             form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Disable form elements and button
+                for (let i = 0; i < formElements.length; i++) {
+                    formElements[i].disabled = true;
+                }
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+                // Show loading alert
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Analyzing your data, please wait.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const formData = new FormData(form);
+                const jsonData = {};
+                formData.forEach((value, key) => { jsonData[key] = value; });
+
+                // Send data to the API endpoint
+                fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', { // Ensure this endpoint is correct
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Try to parse error message from response body
+                        return response.json().then(err => {
+                            throw new Error(err.error || `Server error: ${response.status}`);
+                        }).catch(() => {
+                            // Fallback if response body is not JSON or empty
+                            throw new Error(`Network error: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.close(); // Close loading alert
+
+                    // Re-enable form elements and restore button
+                    for (let i = 0; i < formElements.length; i++) {
+                        formElements[i].disabled = false;
+                    }
+                    submitButton.innerHTML = originalButtonHTML;
+
+                    // Display result using SweetAlert
+                    let iconType = 'info';
+                    let titleText = 'Prediction Result';
+                    // Adjust based on your actual API response structure
+                    let resultText = `Prediction: ${data.prediction_text || 'N/A'} (Probability: ${data.probability_percentage || 'N/A'}%)`;
+
+                    if (data.prediction === 1) { // Assuming 1 means high risk
+                        iconType = 'warning';
+                        titleText = 'High Risk Detected';
+                    } else if (data.prediction === 0) { // Assuming 0 means low risk
+                        iconType = 'success';
+                        titleText = 'Low Risk Detected';
+                    }
+
+                    Swal.fire({
+                        icon: iconType,
+                        title: titleText,
+                        html: resultText + '<br><br><a href="/history.php" class="btn btn-primary btn-sm">View Details in History</a>',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#5a62c8'
+                    });
+
+                    // Optionally clear the form after successful prediction
+                    // form.reset();
+
+                })
+                .catch(error => {
+                    Swal.close(); // Close loading alert
+
+                    // Re-enable form elements and restore button
+                    for (let i = 0; i < formElements.length; i++) {
+                        formElements[i].disabled = false;
+                    }
+                    submitButton.innerHTML = originalButtonHTML;
+
+                    console.error('Prediction Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Prediction Failed',
+                        text: error.message || 'An unexpected error occurred. Please check the console or try again.',
+                        confirmButtonColor: '#e85347'
+                    });
+                });
+            });
+        });
+    </script>
                 event.preventDefault(); // Prevent default form submission
 
                 // Show spinner and disable button
