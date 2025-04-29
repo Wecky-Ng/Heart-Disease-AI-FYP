@@ -62,19 +62,6 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table fyp_heart_disease_prediction.user_last_test_record
-CREATE TABLE IF NOT EXISTS `user_last_test_record` (
-  `user_id` int NOT NULL,
-  `prediction_history_id` int NOT NULL,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`),
-  KEY `FK_user_last_test_record_user_prediction_history` (`prediction_history_id`),
-  CONSTRAINT `FK_user_last_test_record_user_prediction_history` FOREIGN KEY (`prediction_history_id`) REFERENCES `user_prediction_history` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_user_last_test_record_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Data exporting was unselected.
-
 -- Dumping structure for table fyp_heart_disease_prediction.user_prediction_history
 CREATE TABLE IF NOT EXISTS `user_prediction_history` (
   `id` int NOT NULL AUTO_INCREMENT,

@@ -115,10 +115,11 @@ function getLastTestRecord($userId) {
     $db = getDbConnection(); // Assuming getDbConnection() is defined in connection.php
 
     // Using prepared statement to prevent SQL injection
-    // Join user_last_test_record with user_prediction_history to get the full record
-    $query = "SELECT ph.* FROM user_last_test_record ultr
-              JOIN user_prediction_history ph ON ultr.prediction_history_id = ph.id
-              WHERE ultr.user_id = ?";
+    // Fetch the latest record directly from user_prediction_history
+    $query = "SELECT ph.* FROM user_prediction_history ph
+              WHERE ph.user_id = ?
+              ORDER BY ph.created_at DESC
+              LIMIT 1";
 
     $stmt = $db->prepare($query);
     // Check if prepare was successful

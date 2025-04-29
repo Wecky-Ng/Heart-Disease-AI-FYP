@@ -57,10 +57,10 @@
         }
         // --- End Redirect ---
 
-        require_once PROJECT_ROOT . '/database/form_validation_preprocessing.php';
-        require_once PROJECT_ROOT . '/database/set_user_prediction_record.php'; // Includes connection.php
-        require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Includes getPredictionRecordById
-        require_once PROJECT_ROOT . '/database/connection.php'; // Ensure connection is available
+        // require_once PROJECT_ROOT . '/database/form_validation_preprocessing.php'; // Not needed directly on this page
+        // require_once PROJECT_ROOT . '/database/set_user_prediction_record.php'; // Saving is handled before redirecting here
+        require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Includes getPredictionRecordById and connection.php
+        // require_once PROJECT_ROOT . '/database/connection.php'; // Included via get_user_prediction_history.php
 
         // Helper function to get text representation of parameters
         function getParameterText($key, $value) {
@@ -244,12 +244,11 @@
                             $conn = connectToDatabase();
                             if ($conn) {
                                 $historyId = savePredictionHistory($conn, $userId, $validatedData, $predictionResult, $predictionConfidence);
-                                if ($historyId) {
-                                    updateLastTestRecord($conn, $userId, $historyId);
-                                } else {
+                                if (!$historyId) {
                                     error_log("Failed to save prediction history for user {$userId}.");
                                     // Decide if this should be a user-facing error
                                 }
+                                // The last test record is now derived directly from history, no separate update needed.
                                 $conn->close();
                             } else {
                                 error_log("Database connection failed in result.php");
@@ -280,10 +279,11 @@
         */
         // --- END REMOVED POST HANDLING ---
         else {
-            // Neither POST nor GET with ID - show an error or redirect
+            // Neither POST nor GET with ID - redirect to home
             // If accessed directly without POST data or GET ID
-            if (!$displayData) { // Only set error if no data was processed yet
-                 $displayError = "No prediction data available. Please submit the form first or provide a valid record ID.";
+            if (!$displayData && !$displayError) { // Only redirect if no data/error was set by POST/GET
+                header('Location: home.php');
+                exit();
             }
         }
 
@@ -339,7 +339,8 @@
                                                 'sleep_time' => 'Average Sleep Time (hours)',
                                                 'asthma' => 'History of Asthma',
                                                 'kidney_disease' => 'History of Kidney Disease',
-                                                'skin_cancer' => 'History of Skin Cancer'
+                                                'skin_cancer' => 'History of Skin Cancer',
+                                                'prediction_result' => 'Prediction Result' // Added Prediction Result display
                                             ];
 
                                             foreach ($parameterLabels as $key => $label) {

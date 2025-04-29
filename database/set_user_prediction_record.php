@@ -73,36 +73,4 @@ function savePredictionHistory($conn, $userId, $data, $prediction, $confidence)
     }
 }
 
-/**
- * Inserts or updates the user's last test record in user_last_test_record table.
- *
- * @param mysqli|PDO $conn The database connection object.
- * @param int $userId The ID of the user.
- * @param int $predictionHistoryId The ID of the prediction history record to link.
- * @return bool True on success, false on failure.
- */
-function updateLastTestRecord($conn, $userId, $predictionHistoryId)
-{
-    $sql = "INSERT INTO user_last_test_record (user_id, prediction_history_id)
-            VALUES (?, ?)
-            ON DUPLICATE KEY UPDATE prediction_history_id = VALUES(prediction_history_id)";
-
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        error_log("Error preparing statement for updating last test record: " . $conn->error);
-        return false;
-    }
-
-    $stmt->bind_param('ii', $userId, $predictionHistoryId);
-
-    if ($stmt->execute()) {
-        $stmt->close();
-        return true;
-    } else {
-        error_log("Error executing statement for updating last test record: " . $stmt->error);
-        $stmt->close();
-        return false;
-    }
-}
-
 ?>

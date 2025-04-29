@@ -58,15 +58,8 @@ $dbData = $inputs; // Assuming $inputs already has the correct keys
 $historyId = savePredictionHistory($conn, $userId, $dbData, $prediction, $confidence);
 
 if ($historyId) {
-    // Update the last test record
-    $updateSuccess = updateLastTestRecord($conn, $userId, $historyId);
-    if ($updateSuccess) {
-        echo json_encode(['success' => true, 'message' => 'Prediction saved successfully.']);
-    } else {
-        // History saved, but last test record update failed. Log it but report success for history.
-        error_log("Failed to update last test record for user {$userId} after saving history ID {$historyId}.");
-        echo json_encode(['success' => true, 'message' => 'Prediction history saved, but failed to update last test link.']);
-    }
+    // The last test record is now derived directly from history, no separate update needed.
+    echo json_encode(['success' => true, 'message' => 'Prediction saved successfully.']);
 } else {
     error_log("Failed to save prediction history for user {$userId}.");
     echo json_encode(['success' => false, 'message' => 'Failed to save prediction history.']);
