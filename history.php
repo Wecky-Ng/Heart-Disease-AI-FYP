@@ -160,7 +160,8 @@ if ($predictionHistory === false) {
                                                     <?php foreach ($predictionHistory as $index => $prediction): ?>
                                                         <tr>
                                                             <td><?php echo $index + 1; ?></td>
-                                                            <td><?php echo htmlspecialchars($prediction['date']); ?></td> <td>
+                                                            <td><?php echo htmlspecialchars($prediction['date']); ?></td>
+                                                            <td>
                                                                 <?php
                                                                     // The result is already formatted in getUserPredictionHistory function
                                                                     $result_text = $prediction['result'];
@@ -280,31 +281,11 @@ if ($predictionHistory === false) {
                 $('.datatable-init-export').DataTable({
                     dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
                     buttons: [
-                        {
-                            extend: 'copy',
-                            text: '<em class="icon ni ni-copy"></em> Copy',
-                            className: 'btn btn-outline-secondary btn-sm'
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<em class="icon ni ni-file-text"></em> CSV',
-                            className: 'btn btn-outline-secondary btn-sm'
-                        },
-                        {
-                            extend: 'excel',
-                            text: '<em class="icon ni ni-file-xls"></em> Excel',
-                            className: 'btn btn-outline-secondary btn-sm'
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<em class="icon ni ni-file-pdf"></em> PDF',
-                            className: 'btn btn-outline-secondary btn-sm'
-                        },
-                        {
-                            extend: 'print',
-                            text: '<em class="icon ni ni-printer"></em> Print',
-                            className: 'btn btn-outline-secondary btn-sm'
-                        }
+                        { extend: 'copy', text: 'Copy' },
+                        { extend: 'csv', text: 'CSV' },
+                        { extend: 'excel', text: 'Excel' },
+                        { extend: 'pdf', text: 'PDF' },
+                        { extend: 'print', text: 'Print' }
                     ],
                     responsive: true,
                     language: {
