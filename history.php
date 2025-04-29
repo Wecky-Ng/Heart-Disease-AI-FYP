@@ -200,20 +200,78 @@ if ($predictionHistory === false) {
     </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        // Confirmation for deleting a single record
+        // Display SweetAlert2 messages
+        <?php if (!empty($success_message)): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '<?php echo addslashes(htmlspecialchars($success_message)); ?>',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        <?php endif; ?>
+
+        <?php if (!empty($error_message)): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '<?php echo addslashes(htmlspecialchars($error_message)); ?>'
+        });
+        <?php endif; ?>
+
+        // Confirmation dialogs
         function confirmDelete(recordId) {
-            if (confirm("Are you sure you want to delete this prediction record? This action cannot be undone.")) {
-                // Find the form with the matching record_id and submit it
-                $('input[name="record_id"][value="' + recordId + '"]').closest('form').submit();
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, cancel!',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create a form dynamically and submit it
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = ''; // Submit to the same page
+
+                    const recordIdInput = document.createElement('input');
+                    recordIdInput.type = 'hidden';
+                    recordIdInput.name = 'record_id';
+                    recordIdInput.value = recordId;
+                    form.appendChild(recordIdInput);
+
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete_record';
+                    deleteInput.value = '1';
+                    form.appendChild(deleteInput);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
-        
-        // Confirmation for deleting all records
+
         function confirmDeleteAll() {
-            if (confirm("Are you sure you want to delete ALL your prediction records? This action cannot be undone.")) {
-                document.getElementById('delete-all-form').submit();
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will delete all your prediction records permanently!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete all!',
+                cancelButtonText: 'No, cancel!',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-all-form').submit();
+                }
+            });
         }
         
         $(document).ready(function() {

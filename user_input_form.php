@@ -385,6 +385,8 @@ if (isLoggedIn()) {
                                                                         <p class="text-muted small mt-1">If unchecked, this prediction will not be stored in our database for privacy reasons.</p>
                                                                     </div>
                                                                 </div>
+                                                                <?php else: ?>
+                                                                <p class="text-muted small mt-1">For your privacy concerns, your record will not be collected.</p>
                                                                 <?php endif; ?>
                                                             </div>
 

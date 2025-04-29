@@ -85,7 +85,7 @@
 
                                             // --- Display Logic ---
                                             $displayData = null;
-                                            $displayError = null;
+                                            $displayError = null; // This will be used for SweetAlert2
 
                                             // Check if viewing a specific history record via GET request
                                             if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
@@ -110,6 +110,7 @@
                                                     $displayError = "Invalid record ID specified or you are not logged in.";
                                                 }
                                             }
+                                            // The actual SweetAlert JS is added near the end of the body.
                                             // Check if form was submitted via POST
                                             elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 // 1. Validate form data
@@ -198,24 +199,35 @@
                                                             'parameters' => $validatedData // Use the validated form data for display
                                                         ];
 
-                                                        // 5. Save prediction record to database (if user is logged in)
-                                                        if ($userId) {
-                                                            $saveResult = savePredictionRecord(
-                                                                $userId,
-                                                                $validatedData, // Pass the original validated data
-                                                                $prediction,    // Pass the raw prediction (0 or 1)
-                                                                $confidence     // Pass the raw confidence/probability
-                                                            );
-                                                            if (!$saveResult['success']) {
-                                                                // Log error, but don't necessarily block the user from seeing the result
-                                                                error_log("Failed to save prediction record for user {$userId}: " . $saveResult['message']);
-                                                                // Optionally set a non-critical error message for the user
-                                                                // $displayError = "Could not save this prediction to your history. " . ($displayError ?? '');
+                                                        // 5. Save prediction record to database (if user is logged in AND checkbox is checked)
+                                                        if ($userId && isset($_POST['save_record']) && $_POST['save_record'] == '1') {
+                                                            // Get DB connection (ensure connection.php is included and function is available)
+                                                            $conn = getDbConnection();
+                                                            if ($conn) {
+                                                                $historyId = savePredictionHistory($conn, $userId, $validatedData, $prediction, $confidence);
+                                                                if ($historyId) {
+                                                                    $updateSuccess = updateLastTestRecord($conn, $userId, $historyId);
+                                                                    if (!$updateSuccess) {
+                                                                        error_log("Failed to update last test record for user {$userId} after saving history ID {$historyId}.");
+                                                                        // Optionally set a non-critical error message
+                                                                    }
+                                                                } else {
+                                                                    error_log("Failed to save prediction history for user {$userId}.");
+                                                                    // Optionally set a non-critical error message
+                                                                }
+                                                                // Close connection if it was opened here, or manage globally as appropriate
+                                                                // $conn->close(); // Uncomment if connection is not managed globally
+                                                            } else {
+                                                                error_log("Failed to get database connection in result.php for saving record.");
                                                             }
+                                                        } elseif ($userId) {
+                                                            // User is logged in but didn't check the box or checkbox value wasn't '1'
+                                                            // No action needed, record is not saved as per user choice.
+                                                            // error_log("User {$userId} chose not to save the prediction or save_record value was not '1'.");
                                                         } else {
                                                             // User not logged in, cannot save history
-                                                            // Optionally inform the user
-                                                            // $displayError = "Log in to save your prediction history. " . ($displayError ?? '');
+                                                            // No action needed, record is not saved.
+                                                            // error_log("Prediction not saved: User not logged in.");
                                                         }
                                                     } elseif ($apiError) {
                                                         $displayError = "Prediction failed: " . $apiError;
@@ -223,8 +235,9 @@
                                                         $displayError = "Prediction failed due to an unknown API error.";
                                                     }
                                                 } else {
-                                                    // Validation failed
-                                                    $displayError = "Form validation failed: " . implode(", ", $validationResult['errors']);
+                                                    // Validation failed - Prepare error message for SweetAlert
+                                                    $errorMessages = implode('\n', $validationResult['errors']); // Use newline for SweetAlert
+                                                    $displayError = "Form validation failed:\n" . $errorMessages;
                                                 }
                                             } else {
                                                 // Neither GET with ID nor POST - show message or redirect
@@ -232,9 +245,8 @@
                                             }
 
                                             // --- Display Result or Error ---
-                                            if ($displayError) {
-                                                echo '<div class="alert alert-danger">' . htmlspecialchars($displayError) . '</div>';
-                                            } elseif ($displayData) {
+                                            // Error messages will be shown via SweetAlert2 below
+                                            if ($displayData) {
                                                 // Extract variables for easier use in HTML
                                                 $riskLevel = $displayData['riskLevel'];
                                                 $probabilityPercent = $displayData['probabilityPercent'];
@@ -593,11 +605,12 @@
                                                 echo "</div>"; // card-inner
                                                 echo "</div>"; // card
                                             }
-                                            else {
-                                                 // Default message if neither POST nor valid GET with ID
-                                                 // This case should ideally only be hit if the page is accessed directly without POST data or GET ID
-                                                 echo "<div class='alert alert-info'>Invalid request. Please submit the prediction form or view results from the history page.</div>";
-                                            }
+                                            // Note: The 'Invalid request' case is now handled by the $displayError variable and shown via SweetAlert.
+                                            // else {
+                                            //      // Default message if neither POST nor valid GET with ID
+                                            //      // This case should ideally only be hit if the page is accessed directly without POST data or GET ID
+                                            //      // echo "<div class='alert alert-info'>Invalid request. Please submit the prediction form or view results from the history page.</div>";
+                                            // }
                                             ?>
                                         </div>
                                         <div class="col-lg-4">
@@ -635,6 +648,25 @@
 
     <!-- JavaScript -->
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Display SweetAlert2 error message if $displayError is set and no data was displayed
+        <?php if (!empty($displayError) && empty($displayData)): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            html: '<?php echo addslashes(nl2br(htmlspecialchars($displayError))); // Use html for potential line breaks ?>',
+            confirmButtonText: 'OK'
+            // Optionally redirect or offer actions
+            // confirmButtonText: 'Go Back',
+            // preConfirm: () => {
+            //     window.location.href = 'user_input_form.php'; // Redirect to form page
+            // }
+        });
+        <?php endif; ?>
+    </script>
 </body>
 
 </html>
