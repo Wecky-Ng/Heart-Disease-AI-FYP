@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($_POST['full_name'] ?? '');
     $date_of_birth = trim($_POST['date_of_birth'] ?? '');
     $gender = $_POST['gender'] ?? '';
-    
+
     // Basic validation
     if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
         $error = 'Please fill in all required fields';
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Register the user
         $result = registerUser($username, $email, $password);
-        
+
         if ($result['status']) {
             // If additional profile data was provided, update the user profile
             if (!empty($full_name) || !empty($date_of_birth) || !empty($gender)) {
@@ -63,14 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'date_of_birth' => $date_of_birth ?: null,
                     'gender' => $gender ?: null
                 ];
-                
+
                 updateUserProfile($result['user_id'], $userData);
             }
-            
+
             $success = 'Registration successful!';
             // Store user data for auto-login
             $user_id = $result['user_id'];
-            
+
             // Clear form data
             $username = '';
             $email = '';
@@ -85,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -93,8 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Register - Heart Disease Prediction</title>
     <!-- Stylesheets -->
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
-    
+
 </head>
+
 <body class="nk-body bg-white npc-default pg-auth">
     <div class="nk-app-root">
         <div class="nk-main">
@@ -171,23 +173,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <label class="custom-control-label" for="terms">I agree to the <a href="javascript:void(0);" id="terms-link">Terms & Conditions</a></label>
                                         </div>
                                         <!-- Hidden div for Terms & Conditions content -->
-                                        <div id="terms-content" style="display: none;">
-                                            <h4>Terms and Conditions</h4>
-                                            <p>Welcome to Heart Disease AI!</p>
-                                            <p>These terms and conditions outline the rules and regulations for the use of Heart Disease AI's Website.</p>
-                                            <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use Heart Disease AI if you do not agree to take all of the terms and conditions stated on this page.</p>
-                                            <p><strong>Cookies:</strong><br>We employ the use of cookies. By accessing Heart Disease AI, you agreed to use cookies in agreement with the Heart Disease AI's Privacy Policy.</p>
-                                            <p><strong>License:</strong><br>Unless otherwise stated, Heart Disease AI and/or its licensors own the intellectual property rights for all material on Heart Disease AI. All intellectual property rights are reserved. You may access this from Heart Disease AI for your own personal use subjected to restrictions set in these terms and conditions.</p>
-                                            <p>You must not:</p>
+                                        <div id="project-purpose-content" style="display: none;">
+                                            <h4>About This Project</h4>
+                                            <p>This application, <strong>Heart Disease AI</strong>, is part of a Final Year Project developed by <strong>Wecky Ng Wei Chie</strong>, a student at <strong>Asia Pacific University of Technology and Innovation (APU)</strong>, pursuing a <strong>Bachelor’s Degree in Computer Science with a specialism in Artificial Intelligence</strong>.</p>
+
+                                            <p>The application aims to assist users—especially those who may be unaware of their heart disease risk—by offering a quick and accessible predictive assessment using Artificial Intelligence. It is designed to promote early awareness and is not intended to replace professional medical evaluation or diagnosis.</p>
+
+                                            <p><strong>Important Notice:</strong></p>
                                             <ul>
-                                                <li>Republish material from Heart Disease AI</li>
-                                                <li>Sell, rent or sub-license material from Heart Disease AI</li>
-                                                <li>Reproduce, duplicate or copy material from Heart Disease AI</li>
-                                                <li>Redistribute content from Heart Disease AI</li>
+                                                <li>This tool provides AI-generated predictions based on user input and is for informational purposes only.</li>
+                                                <li>It is not a certified medical device and should not be relied upon for any medical decision-making.</li>
+                                                <li>The developer is not responsible for any inaccurate predictions or for any medical, legal, financial, or personal consequences resulting from the use of this application.</li>
+                                                <li>Users are strongly advised to consult a qualified healthcare professional for any medical concerns or symptoms.</li>
                                             </ul>
-                                            <p>This Agreement shall begin on the date hereof.</p>
-                                            <p><strong>Disclaimer:</strong><br>The predictions provided by this tool are for informational purposes only and should not be considered a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.</p>
-                                            <!-- Add more terms as needed -->
+
+                                            <p><strong>Data Privacy:</strong></p>
+                                            <ul>
+                                                <li>Providing health-related data in this app is entirely voluntary.</li>
+                                                <li>You may choose not to submit any personal or health information at any point.</li>
+                                                <li>All information entered will be processed securely and confidentially for the sole purpose of generating predictions.</li>
+                                                <li>No personally identifiable information will be shared or stored without your clear permission.</li>
+                                            </ul>
+
+                                            <p>If you have questions about the project or app, you may contact the developer:</p>
+                                            <ul>
+                                                <li><strong>Name:</strong> Wecky Ng Wei Chie</li>
+                                                <li><strong>TP Number:</strong> TP051083</li>
+                                                <li><strong>Email:</strong> TP051083@mail.apu.edu.my (Preferred: MS Teams)</li>
+                                                <li><strong>Phone:</strong> +60182322119 (Preferred: WhatsApp Message)</li>
+                                            </ul>
+
+                                            <p>Thank you for using Heart Disease AI and supporting this educational research project.</p>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -208,74 +224,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Terms & Conditions Popup
-        const termsLink = document.getElementById('terms-link');
-        const termsContent = document.getElementById('terms-content');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Terms & Conditions Popup
+            const termsLink = document.getElementById('terms-link');
+            const termsContent = document.getElementById('terms-content');
 
-        if (termsLink && termsContent) {
-            termsLink.addEventListener('click', function(event) {
-                event.preventDefault(); // Prevent default link behavior
+            if (termsLink && termsContent) {
+                termsLink.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent default link behavior
+                    Swal.fire({
+                        title: 'Terms & Conditions',
+                        html: termsContent.innerHTML, // Use the content from the hidden div
+                        icon: 'info',
+                        confirmButtonText: 'Close',
+                        confirmButtonColor: '#6576ff',
+                        width: '80%', // Adjust width as needed
+                        textAlign: 'left', // Explicitly set text alignment to left
+                        customClass: {
+                            htmlContainer: 'text-left' // Keep this for good measure
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+
+
+    <?php if (!empty($error)): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
-                    title: 'Terms & Conditions',
-                    html: termsContent.innerHTML, // Use the content from the hidden div
-                    icon: 'info',
-                    confirmButtonText: 'Close',
-                    confirmButtonColor: '#6576ff',
-                    width: '80%', // Adjust width as needed
-                    textAlign: 'left', // Explicitly set text alignment to left
-                    customClass: {
-                        htmlContainer: 'text-left' // Keep this for good measure
+                    title: 'Registration Error',
+                    text: '<?php echo addslashes($error); ?>',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6576ff'
+                });
+            });
+        </script>
+    <?php endif; ?>
+
+    <?php if (!empty($success)): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Success!',
+                    text: '<?php echo addslashes($success); ?>',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6576ff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Auto-login and redirect to home page
+                        <?php if (isset($user_id)): ?>
+                            // Set session variables for the user
+                            <?php
+                            $user = getUserById($user_id);
+                            if ($user) {
+                                $_SESSION['user_id'] = $user_id;
+                                $_SESSION['username'] = $user['username'];
+                                $_SESSION['email'] = $user['email'];
+                            }
+                            ?>
+                            window.location.href = 'home.php';
+                        <?php endif; ?>
                     }
                 });
             });
-        }
-    });
-    </script>
-
-    
-    <?php if (!empty($error)): ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                title: 'Registration Error',
-                text: '<?php echo addslashes($error); ?>',
-                icon: 'error',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#6576ff'
-            });
-        });
-    </script>
-    <?php endif; ?>
-    
-    <?php if (!empty($success)): ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                title: 'Success!',
-                text: '<?php echo addslashes($success); ?>',
-                icon: 'success',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#6576ff'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Auto-login and redirect to home page
-                    <?php if (isset($user_id)): ?>
-                    // Set session variables for the user
-                    <?php 
-                        $user = getUserById($user_id);
-                        if ($user) {
-                            $_SESSION['user_id'] = $user_id;
-                            $_SESSION['username'] = $user['username'];
-                            $_SESSION['email'] = $user['email'];
-                        }
-                    ?>
-                    window.location.href = 'home.php';
-                    <?php endif; ?>
-                }
-            });
-        });
-    </script>
+        </script>
     <?php endif; ?>
 </body>
+
 </html>
