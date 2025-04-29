@@ -284,7 +284,7 @@ if ($predictionHistory === false) {
                     responsive: true,
                     initComplete: function(settings, json) {
                         dataTableInitialized = true; // Set flag after successful initialization
-                    }
+                    },
                     language: {
                         search: "",
                         searchPlaceholder: "Search Predictions"
