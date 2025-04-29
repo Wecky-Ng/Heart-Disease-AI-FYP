@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from flask import Flask, request, jsonify
+from flask_cors import CORS # Import CORS
 # Removed database imports: mysql.connector, Error
 from dotenv import load_dotenv
 
@@ -10,11 +11,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+# Initialize CORS, allowing requests from your Vercel frontend
+CORS(app, resources={r"/predict": {"origins": "https://heart-disease-ai-fyp.vercel.app"}})
 
 # --- Removed Database Configuration ---
 
 # --- Model Loading ---
-MODEL_PATH = 'tuned_ensemble_cat_lgbm_v4.pkl' # Ensure this model file is in the same directory or provide the correct path
+MODEL_PATH = 'tuned_ensemble_cat_lgbm_v5.pkl' # Ensure this model file is in the same directory or provide the correct path
 model = None
 try:
     model = joblib.load(MODEL_PATH)
@@ -155,7 +158,5 @@ def predict():
         return jsonify({'error': 'An error occurred during prediction.'}), 500
 
 if __name__ == '__main__':
-    # Use environment variable for port or default to 5000
-    port = int(os.environ.get('PORT', 5000))
-    # Run on 0.0.0.0 to be accessible externally if needed
-    app.run(host='0.0.0.0', port=port, debug=True) # Set debug=False for production
+    
+    app.run(debug=True) # Set debug=False for production

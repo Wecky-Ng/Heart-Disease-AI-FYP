@@ -189,6 +189,8 @@
                 $ch = curl_init($apiUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_POST, true);
+                // Log the data being sent to the API
+                error_log("API Data being sent: " . print_r($apiData, true));
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($apiData));
                 curl_setopt($ch, CURLOPT_HTTPHEADER, [
                     'Content-Type: application/json',
