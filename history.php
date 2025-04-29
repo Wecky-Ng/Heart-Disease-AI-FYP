@@ -221,25 +221,31 @@ if ($predictionHistory === false) {
             if ($('.datatable-init-export').length) {
                 $('.datatable-init-export').DataTable({
                     dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
-                    buttons: [{
+                    buttons: [
+                        {
                             extend: 'copy',
-                            className: 'btn-sm'
+                            text: '<em class="icon ni ni-copy"></em> Copy',
+                            className: 'btn btn-outline-secondary btn-sm'
                         },
                         {
                             extend: 'csv',
-                            className: 'btn-sm'
+                            text: '<em class="icon ni ni-file-text"></em> CSV',
+                            className: 'btn btn-outline-secondary btn-sm'
                         },
                         {
                             extend: 'excel',
-                            className: 'btn-sm'
+                            text: '<em class="icon ni ni-file-xls"></em> Excel',
+                            className: 'btn btn-outline-secondary btn-sm'
                         },
                         {
                             extend: 'pdf',
-                            className: 'btn-sm'
+                            text: '<em class="icon ni ni-file-pdf"></em> PDF',
+                            className: 'btn btn-outline-secondary btn-sm'
                         },
                         {
                             extend: 'print',
-                            className: 'btn-sm'
+                            text: '<em class="icon ni ni-printer"></em> Print',
+                            className: 'btn btn-outline-secondary btn-sm'
                         }
                     ],
                     responsive: true,

@@ -41,6 +41,7 @@ switch ($request_path) {
     case '/health_disease_facts.php':
     case '/model_details.php':        
     case '/session.php':
+    case '/logout.php':
         // Route direct requests for these top-level PHP files
         $target_file = ltrim($request_path, '/'); // Remove leading slash
         break;

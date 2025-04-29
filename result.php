@@ -188,16 +188,185 @@
                                                     if ($apiResult && isset($apiResult['prediction']) && isset($apiResult['confidence'])) {
                                                         $prediction = (int)$apiResult['prediction']; // 0 or 1
                                                         $confidence = (float)$apiResult['confidence']; // Probability
-                                                        $riskLevel = $prediction == 1 ? 'High' : 'Low'; // Simplified risk level
-                                                        $probabilityPercent = round($confidence * 100, 2);
 
-                                                        // Set risk class and description based on prediction
-                                                        if ($prediction == 1) {
-                                                            $riskClass = "result-high";
-                                                            $riskDescription = "Based on the provided parameters, you have a high risk of heart disease. Please consult with a healthcare professional as soon as possible.";
+                                                        // Prepare data for display, mirroring the GET request structure
+                                                        $displayData = [
+                                                            'riskLevel' => ($prediction == 1) ? 'High Risk' : 'Low Risk',
+                                                            'probabilityPercent' => round($confidence * 100, 2) . '%',
+                                                            'riskClass' => ($prediction == 1) ? 'result-high' : 'result-low',
+                                                            'riskDescription' => ($prediction == 1) ? "Based on the provided parameters, you have a high risk of heart disease. Please consult with a healthcare professional as soon as possible." : "Based on the provided parameters, you have a low risk of heart disease. Maintain a healthy lifestyle to keep it that way.",
+                                                            'parameters' => $validatedData // Use the validated form data for display
+                                                        ];
+
+                                                        // 5. Save prediction record to database (if user is logged in)
+                                                        if ($userId) {
+                                                            $saveResult = savePredictionRecord(
+                                                                $userId,
+                                                                $validatedData, // Pass the original validated data
+                                                                $prediction,    // Pass the raw prediction (0 or 1)
+                                                                $confidence     // Pass the raw confidence/probability
+                                                            );
+                                                            if (!$saveResult['success']) {
+                                                                // Log error, but don't necessarily block the user from seeing the result
+                                                                error_log("Failed to save prediction record for user {$userId}: " . $saveResult['message']);
+                                                                // Optionally set a non-critical error message for the user
+                                                                // $displayError = "Could not save this prediction to your history. " . ($displayError ?? '');
+                                                            }
                                                         } else {
-                                                            $riskClass = "result-low";
-                                                            $riskDescription = "Based on the provided parameters, you have a low risk of heart disease. Maintain a healthy lifestyle to keep it that way.";
+                                                            // User not logged in, cannot save history
+                                                            // Optionally inform the user
+                                                            // $displayError = "Log in to save your prediction history. " . ($displayError ?? '');
+                                                        }
+                                                    } elseif ($apiError) {
+                                                        $displayError = "Prediction failed: " . $apiError;
+                                                    } else {
+                                                        $displayError = "Prediction failed due to an unknown API error.";
+                                                    }
+                                                } else {
+                                                    // Validation failed
+                                                    $displayError = "Form validation failed: " . implode(", ", $validationResult['errors']);
+                                                }
+                                            } else {
+                                                // Neither GET with ID nor POST - show message or redirect
+                                                $displayError = "No prediction data to display. Please submit the form or view a specific record from your history.";
+                                            }
+
+                                            // --- Display Result or Error ---
+                                            if ($displayError) {
+                                                echo '<div class="alert alert-danger">' . htmlspecialchars($displayError) . '</div>';
+                                            } elseif ($displayData) {
+                                                // Extract variables for easier use in HTML
+                                                $riskLevel = $displayData['riskLevel'];
+                                                $probabilityPercent = $displayData['probabilityPercent'];
+                                                $riskClass = $displayData['riskClass'];
+                                                $riskDescription = $displayData['riskDescription'];
+                                                $parameters = $displayData['parameters'];
+                                            ?>
+                                                <!-- Result Display Box -->
+                                                <div class="card card-bordered">
+                                                    <div class="card-inner">
+                                                        <div class="result-box <?php echo htmlspecialchars($riskClass); ?>">
+                                                            <h4 class="mb-2">Prediction Result: <span class="fw-bold"><?php echo htmlspecialchars($riskLevel); ?></span></h4>
+                                                            <p class="lead">Probability of Heart Disease: <strong><?php echo htmlspecialchars($probabilityPercent); ?></strong></p>
+                                                            <p><?php echo htmlspecialchars($riskDescription); ?></p>
+                                                        </div>
+
+                                                        <h5 class="mt-4">Parameters Used for Prediction:</h5>
+                                                        <table class="table table-striped parameter-table">
+                                                            <tbody>
+                                                                <?php
+                                                                // Define labels for parameters (use the keys from $validatedData or $record)
+                                                                $parameterLabels = [
+                                                                    'bmi' => 'BMI',
+                                                                    'smoking' => 'Smoking',
+                                                                    'alcohol_drinking' => 'Heavy Alcohol Consumption',
+                                                                    'stroke' => 'Stroke History',
+                                                                    'physical_health' => 'Poor Physical Health Days (last 30)',
+                                                                    'mental_health' => 'Poor Mental Health Days (last 30)',
+                                                                    'diff_walking' => 'Difficulty Walking',
+                                                                    'sex' => 'Sex',
+                                                                    'age' => 'Age',
+                                                                    'race' => 'Race',
+                                                                    'diabetic' => 'Diabetic Status',
+                                                                    'physical_activity' => 'Physical Activity (last 30 days)',
+                                                                    'gen_health' => 'General Health Perception',
+                                                                    'sleep_time' => 'Average Sleep Time (hours)',
+                                                                    'asthma' => 'Asthma History',
+                                                                    'kidney_disease' => 'Kidney Disease History',
+                                                                    'skin_cancer' => 'Skin Cancer History'
+                                                                    // Add more labels as needed based on your form/DB fields
+                                                                ];
+
+                                                                foreach ($parameterLabels as $key => $label) {
+                                                                    // Check if the key exists in the parameters array
+                                                                    if (isset($parameters[$key])) {
+                                                                        echo '<tr>';
+                                                                        echo '<th>' . htmlspecialchars($label) . '</th>';
+                                                                        // Handle boolean-like 'Yes'/'No' for better display
+                                                                        $value = $parameters[$key];
+                                                                        if (is_string($value) && in_array(strtolower($value), ['yes', 'no'])) {
+                                                                            $displayValue = ucfirst(strtolower($value));
+                                                                        } else {
+                                                                            $displayValue = $value;
+                                                                        }
+                                                                        echo '<td>' . htmlspecialchars($displayValue) . '</td>';
+                                                                        echo '</tr>';
+                                                                    }
+                                                                }
+                                                                ?>
+                                                            </tbody>
+                                                        </table>
+
+                                                        <?php
+                                                        // Display contributing factors if available (only from POST/API result)
+                                                        // Note: History view (GET) doesn't store/show factors currently.
+                                                        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($apiResult['factors']) && is_array($apiResult['factors']) && !empty($apiResult['factors'])) {
+                                                            echo '<h5 class="mt-4">Potential Contributing Factors:</h5>';
+                                                            echo '<ul>';
+                                                            foreach ($apiResult['factors'] as $factor) {
+                                                                echo '<li>' . htmlspecialchars($factor) . '</li>';
+                                                            }
+                                                            echo '</ul>';
+                                                        }
+                                                        ?>
+
+                                                        <div class="mt-4">
+                                                            <a href="user_input_form.php" class="btn btn-primary">Make Another Prediction</a>
+                                                            <a href="history.php" class="btn btn-outline-secondary">View History</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php
+                                            } // End of if ($displayData)
+                                            ?>
+                                        </div><!-- .col -->
+
+                                        <div class="col-lg-4">
+                                            <div class="card card-bordered">
+                                                <div class="card-inner">
+                                                    <h5 class="card-title">Understanding Your Result</h5>
+                                                    <p class="text-soft">This prediction is based on statistical patterns found in the dataset and the model used. It is not a substitute for a professional medical diagnosis.</p>
+                                                    <ul>
+                                                        <li><strong>Low Risk:</strong> Indicates a lower statistical probability compared to the average in the dataset. Continue healthy habits.</li>
+                                                        <li><strong>High Risk:</strong> Indicates a higher statistical probability. It is strongly recommended to consult a doctor for a comprehensive evaluation and advice.</li>
+                                                    </ul>
+                                                    <p class="text-soft mt-2">Factors like age, BMI, smoking, and existing conditions (like diabetes, stroke history) often significantly influence the risk score.</p>
+                                                    <a href="model_details.php" class="btn btn-link">Learn more about the model and data</a>
+                                                </div>
+                                            </div>
+                                            <div class="card card-bordered mt-4">
+                                                <div class="card-inner">
+                                                    <h5 class="card-title">Next Steps</h5>
+                                                    <p>Regardless of the result, consider these general health recommendations:</p>
+                                                    <ul>
+                                                        <li>Maintain a balanced diet.</li>
+                                                        <li>Engage in regular physical activity.</li>
+                                                        <li>Avoid smoking and limit alcohol intake.</li>
+                                                        <li>Manage stress effectively.</li>
+                                                        <li>Get regular check-ups with your doctor.</li>
+                                                    </ul>
+                                                    <a href="health_disease_facts.php" class="btn btn-link">More Health Facts</a>
+                                                </div>
+                                            </div>
+                                        </div><!-- .col -->
+                                    </div><!-- .row -->
+                                </div><!-- .nk-block -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Include the footer component -->
+            <?php include PROJECT_ROOT . '/footer.php'; ?>
+        </div>
+    </div>
+
+    <!-- Include the scripts component -->
+    <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+</body>
+
+</html>
                                                         }
 
                                                         // 5. Save to Database if user logged in and checkbox checked
