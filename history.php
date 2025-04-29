@@ -117,11 +117,11 @@ if ($predictionHistory === false) {
                                                 <h5 class="title">Your Prediction Records</h5>
                                             </div>
                                             <div class="card-tools">
-                                                <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
+                                                <a href="user_input_form.php" class="btn btn-primary"><span>New Prediction</span></a>
                                                 <?php if (!empty($predictionHistory)): ?>
                                                 <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
                                                     <input type="hidden" name="delete_all_records" value="1">
-                                                    <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
+                                                    <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><span>Delete All</span></button>
                                                 </form>
                                                 <?php endif; ?>
                                             </div>
@@ -176,11 +176,11 @@ if ($predictionHistory === false) {
                                                                 <?php echo htmlspecialchars($prediction['details']); ?>
                                                             </td>
                                                             <td>
-                                                                <a href="result.php?id=<?php echo htmlspecialchars($prediction['id']); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
+                                                                <a href="result.php?id=<?php echo htmlspecialchars($prediction['id']); ?>" class="btn btn-sm btn-primary">View</a>
                                                                 <form method="post" action="" class="d-inline ml-1">
                                                                     <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($prediction['id']); ?>">
                                                                     <input type="hidden" name="delete_record" value="1">
-                                                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete(<?php echo htmlspecialchars($prediction['id']); ?>)"><em class="icon ni ni-trash"></em> Delete</button>
+                                                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete(<?php echo htmlspecialchars($prediction['id']); ?>)">Delete</button>
                                                                 </form>
                                                             </td>
                                                         </tr>
@@ -279,14 +279,7 @@ if ($predictionHistory === false) {
             // Initialize DataTable with export options
             if ($('.datatable-init-export').length) {
                 $('.datatable-init-export').DataTable({
-                    dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
-                    buttons: [
-                        { extend: 'copy', text: 'Copy' },
-                        { extend: 'csv', text: 'CSV' },
-                        { extend: 'excel', text: 'Excel' },
-                        { extend: 'pdf', text: 'PDF' },
-                        { extend: 'print', text: 'Print' }
-                    ],
+                    // Simplified configuration - remove custom dom and buttons
                     responsive: true,
                     language: {
                         search: "",

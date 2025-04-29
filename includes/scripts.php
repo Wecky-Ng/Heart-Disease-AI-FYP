@@ -5,11 +5,13 @@
  */
 ?>
 <!-- JavaScript -->
+<!-- Load jQuery first -->
+<script src="js/jquery-3.6.0.min.js"></script>
+<!-- Then load core DashLite JS -->
 <script src="js/bundle.js"></script>
 <script src="js/scripts.js"></script>
 <script src="js/dashboard.js"></script>
-<!-- DataTables JS -->
-<script src="js/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded first -->
+<!-- DataTables JS (depends on jQuery) -->
 <script src="js/jquery.dataTables.min.js"></script>
 <script src="js/dataTables.buttons.min.js"></script>
 <script src="js/jszip.min.js"></script>

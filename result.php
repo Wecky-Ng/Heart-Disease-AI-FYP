@@ -155,7 +155,7 @@
                             'parameters' => $record // Pass the whole record which includes all parameters
                         ];
                     } else {
-                         displayError = "Prediction result data is missing for this record.";
+                         $displayError = "Prediction result data is missing for this record.";
                     }
                 } else {
                     $displayError = "Could not find the specified prediction record or you do not have permission to view it.";
@@ -213,7 +213,7 @@
                 }
 
                 // 3. Call Python API
-                $apiUrl = 'https://heart-disease-prediction-api-84fu.onrender.com/predict'; // Replace with your actual API endpoint
+                $apiUrl = '/predict'; // Replace with your actual API endpoint
                 $options = [
                     'http' => [
                         'header'  => "Content-type: application/json\r\n",
