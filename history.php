@@ -47,8 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_record']) && is
 
     if ($recordId && $userId) {
         // Get database connection
-        $db = getDbConnection();
-        if (deletePredictionRecord($db, $recordId, $userId)) {
+        
+        if (deletePredictionRecord($recordId, $userId)) {
             $success_message = "Record deleted successfully.";
             // Redirect to clear POST data after successful delete
             header('Location: history.php');
@@ -67,8 +67,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_all_records']))
 
     if ($userId) {
         // Get database connection
-        $db = getDbConnection();
-        if (deleteAllPredictionRecords($db, $userId)) {
+        
+        if (deleteAllPredictionRecords($userId)) {
             $success_message = "All records deleted successfully.";
             // Redirect to clear POST data after successful delete
             header('Location: history.php');

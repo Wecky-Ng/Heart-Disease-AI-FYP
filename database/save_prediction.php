@@ -8,7 +8,6 @@ if (!defined('PROJECT_ROOT')) {
 }
 
 require_once PROJECT_ROOT . '/session.php';
-require_once PROJECT_ROOT . '/database/connection.php'; // Ensure this file has no leading/trailing whitespace
 require_once PROJECT_ROOT . '/database/set_user_prediction_record.php'; // Ensure this file has no leading/trailing whitespace
 
 // Set the content type header for JSON response
@@ -47,14 +46,14 @@ if (!$userId) {
     exit(); // Stop execution after sending response
 }
 
-// Get database connection
-// Corrected function call from connectToDatabase() to getDbConnection()
-$conn = getDbConnection();
-if (!$conn) {
-    error_log("Database connection failed in save_prediction.php");
-    echo json_encode(['success' => false, 'message' => 'Database connection error.']);
-    exit(); // Stop execution after sending response
-}
+// // Get database connection
+// // Corrected function call from connectToDatabase() to getDbConnection()
+
+// if (!$conn) {
+//     error_log("Database connection failed in save_prediction.php");
+//     echo json_encode(['success' => false, 'message' => 'Database connection error.']);
+//     exit(); // Stop execution after sending response
+// }
 
 // Prepare data for saving: Extract only the columns expected by user_prediction_history
 // This prevents errors if $inputs contains extra fields like 'save_record'
@@ -87,7 +86,7 @@ foreach ($expected_columns as $column) {
 }
 
 // Call function to save the history record
-$historyId = savePredictionHistory($conn, $userId, $dbData, $prediction, $confidence);
+$historyId = savePredictionHistory($userId, $dbData, $prediction, $confidence);
 
 if ($historyId) {
     // The last test record is now derived directly from history, no separate update needed.
@@ -98,8 +97,5 @@ if ($historyId) {
     echo json_encode(['success' => false, 'message' => 'Failed to save prediction history.']);
 }
 
-// Close the database connection
-$conn->close();
 
-// Ensure there are NO blank lines or whitespace AFTER this closing ?> tag (or omit the tag).
 ?>

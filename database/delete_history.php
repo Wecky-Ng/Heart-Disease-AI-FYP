@@ -17,8 +17,8 @@ require_once __DIR__ . '/connection.php';
  * @param int $userId The ID of the user who owns the record (for security verification)
  * @return bool True on successful deletion, false otherwise
  */
-function deletePredictionRecord($db, $recordId, $userId) {
-    // $db = getDbConnection(); // Connection is now passed as a parameter
+function deletePredictionRecord($recordId, $userId) {
+    $db = getDbConnection(); // Connection is now passed as a parameter
     
     // First, delete the corresponding record from user_last_test_record if it exists
     $sql_last_record = "DELETE FROM user_last_test_record WHERE prediction_history_id = ? AND user_id = ?";
@@ -77,8 +77,8 @@ function deletePredictionRecord($db, $recordId, $userId) {
  * @param int $userId The ID of the user whose prediction history to delete
  * @return bool True on successful deletion, false otherwise
  */
-function deleteAllPredictionRecords($db, $userId) {
-    // $db = getDbConnection(); // Connection is now passed as a parameter
+function deleteAllPredictionRecords($userId) {
+    $db = getDbConnection(); // Connection is now passed as a parameter
     
     // Prepare the SQL query
     $sql = "DELETE FROM user_prediction_history WHERE user_id = ?";

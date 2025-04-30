@@ -19,8 +19,9 @@ require_once __DIR__ . '/connection.php';
  * @param float $confidence The prediction confidence score.
  * @return int|false The ID of the inserted history record on success, false on failure.
  */
-function savePredictionHistory($conn, $userId, $data, $prediction, $confidence)
+function savePredictionHistory($userId, $data, $prediction, $confidence)
 {
+    $db = getDbConnection();
     // Map form data keys to database columns - Adjust keys if they differ in $data
     // Ensure data types are correct before binding
     $sql = "INSERT INTO user_prediction_history (
@@ -31,11 +32,11 @@ function savePredictionHistory($conn, $userId, $data, $prediction, $confidence)
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"; // Added created_at and its placeholder
 
-    $stmt = $conn->prepare($sql);
+    $stmt = $db->prepare($sql);
     if (!$stmt) {
-        error_log("Error preparing statement for saving history: " . $conn->error);
+        error_log("Error preparing statement for saving history: " . $db->error);
         // Log the specific MySQL error for better debugging
-        error_log("MySQL Error: " . $conn->error);
+        error_log("MySQL Error: " . $db->error);
         return false;
     }
 
@@ -75,7 +76,7 @@ function savePredictionHistory($conn, $userId, $data, $prediction, $confidence)
     );
 
     if ($stmt->execute()) {
-        $lastId = $conn->insert_id;
+        $lastId = $db->insert_id;
         $stmt->close();
         return $lastId;
     } else {
