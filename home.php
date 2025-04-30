@@ -22,10 +22,9 @@ require_once PROJECT_ROOT . '/includes/styles.php';
 
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
-    <div class="nk-sidebar-overlay" data-target="sidebarMenu">
         <?php require_once PROJECT_ROOT . '/sidemenu.php'; ?>
-        </div>
-        
+
+        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
 
         <div class="nk-main">
             <?php require_once PROJECT_ROOT . '/header.php'; ?>

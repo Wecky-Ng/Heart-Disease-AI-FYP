@@ -14,7 +14,7 @@ require_once PROJECT_ROOT . '/session.php';
             </a>
         </div>
         <div class="nk-menu-trigger mr-n2">
-            <!-- <a href="#" class="nk-nav-toggle nk-quick-nav-icon d-xl-none" data-target="sidebarMenu"><em class="icon ni ni-arrow-left"></em></a> -->
+            <a href="#" class="nk-nav-toggle nk-quick-nav-icon d-xl-none" data-target="sidebarMenu"><em class="icon ni ni-arrow-left"></em></a>
         </div>
     </div>
     <div class="nk-sidebar-element">
