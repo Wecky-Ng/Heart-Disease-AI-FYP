@@ -48,8 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_record']) && is
         if (deletePredictionRecord($recordId, $userId)) {
             $success_message = "Record deleted successfully.";
             // Redirect to clear POST data after successful delete
-             header('Location: history.php');
-             exit();
+            header('Location: history.php');
+            exit();
         } else {
             $error_message = "Failed to delete record. Please try again.";
         }
@@ -63,16 +63,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_all_records']))
     // User ID is already fetched into $userId from session
 
     if ($userId) {
-         if (deleteAllPredictionRecords($userId)) {
+        if (deleteAllPredictionRecords($userId)) {
             $success_message = "All records deleted successfully.";
             // Redirect to clear POST data after successful delete
-             header('Location: history.php');
-             exit();
-         } else {
+            header('Location: history.php');
+            exit();
+        } else {
             $error_message = "Failed to delete records. Please try again.";
-         }
+        }
     } else {
-         $error_message = "User not logged in.";
+        $error_message = "User not logged in.";
     }
 }
 
@@ -93,7 +93,8 @@ if ($predictionHistory === false) {
 }
 
 // Helper function to determine badge class based on risk level
-function getRiskBadgeClass($riskLevel) {
+function getRiskBadgeClass($riskLevel)
+{
     switch ($riskLevel) {
         case 'High Risk':
             return 'badge-danger';
@@ -106,7 +107,8 @@ function getRiskBadgeClass($riskLevel) {
 }
 
 // Helper function to get text representation of parameters (copied from result.php for consistency)
-function getParameterText($key, $value) {
+function getParameterText($key, $value)
+{
     // Handle null or empty values gracefully
     if ($value === null || $value === '') {
         return 'N/A';
@@ -124,7 +126,7 @@ function getParameterText($key, $value) {
             // Ensure value is treated as integer for comparison
             return ((int)$value == 1) ? 'Yes' : 'No';
         case 'sex':
-             // Ensure value is treated as integer for comparison
+            // Ensure value is treated as integer for comparison
             return ((int)$value == 1) ? 'Male' : 'Female';
         case 'race':
             $races = ['White', 'Black', 'Asian', 'Hispanic', 'American Indian/Alaskan Native', 'Other'];
@@ -132,31 +134,31 @@ function getParameterText($key, $value) {
             return $races[(int)$value] ?? 'Unknown';
         case 'diabetic':
             $diabeticStatus = ['No', 'Yes', 'No, borderline diabetes', 'Yes (during pregnancy)'];
-             // Ensure value is treated as integer for array index
+            // Ensure value is treated as integer for array index
             return $diabeticStatus[(int)$value] ?? 'Unknown';
         case 'gen_health':
             $healthStatus = ['Excellent', 'Very good', 'Good', 'Fair', 'Poor'];
-             // Ensure value is treated as integer for array index
+            // Ensure value is treated as integer for array index
             return $healthStatus[(int)$value] ?? 'Unknown';
         case 'physical_health':
         case 'mental_health':
             // Ensure value is treated as float for display
             return (float)$value . ' days';
         case 'sleep_time':
-             // Ensure value is treated as float for display
+            // Ensure value is treated as float for display
             return (float)$value . ' hours';
         case 'bmi':
-             // Ensure value is treated as float for display
-             return (float)$value; // Return numerical value directly
+            // Ensure value is treated as float for display
+            return (float)$value; // Return numerical value directly
         case 'age':
-             // Ensure value is treated as integer for display
-             return (int)$value; // Return numerical value directly as integer
+            // Ensure value is treated as integer for display
+            return (int)$value; // Return numerical value directly as integer
         case 'prediction_result': // Although not typically displayed in params table, handle just in case
-             // Ensure value is treated as integer for comparison
-             return ((int)$value == 1) ? 'Heart Disease' : 'No Heart Disease';
+            // Ensure value is treated as integer for comparison
+            return ((int)$value == 1) ? 'High Risk' : 'Low Risk';
         case 'prediction_confidence':
-             // Ensure value is treated as float for display
-             return round((float)$value * 100, 2) . '%';
+            // Ensure value is treated as float for display
+            return round((float)$value * 100, 2) . '%';
         default:
             // Ensure the value is not null before passing to htmlspecialchars
             return htmlspecialchars($value ?? 'N/A'); // Default fallback with null check
@@ -175,15 +177,18 @@ function getParameterText($key, $value) {
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Prediction History - Heart Disease Prediction</title>
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
-     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
-     <style>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+    <style>
         /* Optional: Add some basic styling to wrap text in the details column */
-        #predictionHistoryTable td:nth-child(5) { /* Target the fifth column (Details) */
-            white-space: normal; /* Allow text wrapping */
-            word-break: break-word; /* Break long words */
+        #predictionHistoryTable td:nth-child(5) {
+            /* Target the fifth column (Details) */
+            white-space: normal;
+            /* Allow text wrapping */
+            word-break: break-word;
+            /* Break long words */
         }
-     </style>
+    </style>
 
 </head>
 
@@ -220,10 +225,10 @@ function getParameterText($key, $value) {
                                                 <div class="card-tools">
                                                     <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
                                                     <?php if (!empty($predictionHistory)): ?>
-                                                    <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
-                                                        <input type="hidden" name="delete_all_records" value="1">
-                                                        <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
-                                                    </form>
+                                                        <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
+                                                            <input type="hidden" name="delete_all_records" value="1">
+                                                            <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
+                                                        </form>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -262,66 +267,80 @@ function getParameterText($key, $value) {
                                                             <tr>
                                                                 <td><?php echo $index + 1; ?></td>
                                                                 <td><?php echo htmlspecialchars($record['created_at'] ?? 'N/A'); ?></td>
-                                                                <td>
+                                                                <td class="prediction-result-column">
                                                                     <?php
-                                                                        // Check if the key exists and is not null before accessing it
-                                                                        $prediction_result = $record['prediction_result'] ?? null;
-                                                                        $result_text = 'N/A';
-                                                                        $badge_class = 'badge-secondary'; // Default badge
+                                                                    // Check if the key exists and is not null before accessing it
+                                                                    $prediction_result = $record['prediction_result'] ?? null;
+                                                                    $result_text = 'N/A';
+                                                                    $badge_class = 'badge-secondary'; // Default badge
+                                                                    $text_color = ''; // Variable for text color
+                                                                    $font_size = 'font-size: 1em;'; // Default font size
 
-                                                                        // Check if prediction_result is a valid integer (0 or 1)
-                                                                        if ($prediction_result !== null && ($prediction_result === 0 || $prediction_result === 1)) {
-                                                                             $result_text = ($prediction_result == 1) ? 'High Risk' : 'Low Risk';
-                                                                             $badge_class = getRiskBadgeClass($result_text); // Use the helper function
+                                                                    // Check if prediction_result is a valid integer (0 or 1)
+                                                                    if ($prediction_result !== null && ($prediction_result === 0 || $prediction_result === 1)) {
+                                                                        $result_text = ($prediction_result == 1) ? 'High Risk' : 'Low Risk';
+                                                                        $badge_class = getRiskBadgeClass($result_text); // Use the helper function
+
+                                                                        // Set color and potentially adjust font size based on the result
+                                                                        if ($result_text === 'Low Risk') {
+                                                                            $text_color = 'color: green;';
+                                                                            $font_size = 'font-size: 1.1em;'; // Make Low Risk text slightly bigger
+                                                                        } elseif ($result_text === 'High Risk') {
+                                                                            $text_color = 'color: red;';
+                                                                            $font_size = 'font-size: 1.1em;'; // Make High Risk text slightly bigger
                                                                         }
+                                                                    }
                                                                     ?>
-                                                                    <span class="badge <?php echo htmlspecialchars($badge_class); ?>"><?php echo htmlspecialchars($result_text); ?></span>
+                                                                    <span class="badge <?php echo htmlspecialchars($badge_class); ?>" style="<?php echo htmlspecialchars($text_color); ?> <?php echo htmlspecialchars($font_size); ?>">
+                                                                        <?php echo htmlspecialchars($result_text); ?>
+                                                                    </span>
+                                                                </td>
+
+                                                                <td>
+                                                                    <?php
+                                                                    // Check if the key exists and is a valid number before accessing it
+                                                                    $prediction_confidence = $record['prediction_confidence'] ?? null;
+                                                                    if ($prediction_confidence !== null && is_numeric($prediction_confidence)) {
+                                                                        echo htmlspecialchars(round((float)$prediction_confidence * 100, 2) . '%');
+                                                                    } else {
+                                                                        echo 'N/A';
+                                                                    }
+                                                                    ?>
                                                                 </td>
                                                                 <td>
                                                                     <?php
-                                                                        // Check if the key exists and is a valid number before accessing it
-                                                                        $prediction_confidence = $record['prediction_confidence'] ?? null;
-                                                                        if ($prediction_confidence !== null && is_numeric($prediction_confidence)) {
-                                                                             echo htmlspecialchars(round((float)$prediction_confidence * 100, 2) . '%');
-                                                                        } else {
-                                                                             echo 'N/A';
+                                                                    // Construct the details string using getParameterText with direct field access
+                                                                    $detailsString = "";
+                                                                    $paramsToDisplay = [
+                                                                        'age' => 'Age',
+                                                                        'sex' => 'Sex',
+                                                                        'bmi' => 'BMI',
+                                                                        'smoking' => 'Smoking',
+                                                                        'alcohol_drinking' => 'Alcohol',
+                                                                        'stroke' => 'Stroke',
+                                                                        'physical_health' => 'Phys. Health', // Abbreviated for table
+                                                                        'mental_health' => 'Ment. Health', // Abbreviated for table
+                                                                        'diff_walking' => 'Diff. Walking',
+                                                                        'race' => 'Race',
+                                                                        'diabetic' => 'Diabetic',
+                                                                        'physical_activity' => 'Phys. Activity', // Abbreviated
+                                                                        'gen_health' => 'Gen. Health', // Abbreviated
+                                                                        'sleep_time' => 'Sleep Time',
+                                                                        'asthma' => 'Asthma',
+                                                                        'kidney_disease' => 'Kidney Disease',
+                                                                        'skin_cancer' => 'Skin Cancer',
+                                                                    ];
+                                                                    $detailParts = [];
+                                                                    foreach ($paramsToDisplay as $key => $label) {
+                                                                        // Check if the key exists in the record before accessing
+                                                                        if (isset($record[$key])) {
+                                                                            // Ensure value is not null before passing to getParameterText
+                                                                            $formattedValue = getParameterText($key, $record[$key] ?? null);
+                                                                            $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
                                                                         }
-                                                                    ?>
-                                                                </td>
-                                                                <td>
-                                                                    <?php
-                                                                        // Construct the details string using getParameterText with direct field access
-                                                                        $detailsString = "";
-                                                                        $paramsToDisplay = [
-                                                                            'age' => 'Age',
-                                                                            'sex' => 'Sex',
-                                                                            'bmi' => 'BMI',
-                                                                            'smoking' => 'Smoking',
-                                                                            'alcohol_drinking' => 'Alcohol',
-                                                                            'stroke' => 'Stroke',
-                                                                            'physical_health' => 'Phys. Health', // Abbreviated for table
-                                                                            'mental_health' => 'Ment. Health', // Abbreviated for table
-                                                                            'diff_walking' => 'Diff. Walking',
-                                                                            'race' => 'Race',
-                                                                            'diabetic' => 'Diabetic',
-                                                                            'physical_activity' => 'Phys. Activity', // Abbreviated
-                                                                            'gen_health' => 'Gen. Health', // Abbreviated
-                                                                            'sleep_time' => 'Sleep Time',
-                                                                            'asthma' => 'Asthma',
-                                                                            'kidney_disease' => 'Kidney Disease',
-                                                                            'skin_cancer' => 'Skin Cancer',
-                                                                        ];
-                                                                        $detailParts = [];
-                                                                        foreach ($paramsToDisplay as $key => $label) {
-                                                                            // Check if the key exists in the record before accessing
-                                                                            if (isset($record[$key])) {
-                                                                                // Ensure value is not null before passing to getParameterText
-                                                                                $formattedValue = getParameterText($key, $record[$key] ?? null);
-                                                                                $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
-                                                                            }
-                                                                        }
-                                                                        $detailsString = !empty($detailParts) ? implode(", ", $detailParts) : "Details N/A";
-                                                                        echo $detailsString;
+                                                                    }
+                                                                    $detailsString = !empty($detailParts) ? implode(", ", $detailParts) : "Details N/A";
+                                                                    echo $detailsString;
                                                                     ?>
                                                                 </td>
                                                                 <td>
@@ -351,16 +370,16 @@ function getParameterText($key, $value) {
     </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
-     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
-     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.flash.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
     <script>
@@ -368,54 +387,75 @@ function getParameterText($key, $value) {
             // Check if the DataTable is already initialized on the table
             if (!$.fn.DataTable.isDataTable('#predictionHistoryTable')) {
                 $('#predictionHistoryTable').DataTable({
-                     dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
-                     buttons: [
-                         {
-                             extend: 'copy',
-                             text: '<em class="icon ni ni-copy"></em> Copy',
-                             className: 'btn btn-outline-secondary btn-sm'
-                         },
-                         {
-                             extend: 'csv',
-                             text: '<em class="icon ni ni-file-text"></em> CSV',
-                             className: 'btn btn-outline-secondary btn-sm'
-                         },
-                         {
-                             extend: 'excel',
-                             text: '<em class="icon ni ni-file-xls"></em> Excel',
-                             className: 'btn btn-outline-secondary btn-sm'
-                         },
-                         {
-                             extend: 'pdf',
-                             text: '<em class="icon ni ni-file-pdf"></em> PDF',
-                             className: 'btn btn-outline-secondary btn-sm'
-                         },
-                         {
-                             extend: 'print',
-                             text: '<em class="icon ni ni-printer"></em> Print',
-                             className: 'btn btn-outline-secondary btn-sm'
-                         }
-                     ],
-                     responsive: true, // Enable responsive features
-                     "order": [[ 1, "desc" ]], // Order by the Date column (index 1) descending
-                     "columnDefs": [
-                         { "orderable": false, "targets": [0, 4, 5] }, // Disable sorting on #, Details, and Actions columns
-                         // Add responsive priority to columns
-                         { "responsivePriority": 1, "targets": 0 }, // #
-                         { "responsivePriority": 2, "targets": 1 }, // Date
-                         { "responsivePriority": 3, "targets": 2 }, // Result
-                         { "responsivePriority": 4, "targets": 3 }, // Probability
-                         { "responsivePriority": 6, "targets": 4 }, // Details (lower priority)
-                         { "responsivePriority": 5, "targets": 5 }  // Actions (higher priority than details)
-                     ],
-                     language: {
-                         search: "",
-                         searchPlaceholder: "Search Predictions"
-                     }
+                    dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
+                    buttons: [{
+                            extend: 'copy',
+                            text: '<em class="icon ni ni-copy"></em> Copy',
+                            className: 'btn btn-outline-secondary btn-sm'
+                        },
+                        {
+                            extend: 'csv',
+                            text: '<em class="icon ni ni-file-text"></em> CSV',
+                            className: 'btn btn-outline-secondary btn-sm'
+                        },
+                        {
+                            extend: 'excel',
+                            text: '<em class="icon ni ni-file-xls"></em> Excel',
+                            className: 'btn btn-outline-secondary btn-sm'
+                        },
+                        {
+                            extend: 'pdf',
+                            text: '<em class="icon ni ni-file-pdf"></em> PDF',
+                            className: 'btn btn-outline-secondary btn-sm'
+                        },
+                        {
+                            extend: 'print',
+                            text: '<em class="icon ni ni-printer"></em> Print',
+                            className: 'btn btn-outline-secondary btn-sm'
+                        }
+                    ],
+                    responsive: true, // Enable responsive features
+                    "order": [
+                        [1, "desc"]
+                    ], // Order by the Date column (index 1) descending
+                    "columnDefs": [{
+                            "orderable": false,
+                            "targets": [0, 4, 5]
+                        }, // Disable sorting on #, Details, and Actions columns
+                        // Add responsive priority to columns
+                        {
+                            "responsivePriority": 1,
+                            "targets": 0
+                        }, // #
+                        {
+                            "responsivePriority": 2,
+                            "targets": 1
+                        }, // Date
+                        {
+                            "responsivePriority": 3,
+                            "targets": 2
+                        }, // Result
+                        {
+                            "responsivePriority": 4,
+                            "targets": 3
+                        }, // Probability
+                        {
+                            "responsivePriority": 6,
+                            "targets": 4
+                        }, // Details (lower priority)
+                        {
+                            "responsivePriority": 5,
+                            "targets": 5
+                        } // Actions (higher priority than details)
+                    ],
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Search Predictions"
+                    }
                 });
             }
 
-             // Handle delete single record using SweetAlert2
+            // Handle delete single record using SweetAlert2
             $('.datatable-init-export').on('click', '.delete-record-btn', function(e) {
                 e.preventDefault();
                 const recordId = $(this).data('id');
@@ -431,16 +471,16 @@ function getParameterText($key, $value) {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         // Find the form with the matching record_id and submit it
-                         // Use closest('form') to find the parent form of the clicked button
-                         $(this).closest('form').submit();
+                        // Use closest('form') to find the parent form of the clicked button
+                        $(this).closest('form').submit();
                     }
                 });
             });
 
             // Handle delete all records using SweetAlert2
             $('#delete-all-form button').on('click', function(e) {
-                 e.preventDefault();
-                 Swal.fire({
+                e.preventDefault();
+                Swal.fire({
                     title: 'Are you sure?',
                     text: "This will delete ALL your prediction records and cannot be undone!",
                     icon: 'warning',
