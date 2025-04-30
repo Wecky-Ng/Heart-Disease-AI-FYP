@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter both email and password';
     } else {
         // Include user functions
-        require_once PROJECT_ROOT . '/database/set_user.php';
+        require_once PROJECT_ROOT . '/database/get_user.php';
 
         // Authenticate user
         $result = loginUser($email, $password);

@@ -132,3 +132,78 @@ function emailExists($email) {
 
     return $exists;
 }
+
+/**
+ * Authenticate a user
+ *
+ * @param string $username Username or email
+ * @param string $password Password
+ * @return array Result with status (bool), message (string) and user data (array) if successful
+ */
+function loginUser($username, $password) {
+    $db = getDbConnection();
+
+    // Check if input is email or username
+    $field = filter_var($username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+    // Get user from database
+    $stmt = $db->prepare("SELECT * FROM users WHERE $field = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        // Connection is managed globally, do not close here
+        // $db->close();
+        return ['status' => false, 'message' => 'Email not found or password incorrect."'];
+    }
+
+    $user = $result->fetch_assoc();
+    $stmt->close();
+
+    // Verify password
+    if (password_verify($password, $user['password'])) {
+        // Check user status
+        if (isset($user['status'])) { // Check if status column exists
+            if ($user['status'] == 0) {
+                // Connection is managed globally, do not close here
+                // $db->close();
+                return ['status' => false, 'message' => 'Your account has been suspended. Please contact support.'];
+            } elseif ($user['status'] == 2) {
+                 // Connection is managed globally, do not close here
+                 // $db->close();
+                return ['status' => false, 'message' => 'This account has been deleted.'];
+            }
+            // If status is 1 (active), proceed with login
+        } else {
+            // If status column is missing, assume active for backward compatibility or log an error
+            error_log("User status column missing for user ID: " . $user['id']);
+            // Continue with login as if status is 1
+        }
+
+
+        // Update last login time by updating the updated_at timestamp
+        $updateStmt = $db->prepare("UPDATE users SET updated_at = NOW() WHERE id = ?");
+        $updateStmt->bind_param("i", $user['id']);
+        $updateStmt->execute();
+        $updateStmt->close();
+
+        // Connection is managed globally, do not close here
+        // $db->close();
+
+        // Remove password from user data before returning
+        unset($user['password']);
+
+        return [
+            'status' => true,
+            'message' => 'Login successful',
+            'user' => $user
+        ];
+    } else {
+         // Connection is managed globally, do not close here
+        // $db->close();
+        return ['status' => false, 'message' => 'Email not found or password incorrect."'];
+    }
+}
