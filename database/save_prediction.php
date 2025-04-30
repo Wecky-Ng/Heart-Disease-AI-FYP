@@ -1,79 +1,51 @@
 <?php
-// Define PROJECT_ROOT if it hasn't been defined
-// Ensure there are NO blank lines or whitespace BEFORE this opening <?php tag.
-if (!defined('PROJECT_ROOT')) {
-    // Assuming save_prediction.php is in the root
-    // Adjust dirname(__DIR__) if save_prediction.php is in a subdirectory
-    define('PROJECT_ROOT', dirname(__DIR__));
-}
+// Required headers
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once PROJECT_ROOT . '/session.php';
-require_once PROJECT_ROOT . '/database/connection.php'; // Ensure this file has no leading/trailing whitespace
-require_once PROJECT_ROOT . '/database/set_user_prediction_record.php'; // Ensure this file has no leading/trailing whitespace
-
-// Set the content type header for JSON response
-header('Content-Type: application/json');
-
-// Check if user is logged in
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'User not logged in.']);
-    exit(); // Stop execution after sending response
-}
-
-// Check if it's a POST request
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
-    exit(); // Stop execution after sending response
-}
-
-// Get the raw POST data
-$rawData = file_get_contents('php://input');
-$data = json_decode($rawData, true);
-
-// Basic validation of received data
-if (!$data || !isset($data['inputs']) || !isset($data['prediction']) || !isset($data['confidence'])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid or missing data.']);
-    exit(); // Stop execution after sending response
-}
-
-$userId = $_SESSION['user_id'] ?? null;
-$inputs = $data['inputs'];
-$prediction = (int)$data['prediction'];
-$confidence = (float)$data['confidence'];
-
-if (!$userId) {
-    // This should technically be caught by isLoggedIn(), but double-check
-    echo json_encode(['success' => false, 'message' => 'User session error.']);
-    exit(); // Stop execution after sending response
-}
+// Include database and object files
+include_once __DIR__ . '/database/db_connection.php';
+include_once __DIR__ . '/database/set_user_prediction_record.php';
 
 // Get database connection
-// Corrected function call from connectToDatabase() to getDbConnection()
-$conn = getDbConnection();
-if (!$conn) {
-    error_log("Database connection failed in save_prediction.php");
-    echo json_encode(['success' => false, 'message' => 'Database connection error.']);
-    exit(); // Stop execution after sending response
-}
+$database = new Database();
+$conn = $database->getConnection();
 
-// Prepare data for saving (ensure keys match savePredictionHistory expectations)
-// You might need to adjust $dbData if $inputs keys don't directly match DB column names
-$dbData = $inputs;
+// Get posted data
+$json_data = file_get_contents('php://input');
+$data = json_decode($json_data, true);
 
-// Call function to save the history record
-$historyId = savePredictionHistory($conn, $userId, $dbData, $prediction, $confidence);
+// Check if data is not empty and contains required keys
+if (!empty($data) && isset($data['inputs']) && isset($data['prediction']) && isset($data['confidence'])) {
+    // Extract data
+    $inputs = $data['inputs'];
+    $prediction_result = $data['prediction'];
+    $prediction_confidence = $data['confidence']; // Extract confidence
 
-if ($historyId) {
-    // The last test record is now derived directly from history, no separate update needed.
-    echo json_encode(['success' => true, 'message' => 'Prediction saved successfully.']);
+    // Call the function to set the user prediction record
+    // Pass the confidence value to the function
+    if (set_user_prediction_record($conn, $inputs, $prediction_result, $prediction_confidence)) {
+        // Set response code - 201 Created
+        http_response_code(201);
+        // Tell the user
+        echo json_encode(array("message" => "Prediction record was saved."));
+    } else {
+        // If unable to set the record
+        // Set response code - 503 Service Unavailable
+        http_response_code(503);
+        // Tell the user
+        echo json_encode(array("message" => "Unable to save prediction record."));
+    }
 } else {
-    // Log the specific database error if possible from savePredictionHistory
-    error_log("Failed to save prediction history for user {$userId}.");
-    echo json_encode(['success' => false, 'message' => 'Failed to save prediction history.']);
+    // Tell the user data is incomplete
+    // Set response code - 400 Bad Request
+    http_response_code(400);
+    echo json_encode(array("message" => "Unable to save prediction record. Data is incomplete or invalid."));
 }
 
-// Close the database connection
-$conn->close();
-
-// Ensure there are NO blank lines or whitespace AFTER this closing ?> tag (or omit the tag).
+// Close database connection
+$conn = null;
 ?>

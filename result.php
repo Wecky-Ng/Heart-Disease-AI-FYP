@@ -8,7 +8,14 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Heart Disease Prediction - Result</title>
     <!-- Stylesheets -->
-    <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
+     
+    <?php
+    if (!defined('PROJECT_ROOT')) {
+        // Assuming result.php is at the project root
+        define('PROJECT_ROOT', __DIR__);
+    }
+    include PROJECT_ROOT . '/includes/styles.php'; 
+    ?>
     <style>
         .result-box {
             border-radius: 5px;
@@ -42,10 +49,7 @@
         <!-- Include the side menu component -->
         <?php
         // Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
-        if (!defined('PROJECT_ROOT')) {
-            // Assuming result.php is at the project root
-            define('PROJECT_ROOT', __DIR__);
-        }
+        
         // Include the side menu component
         include PROJECT_ROOT . '/sidemenu.php';
 
