@@ -88,12 +88,27 @@ function getUserPredictionHistory($userId) {
         // Add the formatted record to the array
         $predictionHistory[] = [
             'id' => $row['id'],
-            'date' => date('Y-m-d H:i:s', strtotime($row['created_at'])), // Include time for more detail
-            'result' => $riskLevel,
-            'probability' => $probability,
-            'details' => $details,
-            // Add all raw data for detailed view if needed
-            'raw_data' => $row
+            'created_at' => $row['created_at'], // Pass the original created_at timestamp
+            'prediction_result' => $row['prediction_result'], // Pass the original prediction result
+            'prediction_confidence' => $row['prediction_confidence'], // Pass the original confidence value
+            // Include all individual fields directly for easier access in the history.php
+            'age' => $row['age'],
+            'sex' => $row['sex'],
+            'bmi' => $row['bmi'],
+            'smoking' => $row['smoking'],
+            'alcohol_drinking' => $row['alcohol_drinking'],
+            'stroke' => $row['stroke'],
+            'physical_health' => $row['physical_health'],
+            'mental_health' => $row['mental_health'],
+            'diff_walking' => $row['diff_walking'],
+            'race' => $row['race'],
+            'diabetic' => $row['diabetic'],
+            'physical_activity' => $row['physical_activity'],
+            'gen_health' => $row['gen_health'],
+            'sleep_time' => $row['sleep_time'],
+            'asthma' => $row['asthma'],
+            'kidney_disease' => $row['kidney_disease'],
+            'skin_cancer' => $row['skin_cancer']
         ];
     }
 

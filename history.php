@@ -275,7 +275,7 @@ function getParameterText($key, $value) {
                                                                              $badge_class = getRiskBadgeClass($result_text); // Use the helper function
                                                                         }
                                                                     ?>
-                                                                    <span class="badge <?php echo htmlspecialchars($result_text); ?>"><?php echo htmlspecialchars($result_text); ?></span>
+                                                                    <span class="badge <?php echo htmlspecialchars($badge_class); ?>"><?php echo htmlspecialchars($result_text); ?></span>
                                                                 </td>
                                                                 <td>
                                                                     <?php
@@ -290,53 +290,37 @@ function getParameterText($key, $value) {
                                                                 </td>
                                                                 <td>
                                                                     <?php
-                                                                        // Construct the details string using getParameterText and raw_data
+                                                                        // Construct the details string using getParameterText with direct field access
                                                                         $detailsString = "";
-                                                                        // Check if raw_data key exists and is not null
-                                                                        $rawData = $record['raw_data'] ?? null;
-
-                                                                        // Decode if it's a string, otherwise use directly if it's an array
-                                                                        $processedRawData = null;
-                                                                        if (is_string($rawData)) {
-                                                                            $processedRawData = json_decode($rawData, true);
-                                                                        } elseif (is_array($rawData)) {
-                                                                            $processedRawData = $rawData;
-                                                                        }
-
-
-                                                                        if ($processedRawData && is_array($processedRawData)) {
-                                                                            $paramsToDisplay = [
-                                                                                'age' => 'Age',
-                                                                                'sex' => 'Sex',
-                                                                                'bmi' => 'BMI',
-                                                                                'smoking' => 'Smoking',
-                                                                                'alcohol_drinking' => 'Alcohol',
-                                                                                'stroke' => 'Stroke',
-                                                                                'physical_health' => 'Phys. Health', // Abbreviated for table
-                                                                                'mental_health' => 'Ment. Health', // Abbreviated for table
-                                                                                'diff_walking' => 'Diff. Walking',
-                                                                                'race' => 'Race',
-                                                                                'diabetic' => 'Diabetic',
-                                                                                'physical_activity' => 'Phys. Activity', // Abbreviated
-                                                                                'gen_health' => 'Gen. Health', // Abbreviated
-                                                                                'sleep_time' => 'Sleep Time',
-                                                                                'asthma' => 'Asthma',
-                                                                                'kidney_disease' => 'Kidney Disease',
-                                                                                'skin_cancer' => 'Skin Cancer',
-                                                                            ];
-                                                                            $detailParts = [];
-                                                                            foreach ($paramsToDisplay as $key => $label) {
-                                                                                // Check if the key exists in the processed raw data before accessing
-                                                                                if (isset($processedRawData[$key])) {
-                                                                                     // Ensure value is not null before passing to getParameterText
-                                                                                     $formattedValue = getParameterText($key, $processedRawData[$key] ?? null);
-                                                                                     $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
-                                                                                }
+                                                                        $paramsToDisplay = [
+                                                                            'age' => 'Age',
+                                                                            'sex' => 'Sex',
+                                                                            'bmi' => 'BMI',
+                                                                            'smoking' => 'Smoking',
+                                                                            'alcohol_drinking' => 'Alcohol',
+                                                                            'stroke' => 'Stroke',
+                                                                            'physical_health' => 'Phys. Health', // Abbreviated for table
+                                                                            'mental_health' => 'Ment. Health', // Abbreviated for table
+                                                                            'diff_walking' => 'Diff. Walking',
+                                                                            'race' => 'Race',
+                                                                            'diabetic' => 'Diabetic',
+                                                                            'physical_activity' => 'Phys. Activity', // Abbreviated
+                                                                            'gen_health' => 'Gen. Health', // Abbreviated
+                                                                            'sleep_time' => 'Sleep Time',
+                                                                            'asthma' => 'Asthma',
+                                                                            'kidney_disease' => 'Kidney Disease',
+                                                                            'skin_cancer' => 'Skin Cancer',
+                                                                        ];
+                                                                        $detailParts = [];
+                                                                        foreach ($paramsToDisplay as $key => $label) {
+                                                                            // Check if the key exists in the record before accessing
+                                                                            if (isset($record[$key])) {
+                                                                                // Ensure value is not null before passing to getParameterText
+                                                                                $formattedValue = getParameterText($key, $record[$key] ?? null);
+                                                                                $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
                                                                             }
-                                                                            $detailsString = implode(", ", $detailParts);
-                                                                        } else {
-                                                                            $detailsString = "Details N/A";
                                                                         }
+                                                                        $detailsString = !empty($detailParts) ? implode(", ", $detailParts) : "Details N/A";
                                                                         echo $detailsString;
                                                                     ?>
                                                                 </td>

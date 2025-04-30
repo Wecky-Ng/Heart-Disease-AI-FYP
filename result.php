@@ -248,7 +248,9 @@
                                     </table>
                                     <div class="mt-4">
                                         <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em> New Prediction</a>
+                                        <?php if(isLoggedIn()): ?>
                                         <a href="history.php" class="btn btn-outline-secondary"><em class="icon ni ni-list"></em> View History</a>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php elseif ($displayError) :
