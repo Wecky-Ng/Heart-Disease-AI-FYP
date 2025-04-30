@@ -282,12 +282,37 @@ if ($predictionHistory === false) {
                 $('.datatable-init-export').DataTable({
                     // destroy: true, // Using flag instead
                     responsive: true,
+                    buttons: [
+                        {
+                            text: '<em class="icon ni ni-file-text"></em><span>Copy</span>',
+                            extend: 'copy',
+                            className: 'btn btn-sm btn-primary'
+                        },
+                        {
+                            text: '<em class="icon ni ni-file-xls"></em><span>Excel</span>',
+                            extend: 'excel',
+                            className: 'btn btn-sm btn-primary'
+                        },
+                        {
+                            text: '<em class="icon ni ni-file-text"></em><span>CSV</span>',
+                            extend: 'csv',
+                            className: 'btn btn-sm btn-primary'
+                        },
+                        {
+                            text: '<em class="icon ni ni-file-pdf"></em><span>PDF</span>',
+                            extend: 'pdf',
+                            className: 'btn btn-sm btn-primary'
+                        }
+                    ],
+                    dom: '<"row justify-between g-2 with-export"<"col-7 col-sm-4 text-start"f><"col-5 col-sm-8 text-end"<"datatable-filter"<"d-flex justify-content-end g-2"<"dt-export-buttons d-flex align-center"<"dt-export-title d-none d-md-inline-block">B>l>>>><"datatable-wrap my-3"t><"row align-items-center"<"col-7 col-sm-12 col-md-9"p><"col-5 col-sm-12 col-md-3 text-start text-md-end"i>>',
                     initComplete: function(settings, json) {
                         dataTableInitialized = true; // Set flag after successful initialization
+                        $('.dt-export-title').text('Export');
                     },
                     language: {
                         search: "",
-                        searchPlaceholder: "Search Predictions"
+                        searchPlaceholder: "Search Predictions",
+                        lengthMenu: "<span class='d-none d-sm-inline-block'>Show</span><div class='form-control-select'> _MENU_ </div>"
                     }
                 });
             }
