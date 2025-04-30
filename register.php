@@ -1,14 +1,14 @@
 <?php
 // Define PROJECT_ROOT if it hasn't been defined (for local development when not routed through api/index.php)
 if (!defined('PROJECT_ROOT')) {
-    // Assuming home.php is at the project root
+    // Assuming register.php is at the project root
     define('PROJECT_ROOT', __DIR__);
-    // If home.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
+    // If register.php is in a subdirectory, adjust __DIR__ accordingly, e.g., dirname(__DIR__)
 }
 // Include session management and user functions
 require_once PROJECT_ROOT . '/session.php';
-require_once PROJECT_ROOT . '/database/set_user.php';
-require_once PROJECT_ROOT . '/database/get_user.php';
+require_once PROJECT_ROOT . '/database/set_user.php'; // Assuming this contains registerUser and updateUserProfile
+require_once PROJECT_ROOT . '/database/get_user.php'; // Assuming this contains usernameExists, emailExists, and getUserById
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -17,7 +17,7 @@ if (isLoggedIn()) {
 }
 
 // Initialize variables
-$error = '';
+$errors = []; // Changed from single $error string to an array of errors
 $success = '';
 $username = '';
 $email = '';
@@ -36,49 +36,108 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date_of_birth = trim($_POST['date_of_birth'] ?? '');
     $gender = $_POST['gender'] ?? '';
 
-    // Basic validation
-    if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
-        $error = 'Please fill in all required fields';
-    } elseif ($password !== $confirmPassword) {
-        $error = 'Passwords do not match';
-    } elseif (strlen($password) < 8) {
-        $error = 'Password must be at least 8 characters long';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Please enter a valid email address';
-    } elseif (strlen($username) < 3 || strlen($username) > 50) {
-        $error = 'Username must be between 3 and 50 characters';
-    } elseif (usernameExists($username)) {
-        $error = 'Username already exists. Please choose a different username.';
-    } elseif (emailExists($email)) {
-        $error = 'Email already exists. Please use a different email address.';
+    // --- Validation Checks (using independent if statements to collect all errors) ---
+
+    // Check for empty required fields
+    if (empty($username)) {
+        $errors[] = 'Username is required.';
+    }
+    if (empty($email)) {
+        $errors[] = 'Email is required.';
+    }
+    if (empty($password)) {
+        $errors[] = 'Password is required.';
+    }
+    if (empty($confirmPassword)) {
+        $errors[] = 'Confirm Password is required.';
+    }
+
+    // Check if passwords match (only if both are provided)
+    if (!empty($password) && !empty($confirmPassword) && $password !== $confirmPassword) {
+        $errors[] = 'Passwords do not match.';
+    }
+
+    // Check password length (only if password is provided)
+    if (!empty($password) && strlen($password) < 8) {
+        $errors[] = 'Password must be at least 8 characters long.';
+    }
+
+    // Email format validation (This will now run even if other errors exist if email is not empty)
+    if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Please enter a valid email address.';
+    }
+
+    // Username length validation (only if username is provided)
+    if (!empty($username) && (strlen($username) < 3 || strlen($username) > 50)) {
+        $errors[] = 'Username must be between 3 and 50 characters.';
+    }
+
+    // Check if username or email exists (only if basic format/presence validation passes to avoid unnecessary DB calls)
+    // Check if the errors array *so far* only contains required field errors before checking existence
+    $basic_errors_only = true;
+    foreach ($errors as $err) {
+        if (strpos($err, 'required') === false) {
+            $basic_errors_only = false;
+            break;
+        }
+    }
+
+    if ($basic_errors_only) {
+        if (!empty($username) && usernameExists($username)) {
+            $errors[] = 'Username already exists. Please choose a different username.';
+        }
+        if (!empty($email) && emailExists($email)) {
+            $errors[] = 'Email already exists. Please use a different email address.';
+        }
     } else {
+        // If there are other validation errors (like format or length),
+        // we skip the existence checks until those are fixed by the user.
+        // This prevents checking existence for, say, an invalid email format.
+    }
+
+
+    // --- Process Registration if no errors ---
+    if (empty($errors)) {
         // Register the user
+        // Assuming registerUser($username, $email, $password) returns ['status' => bool, 'user_id' => int, 'message' => string]
         $result = registerUser($username, $email, $password);
 
         if ($result['status']) {
             // If additional profile data was provided, update the user profile
-            if (!empty($full_name) || !empty($date_of_birth) || !empty($gender)) {
+            // Ensure $result['user_id'] is set by registerUser on success
+            if (isset($result['user_id']) && (!empty($full_name) || !empty($date_of_birth) || !empty($gender))) {
                 $userData = [
                     'full_name' => $full_name,
-                    'date_of_birth' => $date_of_birth ?: null,
-                    'gender' => $gender ?: null
+                    'date_of_birth' => !empty($date_of_birth) ? $date_of_birth : null, // Ensure empty string is stored as null
+                    'gender' => !empty($gender) ? $gender : null // Ensure empty string is stored as null
                 ];
 
+                // Assuming updateUserProfile($user_id, $data) exists
                 updateUserProfile($result['user_id'], $userData);
             }
 
             $success = 'Registration successful!';
-            // Store user data for auto-login
-            $user_id = $result['user_id'];
+            // Store user data for auto-login (prepare for redirect)
+            $user_id = $result['user_id'] ?? null; // Get user ID from result if available
 
-            // Clear form data
+            // IMPORTANT: Set session variables *before* outputting HTML and JS if auto-login is desired
+            if (isset($user_id) && $user = getUserById($user_id)) {
+                $_SESSION['user_id'] = $user_id;
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                // The redirect will happen in the SweetAlert then() clause
+            }
+
+
+            // Clear form data on success only after potentially setting session vars
             $username = '';
             $email = '';
             $full_name = '';
             $date_of_birth = '';
             $gender = '';
         } else {
-            $error = $result['message'];
+            // Handle specific registration function errors and add to errors array
+            $errors[] = $result['message'] ?? 'An unknown registration error occurred.';
         }
     }
 }
@@ -92,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="description" content="Heart Disease Prediction using AI - Register">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Register - Heart Disease Prediction</title>
-    <!-- Stylesheets -->
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
 
 </head>
@@ -118,8 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Alert messages will be shown via SweetAlert2 -->
-                                <form action="register.php" method="post">
+                                <form action="register.php" method="post" class="form-validate is-alter"> <?php /* Added form-validate class for potential client-side validation */ ?>
                                     <div class="form-group">
                                         <label class="form-label" for="username">Username</label>
                                         <div class="form-control-wrap">
@@ -172,39 +229,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <input type="checkbox" class="custom-control-input" id="terms" name="terms" required>
                                             <label class="custom-control-label" for="terms">I agree to the <a href="javascript:void(0);" id="terms-link">Terms & Conditions</a></label>
                                         </div>
-                                        <!-- Hidden div for Terms & Conditions content -->
-                                        <div id="project-purpose-content" style="display: none;">
-                                            <h4>About This Project</h4>
-                                            <p>This application, <strong>Heart Disease AI</strong>, is part of a Final Year Project developed by <strong>Wecky Ng Wei Chie</strong>, a student at <strong>Asia Pacific University of Technology and Innovation (APU)</strong>, pursuing a <strong>Bachelor’s Degree in Computer Science with a specialism in Artificial Intelligence</strong>.</p>
-
-                                            <p>The application aims to assist users—especially those who may be unaware of their heart disease risk—by offering a quick and accessible predictive assessment using Artificial Intelligence. It is designed to promote early awareness and is not intended to replace professional medical evaluation or diagnosis.</p>
-
-                                            <p><strong>Important Notice:</strong></p>
-                                            <ul>
-                                                <li>This tool provides AI-generated predictions based on user input and is for informational purposes only.</li>
-                                                <li>It is not a certified medical device and should not be relied upon for any medical decision-making.</li>
-                                                <li>The developer is not responsible for any inaccurate predictions or for any medical, legal, financial, or personal consequences resulting from the use of this application.</li>
-                                                <li>Users are strongly advised to consult a qualified healthcare professional for any medical concerns or symptoms.</li>
-                                            </ul>
-
-                                            <p><strong>Data Privacy:</strong></p>
-                                            <ul>
-                                                <li>Providing health-related data in this app is entirely voluntary.</li>
-                                                <li>You may choose not to submit any personal or health information at any point.</li>
-                                                <li>All information entered will be processed securely and confidentially for the sole purpose of generating predictions.</li>
-                                                <li>No personally identifiable information will be shared or stored without your clear permission.</li>
-                                            </ul>
-
-                                            <p>If you have questions about the project or app, you may contact the developer:</p>
-                                            <ul>
-                                                <li><strong>Name:</strong> Wecky Ng Wei Chie</li>
-                                                <li><strong>TP Number:</strong> TP051083</li>
-                                                <li><strong>Email:</strong> TP051083@mail.apu.edu.my (Preferred: MS Teams)</li>
-                                                <li><strong>Phone:</strong> +60182322119 (Preferred: WhatsApp Message)</li>
-                                            </ul>
-
-                                            <p>Thank you for using Heart Disease AI and supporting this educational research project.</p>
-                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <button class="btn btn-lg btn-primary btn-block">Register</button>
@@ -214,20 +238,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             </div>
                         </div>
+                        <?php /* Placed outside the form but within the main content area */ ?>
+                        <div id="project-purpose-content" style="display: none;">
+                            <h4>About This Project</h4>
+                            <p>This application, <strong>Heart Disease AI</strong>, is part of a Final Year Project developed by <strong>Wecky Ng Wei Chie</strong>, a student at <strong>Asia Pacific University of Technology and Innovation (APU)</strong>, pursuing a <strong>Bachelor’s Degree in Computer Science with a specialism in Artificial Intelligence</strong>.</p>
+
+                            <p>The application aims to assist users—especially those who may be unaware of their heart disease risk—by offering a quick and accessible predictive assessment using Artificial Intelligence. It is designed to promote early awareness and is not intended to replace professional medical evaluation or diagnosis.</p>
+
+                            <p><strong>Important Notice:</strong></p>
+                            <ul>
+                                <li>This tool provides AI-generated predictions based on user input and is for informational purposes only.</li>
+                                <li>It is not a certified medical device and should not be relied upon for any medical decision-making.</li>
+                                <li>The developer is not responsible for any inaccurate predictions or for any medical, legal, financial, or personal consequences resulting from the use of this application.</li>
+                                <li>Users are strongly advised to consult a qualified healthcare professional for any medical concerns or symptoms.</li>
+                            </ul>
+
+                            <p><strong>Data Privacy:</strong></p>
+                            <ul>
+                                <li>Providing health-related data in this app is entirely voluntary.</li>
+                                <li>You may choose not to submit any personal or health information at any point.</li>
+                                <li>All information entered will be processed securely and confidentially for the sole purpose of generating predictions.</li>
+                                <li>No personally identifiable information will be shared or stored without your clear permission.</li>
+                            </ul>
+
+                            <p>If you have questions about the project or app, you may contact the developer:</p>
+                            <ul>
+                                <li><strong>Name:</strong> Wecky Ng Wei Chie</li>
+                                <li><strong>TP Number:</strong> TP051083</li>
+                                <li><strong>Email:</strong> TP051083@mail.apu.edu.my (Preferred: MS Teams)</li>
+                                <li><strong>Phone:</strong> +60182322119 (Preferred: WhatsApp Message)</li>
+                            </ul>
+
+                            <p>Thank you for using Heart Disease AI and supporting this educational research project.</p>
+                        </div>
                     </div>
                     <?php include PROJECT_ROOT . '/footer.php'; ?>
                 </div>
             </div>
         </div>
     </div>
-    <!-- JavaScript -->
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Terms & Conditions Popup
             const termsLink = document.getElementById('terms-link');
-            const termsContent = document.getElementById('terms-content');
+            const termsContent = document.getElementById('project-purpose-content'); // Corrected ID reference
 
             if (termsLink && termsContent) {
                 termsLink.addEventListener('click', function(event) {
@@ -239,34 +295,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         confirmButtonText: 'Close',
                         confirmButtonColor: '#6576ff',
                         width: '80%', // Adjust width as needed
-                        textAlign: 'left', // Explicitly set text alignment to left
-                        customClass: {
-                            htmlContainer: 'text-left' // Keep this for good measure
-                        }
+                        // SweetAlert text is usually left-aligned by default, remove explicit classes unless needed
                     });
                 });
             }
-        });
-    </script>
 
-
-    <?php if (!empty($error)): ?>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            // SweetAlert2 for displaying errors (now handles an array)
+            <?php if (!empty($errors)): ?>
+                <?php
+                // Prepare messages for JavaScript.
+                // 1. htmlspecialchars: prevents XSS if messages contain user input like <script>
+                // 2. implode("<br>", ...): joins messages with <br> for multi-line display in HTML
+                // 3. addslashes: escapes quotes and backslashes for the JavaScript string literal
+                $js_error_messages = addslashes(implode("<br>", array_map("htmlspecialchars", $errors)));
+                ?>
                 Swal.fire({
                     title: 'Registration Error',
-                    text: '<?php echo addslashes($error); ?>',
+                    html: '<?php echo $js_error_messages; ?>', // Use html property to render <br>
                     icon: 'error',
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#6576ff'
                 });
-            });
-        </script>
-    <?php endif; ?>
+            <?php endif; ?>
 
-    <?php if (!empty($success)): ?>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            // SweetAlert2 for displaying success
+            <?php if (!empty($success)): ?>
                 Swal.fire({
                     title: 'Success!',
                     text: '<?php echo addslashes($success); ?>',
@@ -275,24 +328,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     confirmButtonColor: '#6576ff'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Auto-login and redirect to home page
-                        <?php if (isset($user_id)): ?>
-                            // Set session variables for the user
-                            <?php
-                            $user = getUserById($user_id);
-                            if ($user) {
-                                $_SESSION['user_id'] = $user_id;
-                                $_SESSION['username'] = $user['username'];
-                                $_SESSION['email'] = $user['email'];
-                            }
-                            ?>
+                        // Redirect after success message
+                        // The PHP code *must* set the session variables for auto-login BEFORE this script runs.
+                        // The presence of the user_id variable in the PHP scope indicates successful registration and potential session setting.
+                        <?php if (isset($user_id) && $user_id !== null): ?>
+                            // Assuming session was set successfully in PHP after registration
                             window.location.href = 'home.php';
+                        <?php else: ?>
+                            // Fallback redirect if for some reason user_id wasn't set or auto-login logic needs review
+                            window.location.href = 'login.php'; // Or home.php depending on desired flow without auto-login
                         <?php endif; ?>
                     }
                 });
-            });
-        </script>
-    <?php endif; ?>
+            <?php endif; ?>
+        });
+    </script>
 </body>
 
 </html>
