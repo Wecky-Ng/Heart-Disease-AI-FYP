@@ -46,23 +46,15 @@
             // Assuming result.php is at the project root
             define('PROJECT_ROOT', __DIR__);
         }
+        // Include the side menu component
+        include PROJECT_ROOT . '/sidemenu.php';
 
         // Include necessary files FIRST, especially session.php
         require_once PROJECT_ROOT . '/session.php'; // Start session and provide isLoggedIn()
 
-        // --- Redirect if not logged in ---
-        // if (!isLoggedIn()) {
-        //     header('Location: home.php'); // Redirect to home page
-        //     exit(); // Stop script execution
-        // }
-        // --- End Redirect ---
-
-        // require_once PROJECT_ROOT . '/database/form_validation_preprocessing.php'; // Not needed directly on this page
-        // require_once PROJECT_ROOT . '/database/set_user_prediction_record.php'; // Saving is handled before redirecting here
+        
         require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Includes getPredictionRecordById and connection.php
-        // require_once PROJECT_ROOT . '/database/connection.php'; // Included via get_user_prediction_history.php
-
-        // Helper function to get text representation of parameters
+       
         function getParameterText($key, $value) {
             // Handle null or empty values gracefully
             if ($value === null || $value === '') {
@@ -174,8 +166,7 @@
             }
         }
 
-        // Include the side menu component
-        include PROJECT_ROOT . '/sidemenu.php';
+        
         ?>
         
         <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
