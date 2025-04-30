@@ -24,6 +24,9 @@ $agePrefillValue = ''; // Initialize age prefill value
 $userData = null;
 $lastTestData = null;
 
+// Removed the local getLastTestRecord function definition from here
+
+
 // Check if user is logged in
 if (isLoggedIn()) {
     // Get current user session data
@@ -31,7 +34,7 @@ if (isLoggedIn()) {
 
     // Get user data from database
     if (isset($sessionData['user_id'])) {
-        $userId = $sessionId = $sessionData['user_id']; // Corrected variable name
+        $userId = $sessionData['user_id'];
         $userData = getUserById($userId); // Assuming getUserById is in database/get_user.php
 
         // Get user's last test record if available
@@ -43,8 +46,9 @@ if (isLoggedIn()) {
         // Prefill Gender: Prioritize last test data, then user profile
         // Note: The last test record stores 'sex' (0=Female, 1=Male), while user profile stores 'gender' (Male/Female/Other string)
         if ($lastTestData && isset($lastTestData['sex']) && $lastTestData['sex'] !== null) {
-            // Use the tinyint value directly for prefill
-            $genderPrefillValue = htmlspecialchars($lastTestData['sex']);
+            // Map tinyint sex from last test record to string for comparison if needed,
+            // or directly use the tinyint value if your form select options match (0/1)
+            $genderPrefillValue = htmlspecialchars($lastTestData['sex']); // Use the tinyint value directly
         } elseif ($userData && !empty($userData['gender'])) {
             // Map gender string from user profile to the tinyint value expected by the form (0 for Female, 1 for Male)
             // Assuming 'Male' -> 1, 'Female' -> 0 based on your DB schema comment for user_prediction_history.sex
@@ -153,6 +157,7 @@ if (isLoggedIn()) {
                                     </div>
                                 </div>
 
+                                <!-- Display Session Error using a hidden input for JS -->
                                 <input type="hidden" id="session-error-message" value="<?php echo htmlspecialchars($session_error); ?>">
 
                                 <div class="nk-block">
@@ -169,7 +174,7 @@ if (isLoggedIn()) {
                                                         <div class="alert-text">Some fields have been prefilled with your profile data and previous test information.</div>
                                                     </div>
                                                     <?php endif; ?>
-                                                    <form id="prediction-form" action="" method="post" class="form-validate">
+                                                    <form id="prediction-form" action="result.php" method="post" class="form-validate">
                                                         <div class="row g-4">
                                                             <div class="col-12">
                                                                 <h6 class="overline-title text-primary">Basic Information</h6>
@@ -201,12 +206,12 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="race" name="race" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['race']) && (int)$lastTestData['race'] === 0) ? 'selected' : ''; ?>>White</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['race']) && (int)$lastTestData['race'] === 1) ? 'selected' : ''; ?>>Black</option>
-                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['race']) && (int)$lastTestData['race'] === 2) ? 'selected' : ''; ?>>Asian</option>
-                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['race']) && (int)$lastTestData['race'] === 3) ? 'selected' : ''; ?>>Hispanic</option>
-                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['race']) && (int)$lastTestData['race'] === 4) ? 'selected' : ''; ?>>American Indian/Alaskan Native</option>
-                                                                            <option value="5" <?php echo ($lastTestData && isset($lastTestData['race']) && (int)$lastTestData['race'] === 5) ? 'selected' : ''; ?>>Other</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 0) ? 'selected' : ''; ?>>White</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 1) ? 'selected' : ''; ?>>Black</option>
+                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 2) ? 'selected' : ''; ?>>Asian</option>
+                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 3) ? 'selected' : ''; ?>>Hispanic</option>
+                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 4) ? 'selected' : ''; ?>>American Indian/Alaskan Native</option>
+                                                                            <option value="5" <?php echo ($lastTestData && isset($lastTestData['raw_data']['race']) && $lastTestData['raw_data']['race'] === 5) ? 'selected' : ''; ?>>Other</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -215,7 +220,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="bmi">BMI</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="60" value="<?php echo ($lastTestData && isset($lastTestData['bmi'])) ? htmlspecialchars($lastTestData['bmi']) : ''; ?>" required maxlength="50">
+                                                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" min="10" max="60" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['bmi'])) ? htmlspecialchars($lastTestData['raw_data']['bmi']) : ''; ?>" required maxlength="50">
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -229,8 +234,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="smoking" name="smoking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['smoking']) && (int)$lastTestData['smoking'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['smoking']) && (int)$lastTestData['smoking'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['smoking']) && $lastTestData['raw_data']['smoking'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['smoking']) && $lastTestData['raw_data']['smoking'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -241,8 +246,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="alcohol_drinking" name="alcohol_drinking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['alcohol_drinking']) && (int)$lastTestData['alcohol_drinking'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['alcohol_drinking']) && (int)$lastTestData['alcohol_drinking'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['alcohol_drinking']) && $lastTestData['raw_data']['alcohol_drinking'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['alcohol_drinking']) && $lastTestData['raw_data']['alcohol_drinking'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -253,8 +258,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="stroke" name="stroke" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['stroke']) && (int)$lastTestData['stroke'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['stroke']) && (int)$lastTestData['stroke'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['stroke']) && $lastTestData['raw_data']['stroke'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['stroke']) && $lastTestData['raw_data']['stroke'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -263,7 +268,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="physical_health">Physical Health (days)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="physical_health" name="physical_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['physical_health'])) ? htmlspecialchars($lastTestData['physical_health']) : ''; ?>" required maxlength="50">
+                                                                        <input type="number" step="0.1" class="form-control" id="physical_health" name="physical_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_health'])) ? htmlspecialchars($lastTestData['raw_data']['physical_health']) : ''; ?>" required maxlength="50">
                                                                         <small class="form-text text-muted">Number of days physical health not good (0-30)</small>
                                                                     </div>
                                                                 </div>
@@ -272,7 +277,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="mental_health">Mental Health (days)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="mental_health" name="mental_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['mental_health'])) ? htmlspecialchars($lastTestData['mental_health']) : ''; ?>" required maxlength="50">
+                                                                        <input type="number" step="0.1" class="form-control" id="mental_health" name="mental_health" min="0" max="30" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['mental_health'])) ? htmlspecialchars($lastTestData['raw_data']['mental_health']) : ''; ?>" required maxlength="50">
                                                                         <small class="form-text text-muted">Number of days mental health not good (0-30)</small>
                                                                     </div>
                                                                 </div>
@@ -283,8 +288,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="diff_walking" name="diff_walking" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['diff_walking']) && (int)$lastTestData['diff_walking'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['diff_walking']) && (int)$lastTestData['diff_walking'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diff_walking']) && $lastTestData['raw_data']['diff_walking'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diff_walking']) && $lastTestData['raw_data']['diff_walking'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -299,10 +304,10 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="diabetic" name="diabetic" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && (int)$lastTestData['diabetic'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && (int)$lastTestData['diabetic'] === 0) ? 'selected' : ''; ?>>No</option>
-                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && (int)$lastTestData['diabetic'] === 2) ? 'selected' : ''; ?>>No, borderline diabetes</option>
-                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['diabetic']) && (int)$lastTestData['diabetic'] === 3) ? 'selected' : ''; ?>>Yes (during pregnancy)</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 2) ? 'selected' : ''; ?>>No, borderline diabetes</option>
+                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['raw_data']['diabetic']) && $lastTestData['raw_data']['diabetic'] === 3) ? 'selected' : ''; ?>>Yes (during pregnancy)</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -313,8 +318,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="physical_activity" name="physical_activity" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['physical_activity']) && (int)$lastTestData['physical_activity'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['physical_activity']) && (int)$lastTestData['physical_activity'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_activity']) && $lastTestData['raw_data']['physical_activity'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['physical_activity']) && $lastTestData['raw_data']['physical_activity'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -325,11 +330,11 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="gen_health" name="gen_health" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && (int)$lastTestData['gen_health'] === 0) ? 'selected' : ''; ?>>Excellent</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && (int)$lastTestData['gen_health'] === 1) ? 'selected' : ''; ?>>Very good</option>
-                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && (int)$lastTestData['gen_health'] === 2) ? 'selected' : ''; ?>>Good</option>
-                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && (int)$lastTestData['gen_health'] === 3) ? 'selected' : ''; ?>>Fair</option>
-                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['gen_health']) && (int)$lastTestData['gen_health'] === 4) ? 'selected' : ''; ?>>Poor</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 0) ? 'selected' : ''; ?>>Excellent</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 1) ? 'selected' : ''; ?>>Very good</option>
+                                                                            <option value="2" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 2) ? 'selected' : ''; ?>>Good</option>
+                                                                            <option value="3" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 3) ? 'selected' : ''; ?>>Fair</option>
+                                                                            <option value="4" <?php echo ($lastTestData && isset($lastTestData['raw_data']['gen_health']) && $lastTestData['raw_data']['gen_health'] === 4) ? 'selected' : ''; ?>>Poor</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -338,7 +343,7 @@ if (isLoggedIn()) {
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="sleep_time">Sleep Time (hours)</label>
                                                                     <div class="form-control-wrap">
-                                                                        <input type="number" step="0.1" class="form-control" id="sleep_time" name="sleep_time" min="0" max="24" value="<?php echo ($lastTestData && isset($lastTestData['sleep_time'])) ? htmlspecialchars($lastTestData['sleep_time']) : ''; ?>" required maxlength="50">
+                                                                        <input type="number" step="0.1" class="form-control" id="sleep_time" name="sleep_time" min="0" max="24" value="<?php echo ($lastTestData && isset($lastTestData['raw_data']['sleep_time'])) ? htmlspecialchars($lastTestData['raw_data']['sleep_time']) : ''; ?>" required maxlength="50">
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -348,8 +353,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="asthma" name="asthma" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['asthma']) && (int)$lastTestData['asthma'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['asthma']) && (int)$lastTestData['asthma'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['asthma']) && $lastTestData['raw_data']['asthma'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['asthma']) && $lastTestData['raw_data']['asthma'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -360,8 +365,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="kidney_disease" name="kidney_disease" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['kidney_disease']) && (int)$lastTestData['kidney_disease'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['kidney_disease']) && (int)$lastTestData['kidney_disease'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['kidney_disease']) && $lastTestData['raw_data']['kidney_disease'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['kidney_disease']) && $lastTestData['raw_data']['kidney_disease'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -372,8 +377,8 @@ if (isLoggedIn()) {
                                                                     <div class="form-control-wrap">
                                                                         <select class="form-select" id="skin_cancer" name="skin_cancer" required>
                                                                             <option value="">Select</option>
-                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['skin_cancer']) && (int)$lastTestData['skin_cancer'] === 1) ? 'selected' : ''; ?>>Yes</option>
-                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['skin_cancer']) && (int)$lastTestData['skin_cancer'] === 0) ? 'selected' : ''; ?>>No</option>
+                                                                            <option value="1" <?php echo ($lastTestData && isset($lastTestData['raw_data']['skin_cancer']) && $lastTestData['raw_data']['skin_cancer'] === 1) ? 'selected' : ''; ?>>Yes</option>
+                                                                            <option value="0" <?php echo ($lastTestData && isset($lastTestData['raw_data']['skin_cancer']) && $lastTestData['raw_data']['skin_cancer'] === 0) ? 'selected' : ''; ?>>No</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -410,6 +415,7 @@ if (isLoggedIn()) {
                                                     <div class="card-head">
                                                         <h5 class="card-title">Prediction Result</h5>
                                                     </div>
+                                                    <!-- Prediction result will now be shown via SweetAlert -->
                                                     <div class="card-head">
                                                         <h5 class="card-title">About This Prediction</h5>
                                                     </div>
@@ -444,18 +450,22 @@ if (isLoggedIn()) {
             <?php include PROJECT_ROOT . '/footer.php'; ?>
         </div>
     </div>
-    </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('prediction-form');
+            // const resultDisplay = document.getElementById('prediction-result-display'); // Removed as we use SweetAlert
             const submitButton = form.querySelector('button[type="submit"]');
-            const originalButtonHTML = submitButton.innerHTML; // Store original button HTML
+            // Assuming the button structure might change, let's select elements robustly
+            // const spinner = submitButton.querySelector('.spinner-border');
+            // const buttonText = submitButton.querySelector('.button-text');
+            const originalButtonHTML = submitButton.innerHTML; // Store original button content
+            const formElements = form.elements;
             const sessionErrorMessage = document.getElementById('session-error-message').value;
 
-            // Display session error if present using SweetAlert2
+            // Display session error if present
             if (sessionErrorMessage) {
                 Swal.fire({
                     icon: 'error',
@@ -468,218 +478,254 @@ if (isLoggedIn()) {
             form.addEventListener('submit', function(event) {
                 event.preventDefault(); // Prevent default form submission
 
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
+                // Disable form elements and button
+                for (let i = 0; i < formElements.length; i++) {
+                    formElements[i].disabled = true;
                 }
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
 
-                // Add spinner and disable button
-                submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...`;
-                submitButton.disabled = true;
-
-                const formData = new FormData(form);
-                const formObject = {}; // Object to send to the API
-                const saveInputs = {}; // Object to send to save_prediction.php (original keys)
-
-                // Map form input names (lowercase snake_case) to API expected keys (PascalCase)
-                const keyMapping = {
-                    'bmi': 'BMI',
-                    'smoking': 'Smoking',
-                    'alcohol_drinking': 'AlcoholDrinking',
-                    'stroke': 'Stroke',
-                    'physical_health': 'PhysicalHealth',
-                    'mental_health': 'MentalHealth',
-                    'diff_walking': 'DiffWalking',
-                    'sex': 'Sex',
-                    'age': 'Age',
-                    'race': 'Race',
-                    'diabetic': 'Diabetic',
-                    'physical_activity': 'PhysicalActivity',
-                    'gen_health': 'GenHealth',
-                    'sleep_time': 'SleepTime',
-                    'asthma': 'Asthma',
-                    'kidney_disease': 'KidneyDisease',
-                    'skin_cancer': 'SkinCancer'
-                };
-
-
-                formData.forEach((value, key) => {
-                    // Store original form data for saving
-                    saveInputs[key] = value;
-
-                    // Find the corresponding API key using the mapping
-                    const apiKey = keyMapping[key];
-
-                    // Only add to formObject if a mapping exists
-                    if (apiKey) {
-                         // Convert numeric string fields to numbers where appropriate for API
-                        if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
-                            formObject[apiKey] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0
-                        } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
-                            formObject[apiKey] = parseInt(value, 10); // Ensure integer for categorical/binary
-                        } else {
-                            // For any other fields not explicitly handled, use the value directly
-                            formObject[apiKey] = value;
-                        }
+                // Show loading alert
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Analyzing your data, please wait.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
-                    // Note: Fields from the form that are not in keyMapping will be ignored by formObject.
                 });
 
-                // Call the Render prediction API
-                fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', {
+                const formData = new FormData(form);
+                const jsonData = {};
+                formData.forEach((value, key) => { jsonData[key] = value; });
+
+                // Send data to the API endpoint
+                fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', { // Ensure this endpoint is correct
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify(formObject) // Send the formObject with correct keys
+                    body: JSON.stringify(jsonData)
                 })
                 .then(response => {
                     if (!response.ok) {
-                        // Attempt to parse error response if not OK
+                        // Try to parse error message from response body
                         return response.json().then(err => {
-                             // Log the full error response from the API for debugging
-                             console.error('API Error Response:', err);
-                             throw new Error(err.error || `API returned status ${response.status}`);
+                            throw new Error(err.error || `Server error: ${response.status}`);
                         }).catch(() => {
-                            // If response is not JSON, throw a generic error
-                            throw new Error(`API returned status ${response.status}`);
+                            // Fallback if response body is not JSON or empty
+                            throw new Error(`Network error: ${response.status}`);
                         });
                     }
                     return response.json();
                 })
                 .then(data => {
-                    // --- Handle API Success ---
+                    Swal.close(); // Close loading alert
+
+                    // Re-enable form elements and restore button
+                    for (let i = 0; i < formElements.length; i++) {
+                        formElements[i].disabled = false;
+                    }
+                    submitButton.innerHTML = originalButtonHTML;
+
+                    // Display result using SweetAlert
+                    let iconType = 'info';
+                    let titleText = 'Prediction Result';
+                    // Adjust based on your actual API response structure
+                    let resultText = `Prediction: ${data.prediction_text || 'N/A'} (Probability: ${data.probability_percentage || 'N/A'}%)`;
+
+                    if (data.prediction === 1) { // Assuming 1 means high risk
+                        iconType = 'warning';
+                        titleText = 'High Risk Detected';
+                    } else if (data.prediction === 0) { // Assuming 0 means low risk
+                        iconType = 'success';
+                        titleText = 'Low Risk Detected';
+                    }
+
+                    Swal.fire({
+                        icon: iconType,
+                        title: titleText,
+                        html: resultText + '<br><br><a href="/history.php" class="btn btn-primary btn-sm">View Details in History</a>',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#5a62c8'
+                    });
+
+                    // Optionally clear the form after successful prediction
+                    // form.reset();
+
+                })
+                .catch(error => {
+                    Swal.close(); // Close loading alert
+
+                    // Re-enable form elements and restore button
+                    for (let i = 0; i < formElements.length; i++) {
+                        formElements[i].disabled = false;
+                    }
+                    submitButton.innerHTML = originalButtonHTML;
+
+                    console.error('Prediction Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Prediction Failed',
+                        text: error.message || 'An unexpected error occurred. Please check the console or try again.',
+                        confirmButtonColor: '#e85347'
+                    });
+                });
+            });
+        });
+    </script>
+                event.preventDefault(); // Prevent default form submission
+
+                // Show spinner and disable button
+                spinner.style.display = 'inline-block';
+                buttonText.textContent = 'Predicting...';
+                submitButton.disabled = true;
+                resultDisplay.style.display = 'none'; // Hide previous results
+                resultDisplay.innerHTML = ''; // Clear previous results
+
+                const formData = new FormData(form);
+                const formObject = {};
+                formData.forEach((value, key) => {
+                    // Convert numeric string fields to numbers where appropriate
+                    // Adjust this list based on your actual numeric fields
+                    if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
+                        formObject[key] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0 or null
+                    } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
+                        formObject[key] = parseInt(value, 10); // Ensure integer for categorical/binary
+                    } else {
+                        formObject[key] = value;
+                    }
+                });
+
+                // Call the Vercel prediction API
+                fetch('/api/predict', { // Use relative path for Vercel deployment
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Network response was not ok'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // --- NEW LOGIC: Save prediction then show SweetAlert & Redirect ---
                     const predictionResult = data.prediction; // 0 or 1
                     const confidenceScore = data.confidence;
 
-                    // Prepare data for saving (use original form input names for database saving)
+                    // Prepare data for saving
                     const saveData = {
-                        inputs: saveInputs, // Use the saveInputs object with original keys
+                        inputs: formObject, // Send the processed form data
                         prediction: predictionResult,
                         confidence: confidenceScore
                     };
 
-                    // Check if the user is logged in and wants to save the record
-                    const saveRecordCheckbox = document.getElementById('save_record');
-                    const isUserLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'; ?>; // Pass PHP variable to JS
+                    // 1. Asynchronously save the prediction
+                    fetch('/database/save_prediction.php', { // Call the new PHP endpoint
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(saveData)
+                    })
+                    .then(saveResponse => saveResponse.json())
+                    .then(saveResult => {
+                        if (saveResult.success) {
+                            console.log('Prediction saved successfully.');
+                            // 2. Show SweetAlert with result
+                            const riskLevel = predictionResult === 1 ? 'High Risk' : 'Low Risk';
+                            const confidencePercent = (confidenceScore * 100).toFixed(2);
+                            const alertIcon = predictionResult === 1 ? 'warning' : 'success';
+                            const alertTitle = `Prediction: ${riskLevel}`;
+                            const alertText = `Confidence: ${confidencePercent}%. Click OK to view details.`;
 
-                    if (isUserLoggedIn && saveRecordCheckbox && saveRecordCheckbox.checked) {
-                        // 1. Asynchronously save the prediction
-                        fetch('/database/save_prediction.php', { // Call the new PHP endpoint
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(saveData) // Send the data for saving
-                        })
-                        .then(saveResponse => {
-                            if (!saveResponse.ok) {
-                                 // Attempt to parse save error response if not OK
-                                 return saveResponse.json().then(err => {
-                                     console.error('Save API Error Response:', err);
-                                     throw new Error(err.message || `Save API returned status ${saveResponse.status}`);
-                                 }).catch(() => {
-                                     throw new Error(`Save API returned status ${saveResponse.status}`);
-                                 });
-                            }
-                            return saveResponse.json();
-                        })
-                        .then(saveResult => {
-                            if (saveResult.success) {
-                                console.log('Prediction saved successfully.');
-                                // Proceed to show SweetAlert and redirect after successful save
-                                showResultAndRedirect(predictionResult, confidenceScore, saveInputs);
+                            Swal.fire({
+                                icon: alertIcon,
+                                title: alertTitle,
+                                text: alertText,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#5a62c8'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // 3. Redirect to result.php via POST
+                                    const postForm = document.createElement('form');
+                                    postForm.method = 'POST';
+                                    postForm.action = 'result.php';
+                                    postForm.style.display = 'none'; // Hide the form
 
-                            } else {
-                                // Saving failed
-                                console.error('Failed to save prediction:', saveResult.message);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Save Error',
-                                    text: 'Could not save the prediction result. Please try again. ' + (saveResult.message || ''),
-                                    confirmButtonColor: '#e74c3c'
-                                });
-                                // Even if saving fails, we can still show the prediction result
-                                showResultAndRedirect(predictionResult, confidenceScore, saveInputs);
-                            }
-                        })
-                        .catch(saveError => {
-                            console.error('Error saving prediction:', saveError);
+                                    // Add original form data as hidden inputs
+                                    for (const key in formObject) {
+                                        if (formObject.hasOwnProperty(key)) {
+                                            const input = document.createElement('input');
+                                            input.type = 'hidden';
+                                            input.name = key;
+                                            input.value = formObject[key];
+                                            postForm.appendChild(input);
+                                        }
+                                    }
+
+                                    // Add prediction results as hidden inputs
+                                    const predictionInput = document.createElement('input');
+                                    predictionInput.type = 'hidden';
+                                    predictionInput.name = 'prediction_result';
+                                    predictionInput.value = predictionResult;
+                                    postForm.appendChild(predictionInput);
+
+                                    const confidenceInput = document.createElement('input');
+                                    confidenceInput.type = 'hidden';
+                                    confidenceInput.name = 'prediction_confidence';
+                                    confidenceInput.value = confidenceScore;
+                                    postForm.appendChild(confidenceInput);
+
+                                    document.body.appendChild(postForm);
+                                    postForm.submit();
+                                }
+                            });
+                        } else {
+                            // Saving failed
+                            console.error('Failed to save prediction:', saveResult.message);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Save Error',
-                                text: 'An error occurred while trying to save the prediction result: ' + saveError.message,
+                                text: 'Could not save the prediction result. Please try again. ' + (saveResult.message || ''),
                                 confirmButtonColor: '#e74c3c'
                             });
-                            // Even if saving fails, we can still show the prediction result
-                            showResultAndRedirect(predictionResult, confidenceScore, saveInputs);
-                        })
-                        .finally(() => {
-                             // Re-enable button regardless of save outcome, but only after save attempt
-                             resetButton();
-                        });
-                    } else {
-                        // User is not logged in or did not check 'Save record'
-                        console.log('Prediction not saved.');
-                        // Proceed directly to show SweetAlert and redirect
-                        showResultAndRedirect(predictionResult, confidenceScore, saveInputs);
-                        resetButton(); // Reset button immediately if not saving
-                    }
-
-                    // Function to show SweetAlert and redirect to result.php
-                    function showResultAndRedirect(predictionResult, confidenceScore, inputs) {
-                        const riskLevel = predictionResult === 1 ? 'High Risk' : 'Low Risk';
-                        const confidencePercent = (confidenceScore * 100).toFixed(2);
-                        const alertIcon = predictionResult === 1 ? 'warning' : 'success';
-                        const alertTitle = `Prediction: ${riskLevel}`;
-                        const alertText = `Confidence: ${confidencePercent}%. Click OK to view details.`;
-
+                        }
+                    })
+                    .catch(saveError => {
+                        console.error('Error saving prediction:', saveError);
                         Swal.fire({
-                            icon: alertIcon,
-                            title: alertTitle,
-                            text: alertText,
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#5a62c8'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Redirect to result.php via POST
-                                const postForm = document.createElement('form');
-                                postForm.method = 'POST';
-                                postForm.action = 'result.php';
-                                postForm.style.display = 'none'; // Hide the form
-
-                                // Add original form data and prediction results as hidden inputs
-                                // Use the original form input names for consistency with result.php display logic
-                                 for (const key in inputs) {
-                                     if (inputs.hasOwnProperty(key)) {
-                                         const input = document.createElement('input');
-                                         input.type = 'hidden';
-                                         input.name = key; // Use original form input name
-                                         input.value = inputs[key]; // Use original form input value
-                                         postForm.appendChild(input);
-                                     }
-                                 }
-
-
-                                // Add prediction results as hidden inputs
-                                const predictionInput = document.createElement('input');
-                                predictionInput.type = 'hidden';
-                                predictionInput.name = 'prediction_result';
-                                predictionInput.value = predictionResult;
-                                postForm.appendChild(predictionInput);
-
-                                const confidenceInput = document.createElement('input');
-                                confidenceInput.type = 'hidden';
-                                confidenceInput.name = 'prediction_confidence';
-                                confidenceInput.value = confidenceScore;
-                                postForm.appendChild(confidenceInput);
-
-                                document.body.appendChild(postForm);
-                                postForm.submit();
-                            }
+                            icon: 'error',
+                            title: 'Save Error',
+                            text: 'An error occurred while trying to save the prediction result: ' + saveError.message,
+                            confirmButtonColor: '#e74c3c'
                         });
-                    }
-                    // --- END API Success Handling ---
+                    })
+                    .finally(() => {
+                         // Re-enable button regardless of save outcome, but only after save attempt
+                         resetButton();
+                    });
+                    // --- END NEW LOGIC ---
+
+                    // --- OLD LOGIC (Remove/Comment Out) ---
+                    /*
+                    const riskLevel = data.prediction === 1 ? 'High Risk' : 'Low Risk';
+                    const confidencePercent = (data.confidence * 100).toFixed(2);
+                    const resultClass = data.prediction === 1 ? 'result-high' : 'result-low';
+
+                    resultDisplay.innerHTML = `
+                        <div class="result-box ${resultClass}">
+                            <h6 class="title">Risk Level: ${riskLevel}</h6>
+                            <p>Confidence: ${confidencePercent}%</p>
+                        </div>
+                    `;
+                    resultDisplay.style.display = 'block';
+                    */
+                    // --- END OLD LOGIC ---
                 })
                 .catch(error => {
                     console.error('Error during prediction fetch:', error);
@@ -691,18 +737,14 @@ if (isLoggedIn()) {
                     });
                     resetButton(); // Reset button on fetch error
                 });
-
-                // Function to reset button state
-                function resetButton() {
-                     // Find the spinner element again in case it was replaced
-                    const spinner = submitButton.querySelector('.spinner-border');
-                    if (spinner) {
-                         spinner.remove(); // Remove the spinner element
-                    }
-                    submitButton.innerHTML = originalButtonHTML; // Restore original button HTML
-                    submitButton.disabled = false;
-                }
+                // Note: resetButton() is now called within the save promise chain's finally block or catch block
             });
+
+            function resetButton() {
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Predict';
+                submitButton.disabled = false;
+            }
         });
     </script>
 </body>
