@@ -552,9 +552,38 @@ if (isLoggedIn()) {
                     const predictionResult = data.prediction; // 0 or 1
                     const confidenceScore = data.confidence;
 
-                    // Prepare data for saving (use original form input names for database saving)
+                    // --- Filter saveInputs to include only expected keys for the database ---
+                    const allowedInputKeys = [
+                        'bmi', 'smoking', 'alcohol_drinking', 'stroke', 'physical_health',
+                        'mental_health', 'diff_walking', 'sex', 'age', 'race', 'diabetic',
+                        'physical_activity', 'gen_health', 'sleep_time', 'asthma', 'kidney_disease',
+                        'skin_cancer'
+                    ];
+                    const filteredSaveInputs = {};
+                    allowedInputKeys.forEach(key => {
+                        if (saveInputs.hasOwnProperty(key)) {
+                            // Ensure correct types are sent to backend
+                            if (['bmi', 'sleep_time'].includes(key)) { // Float/Decimal types
+                                filteredSaveInputs[key] = parseFloat(saveInputs[key]) || 0;
+                            } else if (['physical_health', 'mental_health', 'age'].includes(key)) { // Integer types that might be larger numbers
+                                filteredSaveInputs[key] = parseInt(saveInputs[key], 10) || 0;
+                            } else { // TinyInt / Boolean-like integers (0 or 1), or other integers
+                                filteredSaveInputs[key] = parseInt(saveInputs[key], 10);
+                                // Add extra check for NaN if parseInt fails unexpectedly
+                                if (isNaN(filteredSaveInputs[key])) filteredSaveInputs[key] = 0;
+                            }
+                        } else {
+                            console.warn(`Expected key "${key}" not found in saveInputs.`);
+                            // Set a default value (e.g., null or 0) if a key might be missing
+                            // Check DB schema for nullability. Assuming 0 for now.
+                            filteredSaveInputs[key] = 0;
+                        }
+                    });
+                    // --- End Filtering ---
+
+                    // Prepare data for saving (use FILTERED input names for database saving)
                     const saveData = {
-                        inputs: saveInputs, // Use the saveInputs object with original keys
+                        inputs: filteredSaveInputs, // Use the filtered object with correct keys and types
                         prediction: predictionResult,
                         confidence: confidenceScore
                     };
