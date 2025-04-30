@@ -13,9 +13,6 @@ require_once PROJECT_ROOT . '/session.php';
                 <span class="logo-text">Heart Disease AI</span>
             </a>
         </div>
-        <div class="nk-menu-trigger mr-n2">
-            <a href="#" class="nk-nav-toggle nk-quick-nav-icon d-xl-none" data-target="sidebarMenu"><em class="icon ni ni-arrow-left"></em></a>
-        </div>
     </div>
     <div class="nk-sidebar-element">
         <div class="nk-sidebar-content p-3">
