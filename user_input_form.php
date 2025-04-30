@@ -515,7 +515,7 @@ if (isLoggedIn()) {
                 });
 
                 // Call the Vercel prediction API
-                fetch('/api/predict', { // Use relative path for Vercel deployment
+                fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', { // Use relative path for Vercel deployment
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
