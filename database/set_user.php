@@ -118,7 +118,7 @@ function loginUser($username, $password) {
             } elseif ($user['status'] == 2) {
                  // Connection is managed globally, do not close here
                  // $db->close();
-                return ['status' => false, 'message' => 'This account has been deleted.'];
+                return ['status' => false, 'message' => 'Account does not exist.'];
             }
             // If status is 1 (active), proceed with login
         } else {
