@@ -16,17 +16,80 @@ if (!isLoggedIn()) {
 }
 // --- End Redirect ---
 
+// Get current user data from session
+$userData = getCurrentUser(); // Assuming this function is in session.php
+
+// Ensure user data is available
+if (!$userData || !isset($userData['user_id'])) {
+    // Handle case where user data is not found in session (e.g., session expired)
+    // Redirect to login or show an error message
+    header('Location: login.php'); // Redirect to login as user data is essential
+    exit();
+}
+
+
 require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Includes getUserPredictionHistory and connection.php
+require_once PROJECT_ROOT . '/database/delete_history.php'; // Include delete history functions
 
 // Get current user ID
-$userId = $_SESSION['user_id'] ?? null; // Already checked login status above
+$userId = $userData['user_id'] ?? null; // Get user ID from session data
 
-// Fetch prediction history for the logged-in user
+
+// Process delete actions if submitted
+$success_message = "";
+$error_message = "";
+
+// Handle delete single record
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_record']) && isset($_POST['record_id'])) {
+    $recordId = filter_input(INPUT_POST, 'record_id', FILTER_VALIDATE_INT);
+    // User ID is already fetched into $userId from session
+
+    if ($recordId && $userId) {
+        if (deletePredictionRecord($recordId, $userId)) {
+            $success_message = "Record deleted successfully.";
+            // Redirect to clear POST data after successful delete
+             header('Location: history.php');
+             exit();
+        } else {
+            $error_message = "Failed to delete record. Please try again.";
+        }
+    } else {
+        $error_message = "Invalid delete request or user not logged in.";
+    }
+}
+
+// Handle delete all records
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_all_records'])) {
+    // User ID is already fetched into $userId from session
+
+    if ($userId) {
+         if (deleteAllPredictionRecords($userId)) {
+            $success_message = "All records deleted successfully.";
+            // Redirect to clear POST data after successful delete
+             header('Location: history.php');
+             exit();
+         } else {
+            $error_message = "Failed to delete records. Please try again.";
+         }
+    } else {
+         $error_message = "User not logged in.";
+    }
+}
+
+
+// Fetch the user's prediction history from the database
 $predictionHistory = [];
 if ($userId) {
     $predictionHistory = getUserPredictionHistory($userId);
     // Note: getUserPredictionHistory closes the DB connection.
     // If you need the connection open later, you might need to adjust that function.
+}
+
+// Check if fetching history was successful (getUserPredictionHistory should return an array or empty array on success, or false/null on error)
+if ($predictionHistory === false) {
+    // Handle database error when fetching history
+    $error_message = "Error fetching prediction history. Please try again later.";
+    $predictionHistory = []; // Ensure $predictionHistory is an empty array to prevent errors in the loop
 }
 
 // Helper function to determine badge class based on risk level
@@ -99,6 +162,7 @@ function getParameterText($key, $value) {
     }
 }
 
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -106,117 +170,254 @@ function getParameterText($key, $value) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Heart Disease Prediction History">
+    <meta name="description" content="Heart Disease Prediction using AI - Prediction History">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Prediction History - Heart Disease Prediction</title>
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
 </head>
 
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
         <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
 
-        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
-
         <div class="nk-main">
             <?php include PROJECT_ROOT . '/header.php'; ?>
 
-            <div class="nk-wrap">
-                <div class="nk-content">
-                    <div class="container-fluid">
-                        <div class="nk-content-inner">
-                            <div class="nk-content-body">
-                                <div class="nk-block-head nk-block-head-sm">
-                                    <div class="nk-block-between">
-                                        <div class="nk-block-head-content">
-                                            <h3 class="nk-block-title page-title">Prediction History</h3>
-                                            <div class="nk-block-des text-soft">
-                                                <p>View your past heart disease prediction results.</p>
+            <div class="nk-content">
+                <div class="container-fluid">
+                    <div class="nk-content-inner">
+                        <div class="nk-content-body">
+                            <div class="nk-block-head nk-block-head-sm">
+                                <div class="nk-block-between">
+                                    <div class="nk-block-head-content">
+                                        <h3 class="nk-block-title page-title">Prediction History</h3>
+                                        <div class="nk-block-des text-soft">
+                                            <p>View your past heart disease prediction results.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nk-block">
+                                <div class="card card-bordered card-stretch">
+                                    <div class="card-inner card-inner-bordered">
+                                        <div class="card-title-group">
+                                            <div class="card-title">
+                                                <h5 class="title">Your Prediction Records</h5>
+                                            </div>
+                                            <div class="card-tools">
+                                                <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
+                                                <?php if (!empty($predictionHistory)): ?>
+                                                <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
+                                                    <input type="hidden" name="delete_all_records" value="1">
+                                                    <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
+                                                </form>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
-                                        <div class="nk-block-head-content">
-                                            <a href="user_input_form.php" class="btn btn-primary d-none d-sm-inline-flex"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
-                                            <a href="user_input_form.php" class="btn btn-icon btn-primary d-inline-flex d-sm-none"><em class="icon ni ni-plus"></em></a>
-                                        </div>
                                     </div>
-                                </div><div class="nk-block">
-                                    <div class="card card-bordered">
-                                        <div class="card-inner">
-                                            <?php if ($predictionHistory): ?>
-                                                <table class="datatable-init nk-tb-list nk-tb-ulist display responsive nowrap" id="predictionHistoryTable" style="width:100%">
-                                                    <thead>
-                                                        <tr class="nk-tb-item nk-tb-head">
-                                                            <th class="nk-tb-col"><span>Date</span></th>
-                                                            <th class="nk-tb-col tb-col-mb"><span>Risk Level</span></th>
-                                                            <th class="nk-tb-col tb-col-md"><span>Probability</span></th>
-                                                            <th class="nk-tb-col"><span>Age</span></th>
-                                                            <th class="nk-tb-col"><span>Sex</span></th>
-                                                            <th class="nk-tb-col"><span>BMI</span></th>
-                                                            <th class="nk-tb-col tb-col-md"><span>Smoking</span></th>
-                                                            <th class="nk-tb-col tb-col-md"><span>Alcohol</span></th>
-                                                            <th class="nk-tb-col tb-col-md"><span>Stroke</span></th>
-                                                            <th class="nk-tb-col tb-col-lg"><span>Diabetic</span></th>
-                                                            <th class="nk-tb-col nk-tb-col-tools text-right no-sort">
-                                                            </th>
+                                    <div class="card-inner">
+                                        <?php if (!empty($success_message)): ?>
+                                            <div class="alert alert-success">
+                                                <p><?php echo htmlspecialchars($success_message); ?></p>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (!empty($error_message)): ?>
+                                            <div class="alert alert-danger">
+                                                <p><?php echo htmlspecialchars($error_message); ?></p>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (empty($predictionHistory)): ?>
+                                            <div class="alert alert-info">
+                                                <p>You haven't made any predictions yet. <a href="user_input_form.php">Make your first prediction</a>.</p>
+                                            </div>
+                                        <?php else: ?>
+                                            <table class="table table-hover datatable-init-export display responsive nowrap" id="predictionHistoryTable" style="width:100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Date</th>
+                                                        <th>Result</th>
+                                                        <th>Probability</th>
+                                                        <th>Details</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($predictionHistory as $index => $record): ?>
+                                                        <tr>
+                                                            <td><?php echo $index + 1; ?></td>
+                                                            <td><?php echo htmlspecialchars($record['date']); ?></td>
+                                                            <td>
+                                                                <?php
+                                                                    // The result is already formatted in getUserPredictionHistory function
+                                                                    $result_text = $record['result'];
+                                                                    $badge_class = getRiskBadgeClass($result_text); // Use the helper function
+                                                                ?>
+                                                                <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($result_text); ?></span>
+                                                            </td>
+                                                            <td>
+                                                                <?php echo htmlspecialchars($record['probability']); ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php
+                                                                    // Construct the details string using getParameterText and raw_data
+                                                                    $detailsString = "";
+                                                                    if (isset($record['raw_data'])) {
+                                                                        $paramsToDisplay = [
+                                                                            'age' => 'Age',
+                                                                            'sex' => 'Sex',
+                                                                            'bmi' => 'BMI',
+                                                                            'smoking' => 'Smoking',
+                                                                            'alcohol_drinking' => 'Alcohol',
+                                                                            'stroke' => 'Stroke',
+                                                                            'physical_health' => 'Phys. Health', // Abbreviated for table
+                                                                            'mental_health' => 'Ment. Health', // Abbreviated for table
+                                                                            'diff_walking' => 'Diff. Walking',
+                                                                            'race' => 'Race',
+                                                                            'diabetic' => 'Diabetic',
+                                                                            'physical_activity' => 'Phys. Activity', // Abbreviated
+                                                                            'gen_health' => 'Gen. Health', // Abbreviated
+                                                                            'sleep_time' => 'Sleep Time',
+                                                                            'asthma' => 'Asthma',
+                                                                            'kidney_disease' => 'Kidney Disease',
+                                                                            'skin_cancer' => 'Skin Cancer',
+                                                                        ];
+                                                                        $detailParts = [];
+                                                                        foreach ($paramsToDisplay as $key => $label) {
+                                                                            if (isset($record['raw_data'][$key])) {
+                                                                                 $formattedValue = getParameterText($key, $record['raw_data'][$key]);
+                                                                                 $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
+                                                                            }
+                                                                        }
+                                                                        $detailsString = implode(", ", $detailParts);
+                                                                    } else {
+                                                                        $detailsString = "Details N/A";
+                                                                    }
+                                                                    echo $detailsString;
+                                                                ?>
+                                                            </td>
+                                                            <td>
+                                                                <a href="result.php?id=<?php echo htmlspecialchars($record['id']); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
+                                                                <form method="post" action="" class="d-inline ml-1">
+                                                                    <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($record['id']); ?>">
+                                                                    <input type="hidden" name="delete_record" value="1">
+                                                                    <button type="button" class="btn btn-sm btn-danger delete-record-btn" data-id="<?php echo htmlspecialchars($record['id']); ?>"><em class="icon ni ni-trash"></em> Delete</button>
+                                                                </form>
+                                                            </td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <?php foreach ($predictionHistory as $record): ?>
-                                                            <tr class="nk-tb-item">
-                                                                <td class="nk-tb-col"><?php echo htmlspecialchars($record['date']); ?></td>
-                                                                <td class="nk-tb-col tb-col-mb">
-                                                                    <span class="badge badge-dot <?php echo getRiskBadgeClass($record['result']); ?>"><?php echo htmlspecialchars($record['result']); ?></span>
-                                                                </td>
-                                                                <td class="nk-tb-col tb-col-md"><?php echo htmlspecialchars($record['probability']); ?></td>
-                                                                <td class="nk-tb-col"><?php echo htmlspecialchars(getParameterText('age', $record['raw_data']['age'])); ?></td>
-                                                                <td class="nk-tb-col"><?php echo htmlspecialchars(getParameterText('sex', $record['raw_data']['sex'])); ?></td>
-                                                                <td class="nk-tb-col"><?php echo htmlspecialchars(getParameterText('bmi', $record['raw_data']['bmi'])); ?></td>
-                                                                <td class="nk-tb-col tb-col-md"><?php echo htmlspecialchars(getParameterText('smoking', $record['raw_data']['smoking'])); ?></td>
-                                                                <td class="nk-tb-col tb-col-md"><?php echo htmlspecialchars(getParameterText('alcohol_drinking', $record['raw_data']['alcohol_drinking'])); ?></td>
-                                                                <td class="nk-tb-col tb-col-md"><?php echo htmlspecialchars(getParameterText('stroke', $record['raw_data']['stroke'])); ?></td>
-                                                                <td class="nk-tb-col tb-col-lg"><?php echo htmlspecialchars(getParameterText('diabetic', $record['raw_data']['diabetic'])); ?></td>
-                                                                <td class="nk-tb-col nk-tb-col-tools">
-                                                                    <ul class="nk-tb-actions gx-1">
-                                                                        <li>
-                                                                            <a href="result.php?id=<?php echo htmlspecialchars($record['id']); ?>" class="btn btn-trigger btn-icon" data-toggle="tooltip" data-placement="top" title="View Details">
-                                                                                <em class="icon ni ni-eye"></em>
-                                                                            </a>
-                                                                        </li>
-                                                                    </ul>
-                                                                </td>
-                                                            </tr>
-                                                        <?php endforeach; ?>
-                                                    </tbody>
-                                                </table>
-                                            <?php else: ?>
-                                                <div class="alert alert-info" role="alert">
-                                                    You have no prediction history yet. Make your first prediction!
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        <?php endif; ?>
                                     </div>
-                                </div></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <?php include PROJECT_ROOT . '/footer.php'; ?>
-            </div>
         </div>
+    </div>
+
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
      <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
      <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.flash.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <script>
         $(document).ready(function() {
             // Check if the DataTable is already initialized on the table
             if (!$.fn.DataTable.isDataTable('#predictionHistoryTable')) {
                 $('#predictionHistoryTable').DataTable({
-                    "order": [[ 0, "desc" ]], // Order by the first column (Date) descending
-                     "responsive": true // Enable responsive features
+                     dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
+                     buttons: [{
+                             extend: 'copy',
+                             className: 'btn-sm'
+                         },
+                         {
+                             extend: 'csv',
+                             className: 'btn-sm'
+                         },
+                         {
+                             extend: 'excel',
+                             className: 'btn-sm'
+                         },
+                         {
+                             extend: 'pdf',
+                             className: 'btn-sm'
+                         },
+                         {
+                             extend: 'print',
+                             className: 'btn-sm'
+                         }
+                     ],
+                     responsive: true, // Enable responsive features
+                     "order": [[ 1, "desc" ]], // Order by the Date column (index 1) descending
+                     "columnDefs": [
+                         { "orderable": false, "targets": [0, 4, 5] } // Disable sorting on #, Details, and Actions columns
+                     ],
+                     language: {
+                         search: "",
+                         searchPlaceholder: "Search Predictions"
+                     }
                 });
             }
+
+             // Handle delete single record using SweetAlert2
+            $('.datatable-init-export').on('click', '.delete-record-btn', function(e) {
+                e.preventDefault();
+                const recordId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Find the form with the matching record_id and submit it
+                         // Use closest('form') to find the parent form of the clicked button
+                         $(this).closest('form').submit();
+                    }
+                });
+            });
+
+            // Handle delete all records using SweetAlert2
+            $('#delete-all-form button').on('click', function(e) {
+                 e.preventDefault();
+                 Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will delete ALL your prediction records and cannot be undone!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete all!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('delete-all-form').submit();
+                    }
+                });
+            });
         });
     </script>
 </body>
