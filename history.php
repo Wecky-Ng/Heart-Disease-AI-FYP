@@ -81,8 +81,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_all_records']))
 $predictionHistory = [];
 if ($userId) {
     $predictionHistory = getUserPredictionHistory($userId);
-    // Note: getUserPredictionHistory closes the DB connection.
-    // If you need the connection open later, you might need to adjust that function.
+    // Note: getUserPredictionHistory should return an array or empty array on success, or false/null on error
+    // We assume getUserPredictionHistory now returns data with keys: id, user_id, raw_data, prediction_result, prediction_confidence, created_at
 }
 
 // Check if fetching history was successful (getUserPredictionHistory should return an array or empty array on success, or false/null on error)
@@ -158,7 +158,8 @@ function getParameterText($key, $value) {
              // Ensure value is treated as float for display
              return round((float)$value * 100, 2) . '%';
         default:
-            return htmlspecialchars($value); // Default fallback
+            // Ensure the value is not null before passing to htmlspecialchars
+            return htmlspecialchars($value ?? 'N/A'); // Default fallback with null check
     }
 }
 
@@ -252,26 +253,49 @@ function getParameterText($key, $value) {
                                                     <?php foreach ($predictionHistory as $index => $record): ?>
                                                         <tr>
                                                             <td><?php echo $index + 1; ?></td>
-                                                            <td><?php echo htmlspecialchars($record['created_at']); ?></td>
+                                                            <td><?php echo htmlspecialchars($record['created_at'] ?? 'N/A'); ?></td>
                                                             <td>
                                                                 <?php
-                                                                    // The result is already formatted in getUserPredictionHistory function
-                                                                    $result_text = ($record['prediction_result'] == 1) ? 'High Risk' : 'Low Risk';
-                                                                    $badge_class = getRiskBadgeClass($result_text); // Use the helper function
+                                                                    // Check if the key exists and is not null before accessing it
+                                                                    $prediction_result = $record['prediction_result'] ?? null;
+                                                                    $result_text = 'N/A';
+                                                                    $badge_class = 'badge-secondary'; // Default badge
+
+                                                                    if ($prediction_result !== null) {
+                                                                         $result_text = ($prediction_result == 1) ? 'High Risk' : 'Low Risk';
+                                                                         $badge_class = getRiskBadgeClass($result_text); // Use the helper function
+                                                                    }
                                                                 ?>
                                                                 <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($result_text); ?></span>
                                                             </td>
                                                             <td>
-                                                                <?php echo round($record['prediction_confidence'] * 100, 2) . '%'; ?>
+                                                                <?php
+                                                                    // Check if the key exists and is not null before accessing it
+                                                                    $prediction_confidence = $record['prediction_confidence'] ?? null;
+                                                                    if ($prediction_confidence !== null) {
+                                                                         echo htmlspecialchars(round($prediction_confidence * 100, 2) . '%');
+                                                                    } else {
+                                                                         echo 'N/A';
+                                                                    }
+                                                                ?>
                                                             </td>
                                                             <td>
                                                                 <?php
                                                                     // Construct the details string using getParameterText and raw_data
                                                                     $detailsString = "";
-                                                                    // Check if raw_data is a string and decode it, or use it directly if it's already an array
-                                                                    $rawData = is_string($record['raw_data']) ? json_decode($record['raw_data'], true) : $record['raw_data'];
+                                                                    // Check if raw_data key exists and is not null
+                                                                    $rawData = $record['raw_data'] ?? null;
 
-                                                                    if ($rawData && is_array($rawData)) {
+                                                                    // Decode if it's a string, otherwise use directly if it's an array
+                                                                    $processedRawData = null;
+                                                                    if (is_string($rawData)) {
+                                                                        $processedRawData = json_decode($rawData, true);
+                                                                    } elseif (is_array($rawData)) {
+                                                                        $processedRawData = $rawData;
+                                                                    }
+
+
+                                                                    if ($processedRawData && is_array($processedRawData)) {
                                                                         $paramsToDisplay = [
                                                                             'age' => 'Age',
                                                                             'sex' => 'Sex',
@@ -293,8 +317,10 @@ function getParameterText($key, $value) {
                                                                         ];
                                                                         $detailParts = [];
                                                                         foreach ($paramsToDisplay as $key => $label) {
-                                                                            if (isset($rawData[$key])) {
-                                                                                 $formattedValue = getParameterText($key, $rawData[$key]);
+                                                                            // Check if the key exists in the processed raw data before accessing
+                                                                            if (isset($processedRawData[$key])) {
+                                                                                 // Ensure value is not null before passing to getParameterText
+                                                                                 $formattedValue = getParameterText($key, $processedRawData[$key] ?? null);
                                                                                  $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
                                                                             }
                                                                         }
@@ -306,11 +332,11 @@ function getParameterText($key, $value) {
                                                                 ?>
                                                             </td>
                                                             <td>
-                                                                <a href="result.php?id=<?php echo htmlspecialchars($record['id']); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
+                                                                <a href="result.php?id=<?php echo htmlspecialchars($record['id'] ?? ''); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
                                                                 <form method="post" action="" class="d-inline ml-1">
-                                                                    <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($record['id']); ?>">
+                                                                    <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($record['id'] ?? ''); ?>">
                                                                     <input type="hidden" name="delete_record" value="1">
-                                                                    <button type="button" class="btn btn-sm btn-danger delete-record-btn" data-id="<?php echo htmlspecialchars($record['id']); ?>"><em class="icon ni ni-trash"></em> Delete</button>
+                                                                    <button type="button" class="btn btn-sm btn-danger delete-record-btn" data-id="<?php echo htmlspecialchars($record['id'] ?? ''); ?>"><em class="icon ni ni-trash"></em> Delete</button>
                                                                 </form>
                                                             </td>
                                                         </tr>
