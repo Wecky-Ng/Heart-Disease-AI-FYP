@@ -39,7 +39,7 @@ function savePredictionHistory($conn, $userId, $data, $prediction, $confidence)
     // Bind parameters - Adjust types (i, d, s) as per your table schema
     // Keys MUST match the output of validateAndPreprocessFormData
     $stmt->bind_param(
-        'idiiiiddiiiiiidiiid', // i=int, d=double/float
+        'idiiiidiiiiiidiiiid', // total: 20 types
         $userId,                    // i
         $data['bmi'],               // d
         $data['smoking'],           // i
@@ -50,7 +50,7 @@ function savePredictionHistory($conn, $userId, $data, $prediction, $confidence)
         $data['diff_walking'],      // i
         $data['sex'],               // i
         $data['age'],               // i
-        $data['race'],              // i
+        $data['race'],              // i 
         $data['diabetic'],          // i
         $data['physical_activity'], // i
         $data['gen_health'],        // i
