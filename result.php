@@ -51,10 +51,10 @@
         require_once PROJECT_ROOT . '/session.php'; // Start session and provide isLoggedIn()
 
         // --- Redirect if not logged in ---
-        if (!isLoggedIn()) {
-            header('Location: home.php'); // Redirect to home page
-            exit(); // Stop script execution
-        }
+        // if (!isLoggedIn()) {
+        //     header('Location: home.php'); // Redirect to home page
+        //     exit(); // Stop script execution
+        // }
         // --- End Redirect ---
 
         // require_once PROJECT_ROOT . '/database/form_validation_preprocessing.php'; // Not needed directly on this page
@@ -164,120 +164,7 @@
                     $displayError = "Invalid record ID specified."; // User must be logged in due to check at top
             }
         }
-        // The actual SweetAlert JS is added near the end of the body.
-        // Check if form was submitted via POST
-        /* --- REMOVED REDUNDANT POST HANDLING LOGIC ---
-        elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
-            // 1. Validate form data
-            $validationResult = validateAndPreprocessFormData($_POST);
-
-            if ($validationResult['isValid']) {
-                $validatedData = $validationResult['data'];
-
-                // 2. Prepare data for Python API (ensure keys match API expectations)
-                // Map PHP keys (lowercase_snake) to Python API keys (PascalCase)
-                $keyMapping = [
-                    'bmi' => 'BMI',
-                    'smoking' => 'Smoking',
-                    'alcohol_drinking' => 'AlcoholDrinking',
-                    'stroke' => 'Stroke',
-                    'physical_health' => 'PhysicalHealth',
-                    'mental_health' => 'MentalHealth',
-                    'diff_walking' => 'DiffWalking',
-                    'sex' => 'Sex',
-                    'age' => 'Age', // Sending Age, assuming API handles AgeCategory derivation if needed
-                    'race' => 'Race',
-                    'diabetic' => 'Diabetic',
-                    'physical_activity' => 'PhysicalActivity',
-                    'gen_health' => 'GenHealth',
-                    'sleep_time' => 'SleepTime',
-                    'asthma' => 'Asthma',
-                    'kidney_disease' => 'KidneyDisease',
-                    'skin_cancer' => 'SkinCancer'
-                ];
-
-                $apiData = [];
-                foreach ($keyMapping as $phpKey => $apiKey) {
-                    if (isset($validatedData[$phpKey])) {
-                        // Ensure numeric types are sent as numbers, not strings
-                        if (is_numeric($validatedData[$phpKey])) {
-                            $apiData[$apiKey] = $validatedData[$phpKey] + 0; // Force numeric type
-                        } else {
-                            $apiData[$apiKey] = $validatedData[$phpKey];
-                        }
-                    } else {
-                        // Handle missing keys if necessary, maybe set a default or log an error
-                        error_log("Missing key in validated data: {$phpKey}");
-                        // Decide how to handle this - skip, default, or error out
-                    }
-                }
-
-                // 3. Call Python API
-                $apiUrl = '/predict'; // Replace with your actual API endpoint
-                $options = [
-                    'http' => [
-                        'header'  => "Content-type: application/json\r\n",
-                        'method'  => 'POST',
-                        'content' => json_encode($apiData),
-                        'ignore_errors' => true // Allows reading response body on non-2xx status codes
-                    ]
-                ];
-                $context  = stream_context_create($options);
-                $apiResultJson = @file_get_contents($apiUrl, false, $context);
-                $httpStatusCode = $http_response_header ? (int)explode(' ', $http_response_header[0])[1] : 500;
-
-                if ($apiResultJson === FALSE || $httpStatusCode >= 400) {
-                    $apiError = json_decode($apiResultJson, true);
-                    $errorMessage = $apiError['error'] ?? 'Failed to connect to the prediction service or received an error.';
-                    error_log("API Call Failed: Status={$httpStatusCode}, Response={$apiResultJson}");
-                    $displayError = "Prediction Error: " . htmlspecialchars($errorMessage);
-                } else {
-                    $apiResult = json_decode($apiResultJson, true);
-
-                    if (isset($apiResult['prediction']) && isset($apiResult['confidence'])) {
-                        $predictionResult = (int)$apiResult['prediction'];
-                        $predictionConfidence = (float)$apiResult['confidence'];
-
-                        // 4. Save to Database (if user is logged in)
-                        $historyId = null;
-                        if ($userId) {
-                            $conn = connectToDatabase();
-                            if ($conn) {
-                                $historyId = savePredictionHistory($conn, $userId, $validatedData, $predictionResult, $predictionConfidence);
-                                if (!$historyId) {
-                                    error_log("Failed to save prediction history for user {$userId}.");
-                                    // Decide if this should be a user-facing error
-                                }
-                                // The last test record is now derived directly from history, no separate update needed.
-                                $conn->close();
-                            } else {
-                                error_log("Database connection failed in result.php");
-                                // Decide if this should be a user-facing error
-                            }
-                        }
-
-                        // 5. Prepare data for display
-                        $displayData = [
-                            'riskLevel' => ($predictionResult == 1) ? 'High Risk' : 'Low Risk',
-                            'probabilityPercent' => round($predictionConfidence * 100, 2) . '%',
-                            'riskClass' => ($predictionResult == 1) ? 'result-high' : 'result-low',
-                            'riskDescription' => ($predictionResult == 1) ? "The prediction indicates a high risk of heart disease. Please consult with a healthcare professional." : "The prediction indicates a low risk of heart disease. Maintain a healthy lifestyle.",
-                            'parameters' => $validatedData // Use the validated form data for display
-                        ];
-
-                    } else {
-                        error_log("Invalid API Response: " . $apiResultJson);
-                        $displayError = "Received an invalid response from the prediction service.";
-                    }
-                }
-            } else {
-                // Validation failed
-                $errorMessages = implode(", ", $validationResult['errors']);
-                $displayError = "Invalid input data: " . htmlspecialchars($errorMessages);
-            }
-        }
-        */
-        // --- END REMOVED POST HANDLING ---
+        
         else {
             // Neither POST nor GET with ID - redirect to home
             // If accessed directly without POST data or GET ID
