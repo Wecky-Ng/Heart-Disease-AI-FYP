@@ -56,9 +56,35 @@ if (!$conn) {
     exit(); // Stop execution after sending response
 }
 
-// Prepare data for saving (ensure keys match savePredictionHistory expectations)
-// You might need to adjust $dbData if $inputs keys don't directly match DB column names
-$dbData = $inputs;
+// Prepare data for saving: Extract only the columns expected by user_prediction_history
+// This prevents errors if $inputs contains extra fields like 'save_record'
+$expected_columns = [
+    'bmi', 'smoking', 'alcohol_drinking', 'stroke', 'physical_health',
+    'mental_health', 'diff_walking', 'sex', 'age', 'race', 'diabetic',
+    'physical_activity', 'gen_health', 'sleep_time', 'asthma', 'kidney_disease',
+    'skin_cancer'
+];
+
+$dbData = [];
+foreach ($expected_columns as $column) {
+    if (isset($inputs[$column])) {
+        // Basic type casting based on schema (adjust if needed)
+        if (in_array($column, ['bmi', 'physical_health', 'mental_health', 'sleep_time'])) {
+            $dbData[$column] = (float)$inputs[$column];
+        } elseif (in_array($column, ['age'])) {
+            $dbData[$column] = (int)$inputs[$column];
+        } else {
+            // Assume tinyint/int for others based on schema
+            $dbData[$column] = (int)$inputs[$column];
+        }
+    } else {
+        // Handle missing expected data - log error and potentially stop
+        error_log("Missing expected input column '{$column}' in save_prediction.php for user {$userId}.");
+        echo json_encode(['success' => false, 'message' => "Missing required data: {$column}."]);
+        $conn->close();
+        exit();
+    }
+}
 
 // Call function to save the history record
 $historyId = savePredictionHistory($conn, $userId, $dbData, $prediction, $confidence);
