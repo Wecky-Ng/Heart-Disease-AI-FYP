@@ -189,170 +189,171 @@ function getParameterText($key, $value) {
 
 <body class="nk-body bg-lighter">
     <div class="nk-app-root">
-        <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
-        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
-
-        <div class="nk-main">
+        <div class="nk-main ">
+            <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
+            <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
             <?php include PROJECT_ROOT . '/header.php'; ?>
 
-            <div class="nk-content">
-                <div class="container-fluid">
-                    <div class="nk-content-inner">
-                        <div class="nk-content-body">
-                            <div class="nk-block-head nk-block-head-sm">
-                                <div class="nk-block-between">
-                                    <div class="nk-block-head-content">
-                                        <h3 class="nk-block-title page-title">Prediction History</h3>
-                                        <div class="nk-block-des text-soft">
-                                            <p>View your past heart disease prediction results.</p>
+            <div class="nk-wrap ">
+                <div class="nk-content ">
+                    <div class="container-fluid">
+                        <div class="nk-content-inner">
+                            <div class="nk-content-body">
+                                <div class="nk-block-head nk-block-head-sm">
+                                    <div class="nk-block-between">
+                                        <div class="nk-block-head-content">
+                                            <h3 class="nk-block-title page-title">Prediction History</h3>
+                                            <div class="nk-block-des text-soft">
+                                                <p>View your past heart disease prediction results.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="nk-block">
-                                <div class="card card-bordered card-stretch">
-                                    <div class="card-inner card-inner-bordered">
-                                        <div class="card-title-group">
-                                            <div class="card-title">
-                                                <h5 class="title">Your Prediction Records</h5>
-                                            </div>
-                                            <div class="card-tools">
-                                                <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
-                                                <?php if (!empty($predictionHistory)): ?>
-                                                <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
-                                                    <input type="hidden" name="delete_all_records" value="1">
-                                                    <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
-                                                </form>
-                                                <?php endif; ?>
+                                <div class="nk-block">
+                                    <div class="card card-bordered card-stretch">
+                                        <div class="card-inner card-inner-bordered">
+                                            <div class="card-title-group">
+                                                <div class="card-title">
+                                                    <h5 class="title">Your Prediction Records</h5>
+                                                </div>
+                                                <div class="card-tools">
+                                                    <a href="user_input_form.php" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>New Prediction</span></a>
+                                                    <?php if (!empty($predictionHistory)): ?>
+                                                    <form method="post" action="" class="d-inline ml-2" id="delete-all-form">
+                                                        <input type="hidden" name="delete_all_records" value="1">
+                                                        <button type="button" class="btn btn-danger" onclick="confirmDeleteAll()"><em class="icon ni ni-trash"></em><span>Delete All</span></button>
+                                                    </form>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="card-inner">
-                                        <?php if (!empty($success_message)): ?>
-                                            <div class="alert alert-success">
-                                                <p><?php echo htmlspecialchars($success_message); ?></p>
-                                            </div>
-                                        <?php endif; ?>
+                                        <div class="card-inner">
+                                            <?php if (!empty($success_message)): ?>
+                                                <div class="alert alert-success">
+                                                    <p><?php echo htmlspecialchars($success_message); ?></p>
+                                                </div>
+                                            <?php endif; ?>
 
-                                        <?php if (!empty($error_message)): ?>
-                                            <div class="alert alert-danger">
-                                                <p><?php echo htmlspecialchars($error_message); ?></p>
-                                            </div>
-                                        <?php endif; ?>
+                                            <?php if (!empty($error_message)): ?>
+                                                <div class="alert alert-danger">
+                                                    <p><?php echo htmlspecialchars($error_message); ?></p>
+                                                </div>
+                                            <?php endif; ?>
 
-                                        <?php if (empty($predictionHistory)): ?>
-                                            <div class="alert alert-info">
-                                                <p>You haven't made any predictions yet. <a href="user_input_form.php">Make your first prediction</a>.</p>
-                                            </div>
-                                        <?php else: ?>
-                                            <table class="table table-hover datatable-init-export display responsive nowrap" id="predictionHistoryTable" style="width:100%">
-                                                <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Date</th>
-                                                        <th>Result</th>
-                                                        <th>Probability</th>
-                                                        <th>Details</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php foreach ($predictionHistory as $index => $record): ?>
+                                            <?php if (empty($predictionHistory)): ?>
+                                                <div class="alert alert-info">
+                                                    <p>You haven't made any predictions yet. <a href="user_input_form.php">Make your first prediction</a>.</p>
+                                                </div>
+                                            <?php else: ?>
+                                                <table class="table table-hover datatable-init-export display responsive nowrap" id="predictionHistoryTable" style="width:100%">
+                                                    <thead>
                                                         <tr>
-                                                            <td><?php echo $index + 1; ?></td>
-                                                            <td><?php echo htmlspecialchars($record['created_at'] ?? 'N/A'); ?></td>
-                                                            <td>
-                                                                <?php
-                                                                    // Check if the key exists and is not null before accessing it
-                                                                    $prediction_result = $record['prediction_result'] ?? null;
-                                                                    $result_text = 'N/A';
-                                                                    $badge_class = 'badge-secondary'; // Default badge
-
-                                                                    // Check if prediction_result is a valid integer (0 or 1)
-                                                                    if ($prediction_result !== null && ($prediction_result === 0 || $prediction_result === 1)) {
-                                                                         $result_text = ($prediction_result == 1) ? 'High Risk' : 'Low Risk';
-                                                                         $badge_class = getRiskBadgeClass($result_text); // Use the helper function
-                                                                    }
-                                                                ?>
-                                                                <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($result_text); ?></span>
-                                                            </td>
-                                                            <td>
-                                                                <?php
-                                                                    // Check if the key exists and is a valid number before accessing it
-                                                                    $prediction_confidence = $record['prediction_confidence'] ?? null;
-                                                                    if ($prediction_confidence !== null && is_numeric($prediction_confidence)) {
-                                                                         echo htmlspecialchars(round((float)$prediction_confidence * 100, 2) . '%');
-                                                                    } else {
-                                                                         echo 'N/A';
-                                                                    }
-                                                                ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php
-                                                                    // Construct the details string using getParameterText and raw_data
-                                                                    $detailsString = "";
-                                                                    // Check if raw_data key exists and is not null
-                                                                    $rawData = $record['raw_data'] ?? null;
-
-                                                                    // Decode if it's a string, otherwise use directly if it's an array
-                                                                    $processedRawData = null;
-                                                                    if (is_string($rawData)) {
-                                                                        $processedRawData = json_decode($rawData, true);
-                                                                    } elseif (is_array($rawData)) {
-                                                                        $processedRawData = $rawData;
-                                                                    }
-
-
-                                                                    if ($processedRawData && is_array($processedRawData)) {
-                                                                        $paramsToDisplay = [
-                                                                            'age' => 'Age',
-                                                                            'sex' => 'Sex',
-                                                                            'bmi' => 'BMI',
-                                                                            'smoking' => 'Smoking',
-                                                                            'alcohol_drinking' => 'Alcohol',
-                                                                            'stroke' => 'Stroke',
-                                                                            'physical_health' => 'Phys. Health', // Abbreviated for table
-                                                                            'mental_health' => 'Ment. Health', // Abbreviated for table
-                                                                            'diff_walking' => 'Diff. Walking',
-                                                                            'race' => 'Race',
-                                                                            'diabetic' => 'Diabetic',
-                                                                            'physical_activity' => 'Phys. Activity', // Abbreviated
-                                                                            'gen_health' => 'Gen. Health', // Abbreviated
-                                                                            'sleep_time' => 'Sleep Time',
-                                                                            'asthma' => 'Asthma',
-                                                                            'kidney_disease' => 'Kidney Disease',
-                                                                            'skin_cancer' => 'Skin Cancer',
-                                                                        ];
-                                                                        $detailParts = [];
-                                                                        foreach ($paramsToDisplay as $key => $label) {
-                                                                            // Check if the key exists in the processed raw data before accessing
-                                                                            if (isset($processedRawData[$key])) {
-                                                                                 // Ensure value is not null before passing to getParameterText
-                                                                                 $formattedValue = getParameterText($key, $processedRawData[$key] ?? null);
-                                                                                 $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
-                                                                            }
-                                                                        }
-                                                                        $detailsString = implode(", ", $detailParts);
-                                                                    } else {
-                                                                        $detailsString = "Details N/A";
-                                                                    }
-                                                                    echo $detailsString;
-                                                                ?>
-                                                            </td>
-                                                            <td>
-                                                                <a href="result.php?id=<?php echo htmlspecialchars($record['id'] ?? ''); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
-                                                                <form method="post" action="" class="d-inline ml-1">
-                                                                    <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($record['id'] ?? ''); ?>">
-                                                                    <input type="hidden" name="delete_record" value="1">
-                                                                    <button type="button" class="btn btn-sm btn-danger delete-record-btn" data-id="<?php echo htmlspecialchars($record['id'] ?? ''); ?>"><em class="icon ni ni-trash"></em> Delete</button>
-                                                                </form>
-                                                            </td>
+                                                            <th>#</th>
+                                                            <th>Date</th>
+                                                            <th>Result</th>
+                                                            <th>Probability</th>
+                                                            <th>Details</th>
+                                                            <th>Actions</th>
                                                         </tr>
-                                                    <?php endforeach; ?>
-                                                </tbody>
-                                            </table>
-                                        <?php endif; ?>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($predictionHistory as $index => $record): ?>
+                                                            <tr>
+                                                                <td><?php echo $index + 1; ?></td>
+                                                                <td><?php echo htmlspecialchars($record['created_at'] ?? 'N/A'); ?></td>
+                                                                <td>
+                                                                    <?php
+                                                                        // Check if the key exists and is not null before accessing it
+                                                                        $prediction_result = $record['prediction_result'] ?? null;
+                                                                        $result_text = 'N/A';
+                                                                        $badge_class = 'badge-secondary'; // Default badge
+
+                                                                        // Check if prediction_result is a valid integer (0 or 1)
+                                                                        if ($prediction_result !== null && ($prediction_result === 0 || $prediction_result === 1)) {
+                                                                             $result_text = ($prediction_result == 1) ? 'High Risk' : 'Low Risk';
+                                                                             $badge_class = getRiskBadgeClass($result_text); // Use the helper function
+                                                                        }
+                                                                    ?>
+                                                                    <span class="badge <?php echo htmlspecialchars($result_text); ?>"><?php echo htmlspecialchars($result_text); ?></span>
+                                                                </td>
+                                                                <td>
+                                                                    <?php
+                                                                        // Check if the key exists and is a valid number before accessing it
+                                                                        $prediction_confidence = $record['prediction_confidence'] ?? null;
+                                                                        if ($prediction_confidence !== null && is_numeric($prediction_confidence)) {
+                                                                             echo htmlspecialchars(round((float)$prediction_confidence * 100, 2) . '%');
+                                                                        } else {
+                                                                             echo 'N/A';
+                                                                        }
+                                                                    ?>
+                                                                </td>
+                                                                <td>
+                                                                    <?php
+                                                                        // Construct the details string using getParameterText and raw_data
+                                                                        $detailsString = "";
+                                                                        // Check if raw_data key exists and is not null
+                                                                        $rawData = $record['raw_data'] ?? null;
+
+                                                                        // Decode if it's a string, otherwise use directly if it's an array
+                                                                        $processedRawData = null;
+                                                                        if (is_string($rawData)) {
+                                                                            $processedRawData = json_decode($rawData, true);
+                                                                        } elseif (is_array($rawData)) {
+                                                                            $processedRawData = $rawData;
+                                                                        }
+
+
+                                                                        if ($processedRawData && is_array($processedRawData)) {
+                                                                            $paramsToDisplay = [
+                                                                                'age' => 'Age',
+                                                                                'sex' => 'Sex',
+                                                                                'bmi' => 'BMI',
+                                                                                'smoking' => 'Smoking',
+                                                                                'alcohol_drinking' => 'Alcohol',
+                                                                                'stroke' => 'Stroke',
+                                                                                'physical_health' => 'Phys. Health', // Abbreviated for table
+                                                                                'mental_health' => 'Ment. Health', // Abbreviated for table
+                                                                                'diff_walking' => 'Diff. Walking',
+                                                                                'race' => 'Race',
+                                                                                'diabetic' => 'Diabetic',
+                                                                                'physical_activity' => 'Phys. Activity', // Abbreviated
+                                                                                'gen_health' => 'Gen. Health', // Abbreviated
+                                                                                'sleep_time' => 'Sleep Time',
+                                                                                'asthma' => 'Asthma',
+                                                                                'kidney_disease' => 'Kidney Disease',
+                                                                                'skin_cancer' => 'Skin Cancer',
+                                                                            ];
+                                                                            $detailParts = [];
+                                                                            foreach ($paramsToDisplay as $key => $label) {
+                                                                                // Check if the key exists in the processed raw data before accessing
+                                                                                if (isset($processedRawData[$key])) {
+                                                                                     // Ensure value is not null before passing to getParameterText
+                                                                                     $formattedValue = getParameterText($key, $processedRawData[$key] ?? null);
+                                                                                     $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
+                                                                                }
+                                                                            }
+                                                                            $detailsString = implode(", ", $detailParts);
+                                                                        } else {
+                                                                            $detailsString = "Details N/A";
+                                                                        }
+                                                                        echo $detailsString;
+                                                                    ?>
+                                                                </td>
+                                                                <td>
+                                                                    <a href="result.php?id=<?php echo htmlspecialchars($record['id'] ?? ''); ?>" class="btn btn-sm btn-primary"><em class="icon ni ni-eye"></em> View</a>
+                                                                    <form method="post" action="" class="d-inline ml-1">
+                                                                        <input type="hidden" name="record_id" value="<?php echo htmlspecialchars($record['id'] ?? ''); ?>">
+                                                                        <input type="hidden" name="delete_record" value="1">
+                                                                        <button type="button" class="btn btn-sm btn-danger delete-record-btn" data-id="<?php echo htmlspecialchars($record['id'] ?? ''); ?>"><em class="icon ni ni-trash"></em> Delete</button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -415,8 +416,13 @@ function getParameterText($key, $value) {
                      "order": [[ 1, "desc" ]], // Order by the Date column (index 1) descending
                      "columnDefs": [
                          { "orderable": false, "targets": [0, 4, 5] }, // Disable sorting on #, Details, and Actions columns
-                          // Adjust column widths if necessary to prevent overflow, though Responsive should handle this
-                          // Example: { "width": "15%", "targets": 4 } for Details column
+                         // Add responsive priority to columns
+                         { "responsivePriority": 1, "targets": 0 }, // #
+                         { "responsivePriority": 2, "targets": 1 }, // Date
+                         { "responsivePriority": 3, "targets": 2 }, // Result
+                         { "responsivePriority": 4, "targets": 3 }, // Probability
+                         { "responsivePriority": 6, "targets": 4 }, // Details (lower priority)
+                         { "responsivePriority": 5, "targets": 5 }  // Actions (higher priority than details)
                      ],
                      language: {
                          search: "",
