@@ -157,7 +157,7 @@ function loginUser($username, $password) {
         $stmt->close();
         // Connection is managed globally, do not close here
         // $db->close();
-        return ['status' => false, 'message' => 'Email not found or password incorrect."'];
+        return ['status' => false, 'message' => 'Email not found or password incorrect.'];
     }
 
     $user = $result->fetch_assoc();
@@ -174,7 +174,7 @@ function loginUser($username, $password) {
             } elseif ($user['status'] == 2) {
                  // Connection is managed globally, do not close here
                  // $db->close();
-                return ['status' => false, 'message' => 'This account has been deleted.'];
+                return ['status' => false, 'message' => 'Account does not exist.'];
             }
             // If status is 1 (active), proceed with login
         } else {
@@ -204,6 +204,6 @@ function loginUser($username, $password) {
     } else {
          // Connection is managed globally, do not close here
         // $db->close();
-        return ['status' => false, 'message' => 'Email not found or password incorrect."'];
+        return ['status' => false, 'message' => 'Email not found or password incorrect.'];
     }
 }

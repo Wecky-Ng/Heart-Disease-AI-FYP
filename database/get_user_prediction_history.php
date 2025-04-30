@@ -155,6 +155,8 @@ function getLastTestRecord($userId) {
     $stmt->close();
     $db->close(); // Close the database connection
 
+    // Return the record directly - no need for raw_data nesting
+    // This allows direct access to fields in the form prefill code
     return $lastRecord;
 }
 
