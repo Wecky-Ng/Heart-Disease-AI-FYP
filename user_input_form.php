@@ -24,9 +24,6 @@ $agePrefillValue = ''; // Initialize age prefill value
 $userData = null;
 $lastTestData = null;
 
-// Removed the local getLastTestRecord function definition from here
-
-
 // Check if user is logged in
 if (isLoggedIn()) {
     // Get current user session data
@@ -46,9 +43,8 @@ if (isLoggedIn()) {
         // Prefill Gender: Prioritize last test data, then user profile
         // Note: The last test record stores 'sex' (0=Female, 1=Male), while user profile stores 'gender' (Male/Female/Other string)
         if ($lastTestData && isset($lastTestData['sex']) && $lastTestData['sex'] !== null) {
-            // Map tinyint sex from last test record to string for comparison if needed,
-            // or directly use the tinyint value if your form select options match (0/1)
-            $genderPrefillValue = htmlspecialchars($lastTestData['sex']); // Use the tinyint value directly
+            // Use the tinyint value directly for prefill
+            $genderPrefillValue = htmlspecialchars($lastTestData['sex']);
         } elseif ($userData && !empty($userData['gender'])) {
             // Map gender string from user profile to the tinyint value expected by the form (0 for Female, 1 for Male)
             // Assuming 'Male' -> 1, 'Female' -> 0 based on your DB schema comment for user_prediction_history.sex
@@ -173,7 +169,7 @@ if (isLoggedIn()) {
                                                         <div class="alert-text">Some fields have been prefilled with your profile data and previous test information.</div>
                                                     </div>
                                                     <?php endif; ?>
-                                                    <form id="prediction-form" action="result.php" method="post" class="form-validate">
+                                                    <form id="prediction-form" action="" method="post" class="form-validate">
                                                         <div class="row g-4">
                                                             <div class="col-12">
                                                                 <h6 class="overline-title text-primary">Basic Information</h6>
@@ -451,15 +447,16 @@ if (isLoggedIn()) {
     </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('prediction-form');
             const submitButton = form.querySelector('button[type="submit"]');
-            const originalButtonHTML = submitButton.innerHTML;
+            const originalButtonHTML = submitButton.innerHTML; // Store original button HTML
             const sessionErrorMessage = document.getElementById('session-error-message').value;
 
-            // Display session error if present
+            // Display session error if present using SweetAlert2
             if (sessionErrorMessage) {
                 Swal.fire({
                     icon: 'error',
@@ -469,231 +466,24 @@ if (isLoggedIn()) {
                 });
             }
 
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
 
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
+            form.addEventListener('submit', function(event) {
+                // Basic form validation before submission (browser's built-in validation is also active due to 'required')
+                 if (!form.checkValidity()) {
+                    // If form is invalid, browser will show validation messages
+                    return; // Stop the script here, browser handles the rest
                 }
 
-                const spinner = submitButton.querySelector('.spinner-border') || document.createElement('span');
-                const buttonText = submitButton.querySelector('.button-text') || submitButton;
-
-                if (spinner) spinner.style.display = 'inline-block';
-                if (buttonText.textContent) buttonText.textContent = 'Predicting...';
+                // Add spinner and disable button on valid form submission
+                submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...`;
                 submitButton.disabled = true;
 
-                const formData = new FormData(form);
-                const formObject = {};
-
-                // Map form input names (lowercase snake_case) to API expected keys (PascalCase)
-                const keyMapping = {
-                    'bmi': 'BMI',
-                    'smoking': 'Smoking',
-                    'alcohol_drinking': 'AlcoholDrinking',
-                    'stroke': 'Stroke',
-                    'physical_health': 'PhysicalHealth',
-                    'mental_health': 'MentalHealth',
-                    'diff_walking': 'DiffWalking',
-                    'sex': 'Sex',
-                    'age': 'Age',
-                    'race': 'Race',
-                    'diabetic': 'Diabetic',
-                    'physical_activity': 'PhysicalActivity',
-                    'gen_health': 'GenHealth',
-                    'sleep_time': 'SleepTime',
-                    'asthma': 'Asthma',
-                    'kidney_disease': 'KidneyDisease',
-                    'skin_cancer': 'SkinCancer'
-                };
-
-
-                formData.forEach((value, key) => {
-                    // Find the corresponding API key using the mapping
-                    const apiKey = keyMapping[key];
-
-                    // Only add to formObject if a mapping exists
-                    if (apiKey) {
-                         // Convert numeric string fields to numbers where appropriate
-                        if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
-                            formObject[apiKey] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0
-                        } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
-                            formObject[apiKey] = parseInt(value, 10); // Ensure integer for categorical/binary
-                        } else {
-                            // For any other fields not explicitly handled, use the value directly
-                            formObject[apiKey] = value;
-                        }
-                    }
-                    // Note: Fields from the form that are not in keyMapping will be ignored.
-                });
-
-
-                // Call the Render prediction API
-                fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formObject) // Send the formObject with correct keys
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        // Attempt to parse error response if not OK
-                        return response.json().then(err => {
-                             // Log the full error response from the API for debugging
-                             console.error('API Error Response:', err);
-                             throw new Error(err.error || `API returned status ${response.status}`);
-                        }).catch(() => {
-                            // If response is not JSON, throw a generic error
-                            throw new Error(`API returned status ${response.status}`);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // --- NEW LOGIC: Save prediction then show SweetAlert & Redirect ---
-                    const predictionResult = data.prediction; // 0 or 1
-                    const confidenceScore = data.confidence;
-
-                    // Prepare data for saving (use original form input names for database saving)
-                    const saveData = {
-                        inputs: {}, // Will populate with original form input names
-                        prediction: predictionResult,
-                        confidence: confidenceScore
-                    };
-
-                    // Repopulate saveData.inputs with original form input names and values
-                    formData.forEach((value, key) => {
-                         // Convert numeric string fields to numbers where appropriate for saving
-                         if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
-                            saveData.inputs[key] = parseFloat(value) || 0;
-                        } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
-                            saveData.inputs[key] = parseInt(value, 10);
-                        } else {
-                             saveData.inputs[key] = value;
-                        }
-                    });
-
-
-                    // 1. Asynchronously save the prediction
-                    fetch('/database/save_prediction.php', { // Call the new PHP endpoint
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(saveData) // Send the data for saving
-                    })
-                    .then(saveResponse => {
-                        if (!saveResponse.ok) {
-                             // Attempt to parse save error response if not OK
-                             return saveResponse.json().then(err => {
-                                 console.error('Save API Error Response:', err);
-                                 throw new Error(err.message || `Save API returned status ${saveResponse.status}`);
-                             }).catch(() => {
-                                 throw new Error(`Save API returned status ${saveResponse.status}`);
-                             });
-                        }
-                        return saveResponse.json();
-                    })
-                    .then(saveResult => {
-                        if (saveResult.success) {
-                            console.log('Prediction saved successfully.');
-                            // 2. Show SweetAlert with result
-                            const riskLevel = predictionResult === 1 ? 'High Risk' : 'Low Risk';
-                            const confidencePercent = (confidenceScore * 100).toFixed(2);
-                            const alertIcon = predictionResult === 1 ? 'warning' : 'success';
-                            const alertTitle = `Prediction: ${riskLevel}`;
-                            const alertText = `Confidence: ${confidencePercent}%. Click OK to view details.`;
-
-                            Swal.fire({
-                                icon: alertIcon,
-                                title: alertTitle,
-                                text: alertText,
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#5a62c8'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // 3. Redirect to result.php via POST
-                                    const postForm = document.createElement('form');
-                                    postForm.method = 'POST';
-                                    postForm.action = 'result.php';
-                                    postForm.style.display = 'none'; // Hide the form
-
-                                    // Add original form data and prediction results as hidden inputs
-                                    // Use the original form input names for consistency with result.php display logic
-                                     formData.forEach((value, key) => {
-                                        const input = document.createElement('input');
-                                        input.type = 'hidden';
-                                        input.name = key; // Use original form input name
-                                        input.value = value; // Use original form input value
-                                        postForm.appendChild(input);
-                                    });
-
-                                    // Add prediction results as hidden inputs
-                                    const predictionInput = document.createElement('input');
-                                    predictionInput.type = 'hidden';
-                                    predictionInput.name = 'prediction_result';
-                                    predictionInput.value = predictionResult;
-                                    postForm.appendChild(predictionInput);
-
-                                    const confidenceInput = document.createElement('input');
-                                    confidenceInput.type = 'hidden';
-                                    confidenceInput.name = 'prediction_confidence';
-                                    confidenceInput.value = confidenceScore;
-                                    postForm.appendChild(confidenceInput);
-
-                                    document.body.appendChild(postForm);
-                                    postForm.submit();
-                                }
-                            });
-                        } else {
-                            // Saving failed
-                            console.error('Failed to save prediction:', saveResult.message);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Save Error',
-                                text: 'Could not save the prediction result. Please try again. ' + (saveResult.message || ''),
-                                confirmButtonColor: '#e74c3c'
-                            });
-                        }
-                    })
-                    .catch(saveError => {
-                        console.error('Error saving prediction:', saveError);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Save Error',
-                            text: 'An error occurred while trying to save the prediction result: ' + saveError.message,
-                            confirmButtonColor: '#e74c3c'
-                        });
-                    })
-                    .finally(() => {
-                         // Re-enable button regardless of save outcome, but only after save attempt
-                         resetButton();
-                    });
-                    // --- END NEW LOGIC ---
-                })
-                .catch(error => {
-                    console.error('Error during prediction fetch:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Prediction Error',
-                        text: 'Failed to get prediction: ' + error.message,
-                        confirmButtonColor: '#e74c3c'
-                    });
-                    resetButton(); // Reset button on fetch error
-                });
-
-                // Function to reset button state
-                function resetButton() {
-                    const spinner = submitButton.querySelector('.spinner-border'); // Re-select in case it was created
-                    const buttonText = submitButton.querySelector('.button-text') || submitButton;
-
-                    if (spinner) spinner.style.display = 'none';
-                    submitButton.innerHTML = originalButtonHTML; // Restore original button HTML
-                    submitButton.disabled = false;
-                }
+                // The form will now submit normally to form_preprocessing.php
+                // The API call and redirection will be handled by form_preprocessing.php
             });
+
+            // Note: The complex fetch, save, and SweetAlert logic has been removed
+            // as the form submission is now handled by form_preprocessing.php
         });
     </script>
 </body>
