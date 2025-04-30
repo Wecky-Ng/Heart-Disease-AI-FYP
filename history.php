@@ -177,6 +177,13 @@ function getParameterText($key, $value) {
     <?php include PROJECT_ROOT . '/includes/styles.php'; ?>
      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+     <style>
+        /* Optional: Add some basic styling to wrap text in the details column */
+        #predictionHistoryTable td:nth-child(5) { /* Target the fifth column (Details) */
+            white-space: normal; /* Allow text wrapping */
+            word-break: break-word; /* Break long words */
+        }
+     </style>
 
 </head>
 
@@ -261,7 +268,8 @@ function getParameterText($key, $value) {
                                                                     $result_text = 'N/A';
                                                                     $badge_class = 'badge-secondary'; // Default badge
 
-                                                                    if ($prediction_result !== null) {
+                                                                    // Check if prediction_result is a valid integer (0 or 1)
+                                                                    if ($prediction_result !== null && ($prediction_result === 0 || $prediction_result === 1)) {
                                                                          $result_text = ($prediction_result == 1) ? 'High Risk' : 'Low Risk';
                                                                          $badge_class = getRiskBadgeClass($result_text); // Use the helper function
                                                                     }
@@ -270,10 +278,10 @@ function getParameterText($key, $value) {
                                                             </td>
                                                             <td>
                                                                 <?php
-                                                                    // Check if the key exists and is not null before accessing it
+                                                                    // Check if the key exists and is a valid number before accessing it
                                                                     $prediction_confidence = $record['prediction_confidence'] ?? null;
-                                                                    if ($prediction_confidence !== null) {
-                                                                         echo htmlspecialchars(round($prediction_confidence * 100, 2) . '%');
+                                                                    if ($prediction_confidence !== null && is_numeric($prediction_confidence)) {
+                                                                         echo htmlspecialchars(round((float)$prediction_confidence * 100, 2) . '%');
                                                                     } else {
                                                                          echo 'N/A';
                                                                     }
@@ -375,25 +383,31 @@ function getParameterText($key, $value) {
             if (!$.fn.DataTable.isDataTable('#predictionHistoryTable')) {
                 $('#predictionHistoryTable').DataTable({
                      dom: '<"row justify-between g-2"<"col-7 col-sm-6 text-left"f><"col-5 col-sm-6 text-right"B>>tip',
-                     buttons: [{
+                     buttons: [
+                         {
                              extend: 'copy',
-                             className: 'btn-sm'
+                             text: '<em class="icon ni ni-copy"></em> Copy',
+                             className: 'btn btn-outline-secondary btn-sm'
                          },
                          {
                              extend: 'csv',
-                             className: 'btn-sm'
+                             text: '<em class="icon ni ni-file-text"></em> CSV',
+                             className: 'btn btn-outline-secondary btn-sm'
                          },
                          {
                              extend: 'excel',
-                             className: 'btn-sm'
+                             text: '<em class="icon ni ni-file-xls"></em> Excel',
+                             className: 'btn btn-outline-secondary btn-sm'
                          },
                          {
                              extend: 'pdf',
-                             className: 'btn-sm'
+                             text: '<em class="icon ni ni-file-pdf"></em> PDF',
+                             className: 'btn btn-outline-secondary btn-sm'
                          },
                          {
                              extend: 'print',
-                             className: 'btn-sm'
+                             text: '<em class="icon ni ni-printer"></em> Print',
+                             className: 'btn btn-outline-secondary btn-sm'
                          }
                      ],
                      responsive: true, // Enable responsive features
