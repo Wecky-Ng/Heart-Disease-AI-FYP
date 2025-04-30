@@ -157,7 +157,6 @@ if (isLoggedIn()) {
                                     </div>
                                 </div>
 
-                                <!-- Display Session Error using a hidden input for JS -->
                                 <input type="hidden" id="session-error-message" value="<?php echo htmlspecialchars($session_error); ?>">
 
                                 <div class="nk-block">
@@ -415,7 +414,6 @@ if (isLoggedIn()) {
                                                     <div class="card-head">
                                                         <h5 class="card-title">Prediction Result</h5>
                                                     </div>
-                                                    <!-- Prediction result will now be shown via SweetAlert -->
                                                     <div class="card-head">
                                                         <h5 class="card-title">About This Prediction</h5>
                                                     </div>
@@ -450,343 +448,253 @@ if (isLoggedIn()) {
             <?php include PROJECT_ROOT . '/footer.php'; ?>
         </div>
     </div>
+    </div>
 
     <?php include PROJECT_ROOT . '/includes/scripts.php'; ?>
-    
+
     <script>
-        // document.addEventListener('DOMContentLoaded', function() {
-        //     const form = document.getElementById('prediction-form');
-        //     // const resultDisplay = document.getElementById('prediction-result-display'); // Removed as we use SweetAlert
-        //     const submitButton = form.querySelector('button[type="submit"]');
-        //     // Assuming the button structure might change, let's select elements robustly
-        //     // const spinner = submitButton.querySelector('.spinner-border');
-        //     // const buttonText = submitButton.querySelector('.button-text');
-        //     const originalButtonHTML = submitButton.innerHTML; // Store original button content
-        //     const formElements = form.elements;
-        //     const sessionErrorMessage = document.getElementById('session-error-message').value;
-
-        //     // Display session error if present
-        //     if (sessionErrorMessage) {
-        //         Swal.fire({
-        //             icon: 'error',
-        //             title: 'Error',
-        //             text: sessionErrorMessage,
-        //             confirmButtonColor: '#5a62c8'
-        //         });
-        //     }
-
-        //     form.addEventListener('submit', function(event) {
-        //         event.preventDefault(); // Prevent default form submission
-                
-        //         // Check form validity before proceeding
-        //         if (!form.checkValidity()) {
-        //             // If form is invalid, trigger browser's native validation UI
-        //             form.reportValidity();
-        //             return; // Stop execution if form is invalid
-        //         }
-                
-        //         // Define spinner and button text elements
-        //         const spinner = submitButton.querySelector('.spinner-border') || document.createElement('span');
-        //         const buttonText = submitButton.querySelector('.button-text') || submitButton;
-                
-        //         // Show spinner and disable button
-        //         if (spinner) spinner.style.display = 'inline-block';
-        //         if (buttonText.textContent) buttonText.textContent = 'Predicting...';
-        //         submitButton.disabled = true;
-                
-        //         // Create a result display area if needed
-        //         let resultDisplay = document.getElementById('prediction-result-display');
-        //         if (resultDisplay) {
-        //             resultDisplay.style.display = 'none'; // Hide previous results
-        //             resultDisplay.innerHTML = ''; // Clear previous results
-        //         }
-
-        //         const formData = new FormData(form);
-        //         const formObject = {};
-        //         formData.forEach((value, key) => {
-        //             // Convert numeric string fields to numbers where appropriate
-        //             if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
-        //                 formObject[key] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0 or null
-        //             } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
-        //                 formObject[key] = parseInt(value, 10); // Ensure integer for categorical/binary
-        //             } else {
-        //                 formObject[key] = value;
-        //             }
-        //         });
-
-        //         // Call the Vercel prediction API
-        //         fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', { // Use relative path for Vercel deployment
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //             },
-        //             body: JSON.stringify(formObject)
-        //         })
-        //         .then(response => {
-        //             if (!response.ok) {
-        //                 return response.json().then(err => { throw new Error(err.error || 'Network response was not ok'); });
-        //             }
-        //             return response.json();
-        //         })
-        //         .then(data => {
-        //             // --- NEW LOGIC: Save prediction then show SweetAlert & Redirect ---
-        //             const predictionResult = data.prediction; // 0 or 1
-        //             const confidenceScore = data.confidence;
-
-        //             // Prepare data for saving
-        //             const saveData = {
-        //                 inputs: formObject, // Send the processed form data
-        //                 prediction: predictionResult,
-        //                 confidence: confidenceScore
-        //             };
-
-        //             // 1. Asynchronously save the prediction
-        //             fetch('/database/save_prediction.php', { // Call the new PHP endpoint
-        //                 method: 'POST',
-        //                 headers: {
-        //                     'Content-Type': 'application/json',
-        //                 },
-        //                 body: JSON.stringify(saveData)
-        //             })
-        //             .then(saveResponse => saveResponse.json())
-        //             .then(saveResult => {
-        //                 if (saveResult.success) {
-        //                     console.log('Prediction saved successfully.');
-        //                     // 2. Show SweetAlert with result
-        //                     const riskLevel = predictionResult === 1 ? 'High Risk' : 'Low Risk';
-        //                     const confidencePercent = (confidenceScore * 100).toFixed(2);
-        //                     const alertIcon = predictionResult === 1 ? 'warning' : 'success';
-        //                     const alertTitle = `Prediction: ${riskLevel}`;
-        //                     const alertText = `Confidence: ${confidencePercent}%. Click OK to view details.`;
-
-        //                     Swal.fire({
-        //                         icon: alertIcon,
-        //                         title: alertTitle,
-        //                         text: alertText,
-        //                         confirmButtonText: 'OK',
-        //                         confirmButtonColor: '#5a62c8'
-        //                     }).then((result) => {
-        //                         if (result.isConfirmed) {
-        //                             // 3. Redirect to result.php via POST
-        //                             const postForm = document.createElement('form');
-        //                             postForm.method = 'POST';
-        //                             postForm.action = 'result.php';
-        //                             postForm.style.display = 'none'; // Hide the form
-
-        //                             // Add original form data as hidden inputs
-        //                             for (const key in formObject) {
-        //                                 if (formObject.hasOwnProperty(key)) {
-        //                                     const input = document.createElement('input');
-        //                                     input.type = 'hidden';
-        //                                     input.name = key;
-        //                                     input.value = formObject[key];
-        //                                     postForm.appendChild(input);
-        //                                 }
-        //                             }
-
-        //                             // Add prediction results as hidden inputs
-        //                             const predictionInput = document.createElement('input');
-        //                             predictionInput.type = 'hidden';
-        //                             predictionInput.name = 'prediction_result';
-        //                             predictionInput.value = predictionResult;
-        //                             postForm.appendChild(predictionInput);
-
-        //                             const confidenceInput = document.createElement('input');
-        //                             confidenceInput.type = 'hidden';
-        //                             confidenceInput.name = 'prediction_confidence';
-        //                             confidenceInput.value = confidenceScore;
-        //                             postForm.appendChild(confidenceInput);
-
-        //                             document.body.appendChild(postForm);
-        //                             postForm.submit();
-        //                         }
-        //                     });
-        //                 } else {
-        //                     // Saving failed
-        //                     console.error('Failed to save prediction:', saveResult.message);
-        //                     Swal.fire({
-        //                         icon: 'error',
-        //                         title: 'Save Error',
-        //                         text: 'Could not save the prediction result. Please try again. ' + (saveResult.message || ''),
-        //                         confirmButtonColor: '#e74c3c'
-        //                     });
-        //                 }
-        //             })
-        //             .catch(saveError => {
-        //                 console.error('Error saving prediction:', saveError);
-        //                 Swal.fire({
-        //                     icon: 'error',
-        //                     title: 'Save Error',
-        //                     text: 'An error occurred while trying to save the prediction result: ' + saveError.message,
-        //                     confirmButtonColor: '#e74c3c'
-        //                 });
-        //             })
-        //             .finally(() => {
-        //                  // Re-enable button regardless of save outcome, but only after save attempt
-        //                  resetButton();
-        //             });
-        //             // --- END NEW LOGIC ---
-        //         })
-        //         .catch(error => {
-        //             console.error('Error during prediction fetch:', error);
-        //             Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'Prediction Error',
-        //                 text: 'Failed to get prediction: ' + error.message,
-        //                 confirmButtonColor: '#e74c3c'
-        //             });
-        //             resetButton(); // Reset button on fetch error
-        //         });
-                
-        //         // Function to reset button state
-        //         function resetButton() {
-        //             if (spinner) spinner.style.display = 'none';
-        //             if (buttonText.textContent) buttonText.textContent = 'Predict';
-        //             submitButton.disabled = false;
-        //         }
-        //     });
-        // });
         document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('prediction-form');
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalButtonHTML = submitButton.innerHTML; // Store original button content
-    const formElements = form.elements;
-    const sessionErrorMessage = document.getElementById('session-error-message').value;
+            const form = document.getElementById('prediction-form');
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalButtonHTML = submitButton.innerHTML;
+            const sessionErrorMessage = document.getElementById('session-error-message').value;
 
-    // Display session error if present
-    if (sessionErrorMessage) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: sessionErrorMessage,
-            confirmButtonColor: '#5a62c8'
-        });
-    }
-
-    form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-
-        // Check form validity before proceeding
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return; // Stop execution if form is invalid
-        }
-
-        // Show loading alert
-        Swal.fire({
-            title: 'Processing...',
-            text: 'Please wait while we analyze your data.',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Disable form elements and button
-        for (let i = 0; i < formElements.length; i++) {
-            formElements[i].disabled = true;
-        }
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...'; // Update button text/spinner
-        submitButton.disabled = true;
-
-
-        const formData = new FormData(form);
-        const formObject = {};
-        formData.forEach((value, key) => {
-            // Convert numeric string fields to numbers where appropriate
-            if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
-                formObject[key] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0 or null
-            } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
-                formObject[key] = parseInt(value, 10); // Ensure integer for categorical/binary
-            } else {
-                formObject[key] = value;
-            }
-        });
-
-        // --- START: Modified Fetch Logic based on your requirement ---
-        fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json' // Added Accept header as requested
-            },
-            body: JSON.stringify(formObject) // Use formObject, assuming this contains the correct data
-        })
-        .then(response => {
-            if (!response.ok) {
-                // Try to parse error message from response body
-                return response.json().then(err => {
-                    throw new Error(err.error || `Server error: ${response.status}`);
-                }).catch(() => {
-                    // Fallback if response body is not JSON or empty
-                    throw new Error(`Network error: ${response.status}`);
+            // Display session error if present
+            if (sessionErrorMessage) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: sessionErrorMessage,
+                    confirmButtonColor: '#5a62c8'
                 });
             }
-            return response.json();
-        })
-        .then(data => {
-            Swal.close(); // Close loading alert
 
-            // Re-enable form elements and restore button
-            for (let i = 0; i < formElements.length; i++) {
-                formElements[i].disabled = false;
-            }
-            submitButton.innerHTML = originalButtonHTML;
-            submitButton.disabled = false;
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
 
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
 
-            // Display result using SweetAlert
-            let iconType = 'info';
-            let titleText = 'Prediction Result';
-            // Adjust based on your actual API response structure - Using prediction_text and probability_percentage if available based on your example
-            // Assuming 'data.prediction' holds 0 or 1, and 'data.confidence' (from your original code) or 'data.probability_percentage' might hold the probability
-            // Let's try to use the most likely fields based on both snippets. Adjust data.xxx fields if your API returns different keys.
-            let probability = data.probability_percentage !== undefined ? data.probability_percentage : (data.confidence !== undefined ? (data.confidence * 100).toFixed(2) : 'N/A');
-            let resultText = `Prediction: ${data.prediction_text || (data.prediction === 1 ? 'High Risk' : 'Low Risk')} (Probability: ${probability}%)`;
+                const spinner = submitButton.querySelector('.spinner-border') || document.createElement('span');
+                const buttonText = submitButton.querySelector('.button-text') || submitButton;
 
-            if (data.prediction === 1) { // Assuming 1 means high risk
-                iconType = 'warning';
-                titleText = 'High Risk Detected';
-            } else if (data.prediction === 0) { // Assuming 0 means low risk
-                iconType = 'success';
-                titleText = 'Low Risk Detected';
-            }
+                if (spinner) spinner.style.display = 'inline-block';
+                if (buttonText.textContent) buttonText.textContent = 'Predicting...';
+                submitButton.disabled = true;
 
-            Swal.fire({
-                icon: iconType,
-                title: titleText,
-                // Included the link to history.php as in your example
-                html: resultText + '<br><br><a href="/history.php" class="btn btn-primary btn-sm">View Details in History</a>',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#5a62c8'
-            });
+                const formData = new FormData(form);
+                const formObject = {};
 
-            // Optionally clear the form after successful prediction
-            // form.reset(); // Uncomment this line if you want to clear the form
-
-        })
-        .catch(error => {
-            Swal.close(); // Close loading alert
-
-            // Re-enable form elements and restore button
-            for (let i = 0; i < formElements.length; i++) {
-                formElements[i].disabled = false;
-            }
-            submitButton.innerHTML = originalButtonHTML;
-             submitButton.disabled = false;
+                // Map form input names (lowercase snake_case) to API expected keys (PascalCase)
+                const keyMapping = {
+                    'bmi': 'BMI',
+                    'smoking': 'Smoking',
+                    'alcohol_drinking': 'AlcoholDrinking',
+                    'stroke': 'Stroke',
+                    'physical_health': 'PhysicalHealth',
+                    'mental_health': 'MentalHealth',
+                    'diff_walking': 'DiffWalking',
+                    'sex': 'Sex',
+                    'age': 'Age',
+                    'race': 'Race',
+                    'diabetic': 'Diabetic',
+                    'physical_activity': 'PhysicalActivity',
+                    'gen_health': 'GenHealth',
+                    'sleep_time': 'SleepTime',
+                    'asthma': 'Asthma',
+                    'kidney_disease': 'KidneyDisease',
+                    'skin_cancer': 'SkinCancer'
+                };
 
 
-            console.error('Prediction Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Prediction Failed',
-                text: error.message || 'An unexpected error occurred. Please check the console or try again.',
-                confirmButtonColor: '#e85347' // Using a distinct error color
+                formData.forEach((value, key) => {
+                    // Find the corresponding API key using the mapping
+                    const apiKey = keyMapping[key];
+
+                    // Only add to formObject if a mapping exists
+                    if (apiKey) {
+                         // Convert numeric string fields to numbers where appropriate
+                        if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
+                            formObject[apiKey] = parseFloat(value) || 0; // Use parseFloat, handle NaN with 0
+                        } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
+                            formObject[apiKey] = parseInt(value, 10); // Ensure integer for categorical/binary
+                        } else {
+                            // For any other fields not explicitly handled, use the value directly
+                            formObject[apiKey] = value;
+                        }
+                    }
+                    // Note: Fields from the form that are not in keyMapping will be ignored.
+                });
+
+
+                // Call the Render prediction API
+                fetch('https://heart-disease-prediction-api-84fu.onrender.com/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject) // Send the formObject with correct keys
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Attempt to parse error response if not OK
+                        return response.json().then(err => {
+                             // Log the full error response from the API for debugging
+                             console.error('API Error Response:', err);
+                             throw new Error(err.error || `API returned status ${response.status}`);
+                        }).catch(() => {
+                            // If response is not JSON, throw a generic error
+                            throw new Error(`API returned status ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // --- NEW LOGIC: Save prediction then show SweetAlert & Redirect ---
+                    const predictionResult = data.prediction; // 0 or 1
+                    const confidenceScore = data.confidence;
+
+                    // Prepare data for saving (use original form input names for database saving)
+                    const saveData = {
+                        inputs: {}, // Will populate with original form input names
+                        prediction: predictionResult,
+                        confidence: confidenceScore
+                    };
+
+                    // Repopulate saveData.inputs with original form input names and values
+                    formData.forEach((value, key) => {
+                         // Convert numeric string fields to numbers where appropriate for saving
+                         if (['bmi', 'physical_health', 'mental_health', 'age', 'sleep_time'].includes(key)) {
+                            saveData.inputs[key] = parseFloat(value) || 0;
+                        } else if (['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 'kidney_disease', 'skin_cancer'].includes(key)) {
+                            saveData.inputs[key] = parseInt(value, 10);
+                        } else {
+                             saveData.inputs[key] = value;
+                        }
+                    });
+
+
+                    // 1. Asynchronously save the prediction
+                    fetch('/database/save_prediction.php', { // Call the new PHP endpoint
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(saveData) // Send the data for saving
+                    })
+                    .then(saveResponse => {
+                        if (!saveResponse.ok) {
+                             // Attempt to parse save error response if not OK
+                             return saveResponse.json().then(err => {
+                                 console.error('Save API Error Response:', err);
+                                 throw new Error(err.message || `Save API returned status ${saveResponse.status}`);
+                             }).catch(() => {
+                                 throw new Error(`Save API returned status ${saveResponse.status}`);
+                             });
+                        }
+                        return saveResponse.json();
+                    })
+                    .then(saveResult => {
+                        if (saveResult.success) {
+                            console.log('Prediction saved successfully.');
+                            // 2. Show SweetAlert with result
+                            const riskLevel = predictionResult === 1 ? 'High Risk' : 'Low Risk';
+                            const confidencePercent = (confidenceScore * 100).toFixed(2);
+                            const alertIcon = predictionResult === 1 ? 'warning' : 'success';
+                            const alertTitle = `Prediction: ${riskLevel}`;
+                            const alertText = `Confidence: ${confidencePercent}%. Click OK to view details.`;
+
+                            Swal.fire({
+                                icon: alertIcon,
+                                title: alertTitle,
+                                text: alertText,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#5a62c8'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // 3. Redirect to result.php via POST
+                                    const postForm = document.createElement('form');
+                                    postForm.method = 'POST';
+                                    postForm.action = 'result.php';
+                                    postForm.style.display = 'none'; // Hide the form
+
+                                    // Add original form data and prediction results as hidden inputs
+                                    // Use the original form input names for consistency with result.php display logic
+                                     formData.forEach((value, key) => {
+                                        const input = document.createElement('input');
+                                        input.type = 'hidden';
+                                        input.name = key; // Use original form input name
+                                        input.value = value; // Use original form input value
+                                        postForm.appendChild(input);
+                                    });
+
+                                    // Add prediction results as hidden inputs
+                                    const predictionInput = document.createElement('input');
+                                    predictionInput.type = 'hidden';
+                                    predictionInput.name = 'prediction_result';
+                                    predictionInput.value = predictionResult;
+                                    postForm.appendChild(predictionInput);
+
+                                    const confidenceInput = document.createElement('input');
+                                    confidenceInput.type = 'hidden';
+                                    confidenceInput.name = 'prediction_confidence';
+                                    confidenceInput.value = confidenceScore;
+                                    postForm.appendChild(confidenceInput);
+
+                                    document.body.appendChild(postForm);
+                                    postForm.submit();
+                                }
+                            });
+                        } else {
+                            // Saving failed
+                            console.error('Failed to save prediction:', saveResult.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Save Error',
+                                text: 'Could not save the prediction result. Please try again. ' + (saveResult.message || ''),
+                                confirmButtonColor: '#e74c3c'
+                            });
+                        }
+                    })
+                    .catch(saveError => {
+                        console.error('Error saving prediction:', saveError);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Save Error',
+                            text: 'An error occurred while trying to save the prediction result: ' + saveError.message,
+                            confirmButtonColor: '#e74c3c'
+                        });
+                    })
+                    .finally(() => {
+                         // Re-enable button regardless of save outcome, but only after save attempt
+                         resetButton();
+                    });
+                    // --- END NEW LOGIC ---
+                })
+                .catch(error => {
+                    console.error('Error during prediction fetch:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Prediction Error',
+                        text: 'Failed to get prediction: ' + error.message,
+                        confirmButtonColor: '#e74c3c'
+                    });
+                    resetButton(); // Reset button on fetch error
+                });
+
+                // Function to reset button state
+                function resetButton() {
+                    const spinner = submitButton.querySelector('.spinner-border'); // Re-select in case it was created
+                    const buttonText = submitButton.querySelector('.button-text') || submitButton;
+
+                    if (spinner) spinner.style.display = 'none';
+                    submitButton.innerHTML = originalButtonHTML; // Restore original button HTML
+                    submitButton.disabled = false;
+                }
             });
         });
-        // --- END: Modified Fetch Logic ---
-    });
-});
     </script>
 </body>
 </html>
