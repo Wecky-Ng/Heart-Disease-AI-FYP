@@ -1,11 +1,13 @@
 <?php
-// Set session cookie parameters before starting the session
-// Lifetime of the session cookie in seconds (30 minutes = 1800 seconds)
-$session_cookie_lifetime = 1800;
+// Ensure there are NO blank lines or whitespace BEFORE this opening <?php tag.
 
 // Set the maximum lifetime of session data on the server
 // This should generally be equal to or longer than the cookie lifetime
-$session_gc_maxlifetime = 1800; // Set to 30 minutes as well
+$session_gc_maxlifetime = 1800; // Set to 30 minutes
+
+// Set session cookie parameters before starting the session
+// Lifetime of the session cookie in seconds (30 minutes = 1800 seconds)
+$session_cookie_lifetime = 1800;
 
 // Set the session cookie parameters
 // This must be called BEFORE session_start()
@@ -38,7 +40,7 @@ function isLoggedIn() {
 // Function to set user session after successful login
 function setUserSession($userId, $username, $email, $userRole = 'User') {
     // Ensure session is started before setting variables
-    if (session_status() == PHP_SESSION_NONE) {
+     if (session_status() == PHP_SESSION_NONE) {
         session_start();
     }
     $_SESSION['user_id'] = $userId;
@@ -90,5 +92,17 @@ function endUserSession() {
     session_destroy();
 }
 
-
+// Note: The commented-out guest user logic below is generally not needed
+// if you are handling authentication by checking isLoggedIn().
+// Uncommenting this might overwrite session data unexpectedly if not careful.
+/*
+// For demonstration purposes - if no user is logged in, set as guest
+if (!isLoggedIn()) {
+    // This is just a placeholder for guest users
+    // In a real application, you would redirect to login page or show limited content
+    $_SESSION['username'] = 'Guest User';
+    $_SESSION['email'] = 'guest@example.com';
+    $_SESSION['user_role'] = 'Guest';
+}
+*/
 ?>
