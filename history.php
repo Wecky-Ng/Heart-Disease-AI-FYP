@@ -91,10 +91,13 @@ if ($predictionHistory === false) {
     <div class="nk-app-root">
         <?php include PROJECT_ROOT . '/sidemenu.php'; ?>
 
+        <div class="nk-sidebar-overlay" data-target="sidebarMenu"></div>
+
         <div class="nk-main">
             <?php include PROJECT_ROOT . '/header.php'; ?>
 
-            <div class="nk-content">
+            <div class="nk-wrap">
+                <div class="nk-content">
                 <div class="container-fluid">
                     <div class="nk-content-inner">
                         <div class="nk-content-body history-content-body">
@@ -193,6 +196,7 @@ if ($predictionHistory === false) {
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
 

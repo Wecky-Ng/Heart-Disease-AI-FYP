@@ -26,7 +26,7 @@ function getCurrentUser() {
     return [
         'user_id' => $_SESSION['user_id'] ?? null,
         'username' => $_SESSION['username'] ?? 'Guest User',
-        'email' => $_SESSION['email'] ?? 'guest@example.com',
+        'email' => $_SESSION['email'] ?? 'Guest Mode',
         'user_role' => $_SESSION['user_role'] ?? 'Guest',
         'login_time' => $_SESSION['login_time'] ?? null
     ];
