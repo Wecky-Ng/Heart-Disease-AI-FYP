@@ -491,7 +491,7 @@ if (isLoggedIn()) {
                     'mental_health': 'MentalHealth',
                     'diff_walking': 'DiffWalking',
                     'sex': 'Sex',
-                    'age': 'Age',
+                    'age': 'age',
                     'race': 'Race',
                     'diabetic': 'Diabetic',
                     'physical_activity': 'PhysicalActivity',
