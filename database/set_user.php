@@ -101,7 +101,7 @@ function loginUser($username, $password) {
         $stmt->close();
         // Connection is managed globally, do not close here
         // $db->close();
-        return ['status' => false, 'message' => 'User not found'];
+        return ['status' => false, 'message' => 'Email not found or password incorrect.”'];
     }
 
     $user = $result->fetch_assoc();
@@ -148,7 +148,7 @@ function loginUser($username, $password) {
     } else {
          // Connection is managed globally, do not close here
         // $db->close();
-        return ['status' => false, 'message' => 'Invalid password'];
+        return ['status' => false, 'message' => 'Email not found or password incorrect.”'];
     }
 }
 
