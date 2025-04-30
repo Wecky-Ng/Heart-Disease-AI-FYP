@@ -252,23 +252,26 @@ function getParameterText($key, $value) {
                                                     <?php foreach ($predictionHistory as $index => $record): ?>
                                                         <tr>
                                                             <td><?php echo $index + 1; ?></td>
-                                                            <td><?php echo htmlspecialchars($record['date']); ?></td>
+                                                            <td><?php echo htmlspecialchars($record['created_at']); ?></td>
                                                             <td>
                                                                 <?php
                                                                     // The result is already formatted in getUserPredictionHistory function
-                                                                    $result_text = $record['result'];
+                                                                    $result_text = ($record['prediction_result'] == 1) ? 'High Risk' : 'Low Risk';
                                                                     $badge_class = getRiskBadgeClass($result_text); // Use the helper function
                                                                 ?>
                                                                 <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($result_text); ?></span>
                                                             </td>
                                                             <td>
-                                                                <?php echo htmlspecialchars($record['probability']); ?>
+                                                                <?php echo round($record['prediction_confidence'] * 100, 2) . '%'; ?>
                                                             </td>
                                                             <td>
                                                                 <?php
                                                                     // Construct the details string using getParameterText and raw_data
                                                                     $detailsString = "";
-                                                                    if (isset($record['raw_data'])) {
+                                                                    // Check if raw_data is a string and decode it, or use it directly if it's already an array
+                                                                    $rawData = is_string($record['raw_data']) ? json_decode($record['raw_data'], true) : $record['raw_data'];
+
+                                                                    if ($rawData && is_array($rawData)) {
                                                                         $paramsToDisplay = [
                                                                             'age' => 'Age',
                                                                             'sex' => 'Sex',
@@ -290,8 +293,8 @@ function getParameterText($key, $value) {
                                                                         ];
                                                                         $detailParts = [];
                                                                         foreach ($paramsToDisplay as $key => $label) {
-                                                                            if (isset($record['raw_data'][$key])) {
-                                                                                 $formattedValue = getParameterText($key, $record['raw_data'][$key]);
+                                                                            if (isset($rawData[$key])) {
+                                                                                 $formattedValue = getParameterText($key, $rawData[$key]);
                                                                                  $detailParts[] = "<strong>" . htmlspecialchars($label) . ":</strong> " . htmlspecialchars($formattedValue);
                                                                             }
                                                                         }
@@ -370,7 +373,9 @@ function getParameterText($key, $value) {
                      responsive: true, // Enable responsive features
                      "order": [[ 1, "desc" ]], // Order by the Date column (index 1) descending
                      "columnDefs": [
-                         { "orderable": false, "targets": [0, 4, 5] } // Disable sorting on #, Details, and Actions columns
+                         { "orderable": false, "targets": [0, 4, 5] }, // Disable sorting on #, Details, and Actions columns
+                          // Adjust column widths if necessary to prevent overflow, though Responsive should handle this
+                          // Example: { "width": "15%", "targets": 4 } for Details column
                      ],
                      language: {
                          search: "",
