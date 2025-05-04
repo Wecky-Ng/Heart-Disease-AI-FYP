@@ -1,7 +1,14 @@
 <?php
+// Configure PHP session settings
+ini_set('session.gc_maxlifetime', 3600); // Set session timeout to 1 hour (in seconds)
+ini_set('session.cookie_lifetime', 0); // Session cookie expires when browser closes
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+// Define session timeout (in seconds)
+define('SESSION_TIMEOUT', 3600); // 1 hour
 
 // Function to check if user is logged in
 function isLoggedIn() {
@@ -15,6 +22,7 @@ function setUserSession($userId, $username, $email, $userRole = 'User') {
     $_SESSION['email'] = $email;
     $_SESSION['user_role'] = $userRole;
     $_SESSION['login_time'] = time();
+    $_SESSION['last_activity'] = time();
 }
 
 // Function to get current user information
@@ -50,6 +58,62 @@ function endUserSession() {
     session_destroy();
 }
 
+// Function to check if session needs refresh and refresh it
+function checkAndRefreshSession() {
+    if (!isLoggedIn()) {
+        return false;
+    }
+    
+    // Check if last_activity is set
+    if (!isset($_SESSION['last_activity'])) {
+        $_SESSION['last_activity'] = time();
+        return true;
+    }
+    
+    // Calculate time since last activity
+    $currentTime = time();
+    $lastActivity = $_SESSION['last_activity'];
+    $timeSinceLastActivity = $currentTime - $lastActivity;
+    
+    // If user has been active recently, update last_activity
+    if ($timeSinceLastActivity < SESSION_TIMEOUT) {
+        $_SESSION['last_activity'] = $currentTime;
+        return true;
+    }
+    
+    // Session has expired
+    endUserSession();
+    return false;
+}
+
+// Function to get remaining session time in seconds
+function getRemainingSessionTime() {
+    if (!isLoggedIn() || !isset($_SESSION['last_activity'])) {
+        return 0;
+    }
+    
+    $currentTime = time();
+    $lastActivity = $_SESSION['last_activity'];
+    $elapsedTime = $currentTime - $lastActivity;
+    
+    $remainingTime = SESSION_TIMEOUT - $elapsedTime;
+    return ($remainingTime > 0) ? $remainingTime : 0;
+}
+
+// AJAX endpoint to refresh session
+if (isset($_GET['refresh_session']) && $_GET['refresh_session'] === 'true') {
+    // Only process AJAX requests
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        if (isLoggedIn()) {
+            $_SESSION['last_activity'] = time();
+            echo json_encode(['success' => true, 'remaining' => getRemainingSessionTime()]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+        }
+        exit;
+    }
+}
+
 // For demonstration purposes - if no user is logged in, set as guest
 if (!isLoggedIn()) {
     // This is just a placeholder for guest users
@@ -57,5 +121,10 @@ if (!isLoggedIn()) {
     $_SESSION['username'] = 'Guest User';
     $_SESSION['email'] = 'Guest Mode';
     $_SESSION['user_role'] = 'Guest';
+}
+
+// Check and refresh session for logged-in users
+if (isLoggedIn() && !isset($_GET['refresh_session'])) {
+    checkAndRefreshSession();
 }
 ?>

@@ -3,6 +3,9 @@
  * Common JavaScript includes for Heart Disease AI FYP
  * This file centralizes all JS imports for easier global management
  */
+
+// Include session refresh functionality
+require_once __DIR__ . '/session_refresh.php';
 ?>
 <!-- JavaScript -->
 <!-- Load jQuery first -->

@@ -604,14 +604,28 @@ if (isLoggedIn()) {
                         .then(saveResponse => {
                             if (!saveResponse.ok) {
                                  // Attempt to parse save error response if not OK
-                                 return saveResponse.json().then(err => {
-                                     console.error('Save API Error Response:', err);
-                                     throw new Error(err.message || `Save API returned status ${saveResponse.status}`);
-                                 }).catch(() => {
-                                     throw new Error(`Save API returned status ${saveResponse.status}`);
+                                 return saveResponse.text().then(text => {
+                                     console.error('Save API Error Response Text:', text);
+                                     // Try to parse as JSON if possible
+                                     try {
+                                         const err = JSON.parse(text);
+                                         throw new Error(err.message || `Save API returned status ${saveResponse.status}`);
+                                     } catch (parseError) {
+                                         // If not valid JSON, use the raw text or status
+                                         console.error('JSON Parse Error:', parseError);
+                                         throw new Error(`Save API returned status ${saveResponse.status}: ${text.substring(0, 100)}...`);
+                                     }
                                  });
                             }
-                            return saveResponse.json();
+                            // For successful responses, first get as text then parse as JSON to catch any JSON syntax errors
+                            return saveResponse.text().then(text => {
+                                try {
+                                    return JSON.parse(text);
+                                } catch (parseError) {
+                                    console.error('JSON Parse Error in success response:', parseError, 'Response text:', text);
+                                    throw new Error('Invalid JSON response from server');
+                                }
+                            });
                         })
                         .then(saveResult => {
                             if (saveResult.success) {
