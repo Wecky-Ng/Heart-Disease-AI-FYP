@@ -46,15 +46,6 @@ if (!$userId) {
     exit(); // Stop execution after sending response
 }
 
-// // Get database connection
-// // Corrected function call from connectToDatabase() to getDbConnection()
-
-// if (!$conn) {
-//     error_log("Database connection failed in save_prediction.php");
-//     echo json_encode(['success' => false, 'message' => 'Database connection error.']);
-//     exit(); // Stop execution after sending response
-// }
-
 // Prepare data for saving: Extract only the columns expected by user_prediction_history
 // This prevents errors if $inputs contains extra fields like 'save_record'
 $expected_columns = [
@@ -80,7 +71,7 @@ foreach ($expected_columns as $column) {
         // Handle missing expected data - log error and potentially stop
         error_log("Missing expected input column '{$column}' in save_prediction.php for user {$userId}.");
         echo json_encode(['success' => false, 'message' => "Missing required data: {$column}."]);
-        $conn->close();
+        // Removed $conn->close() as $conn doesn't exist
         exit();
     }
 }
@@ -96,6 +87,4 @@ if ($historyId) {
     error_log("Failed to save prediction history for user {$userId}.");
     echo json_encode(['success' => false, 'message' => 'Failed to save prediction history.']);
 }
-
-
 ?>

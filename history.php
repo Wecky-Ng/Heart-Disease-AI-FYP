@@ -30,7 +30,6 @@ if (!$userData || !isset($userData['user_id'])) {
 
 require_once PROJECT_ROOT . '/database/get_user_prediction_history.php'; // Includes getUserPredictionHistory and connection.php
 require_once PROJECT_ROOT . '/database/delete_history.php'; // Include delete history functions
-require_once PROJECT_ROOT . '/database/connection.php'; // Explicitly include connection.php for getDbConnection
 
 // Get current user ID
 $userId = $userData['user_id'] ?? null; // Get user ID from session data
@@ -47,8 +46,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_record']) && is
 
     if ($recordId && $userId) {
         // Get database connection
-        
-        if (deletePredictionRecord($recordId, $userId)) {
+        $db = getDbConnection();
+        if (deletePredictionRecord($db, $recordId, $userId)) {
             $success_message = "Record deleted successfully.";
             // Redirect to clear POST data after successful delete
             header('Location: history.php');
@@ -67,8 +66,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_all_records']))
 
     if ($userId) {
         // Get database connection
-        
-        if (deleteAllPredictionRecords($userId)) {
+        $db = getDbConnection();
+        if (deleteAllPredictionRecords($db, $userId)) {
             $success_message = "All records deleted successfully.";
             // Redirect to clear POST data after successful delete
             header('Location: history.php');
