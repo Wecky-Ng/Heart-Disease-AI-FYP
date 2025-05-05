@@ -4,25 +4,16 @@
     "api/index.php": { "runtime": "vercel-php@0.7.3" }
   },
   "routes": [
-    { "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))", "dest": "/$1" },
+    { "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico))", "dest": "/$1" },
     { "src": "/home.php", "dest": "/api/index.php" },
     { "src": "/user_input_form.php", "dest": "/api/index.php" },
     { "src": "/result.php", "dest": "/api/index.php" },
     { "src": "/session.php", "dest": "/api/index.php" },
-    
     { "src": "/database/(.*\\.php)", "dest": "/api/index.php" },
-
-    
     { "src": "/includes/(.*\\.php)", "dest": "/api/index.php" },
-
-    
     { "src": "/", "dest": "/api/index.php" },
-
-    
     { "src": "/(.*)", "dest": "/api/index.php" }
     
- 
-
   ],
   "build": {
     "env": {
