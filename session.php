@@ -1,9 +1,11 @@
 <?php
-// Configure PHP session settings
-ini_set('session.gc_maxlifetime', 3600); // Set session timeout to 1 hour (in seconds)
-ini_set('session.cookie_lifetime', 0); // Session cookie expires when browser closes
-
+// Check if session is already active before configuring settings
 if (session_status() == PHP_SESSION_NONE) {
+    // Configure PHP session settings
+    ini_set('session.gc_maxlifetime', 3600); // Set session timeout to 1 hour (in seconds)
+    ini_set('session.cookie_lifetime', 0); // Session cookie expires when browser closes
+    
+    // Start the session after configuring settings
     session_start();
 }
 
