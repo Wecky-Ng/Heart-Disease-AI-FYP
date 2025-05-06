@@ -48,7 +48,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // physical_health (d), mental_health (d), diff_walking (i), sex (i), age (i),
     // race (i), diabetic (i), physical_activity (i), gen_health (i), sleep_time (d),
     // asthma (i), kidney_disease (i), skin_cancer (i), prediction_result (i), prediction_confidence (d)
-    $types = 'idiiiiddiiiiiidiiid'; // Corrected type string (20 characters for 20 parameters)
+    $types = 'idiiiddiiiiiiidiiid'; // Corrected type string (20 characters for 20 parameters)
 
     // Bind the parameters
     $stmt->bind_param(

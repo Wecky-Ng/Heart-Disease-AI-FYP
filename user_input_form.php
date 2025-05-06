@@ -563,9 +563,9 @@ if (isLoggedIn()) {
                     allowedInputKeys.forEach(key => {
                         if (saveInputs.hasOwnProperty(key)) {
                             // Ensure correct types are sent to backend
-                            if (['bmi', 'sleep_time'].includes(key)) { // Float/Decimal types
+                            if (['bmi', 'physical_health', 'mental_health', 'sleep_time'].includes(key)) { // Float/Decimal types
                                 filteredSaveInputs[key] = parseFloat(saveInputs[key]) || 0;
-                            } else if (['physical_health', 'mental_health', 'age'].includes(key)) { // Integer types that might be larger numbers
+                            } else if (['age'].includes(key)) { // Integer types that might be larger numbers
                                 filteredSaveInputs[key] = parseInt(saveInputs[key], 10) || 0;
                             } else { // TinyInt / Boolean-like integers (0 or 1), or other integers
                                 filteredSaveInputs[key] = parseInt(saveInputs[key], 10);
