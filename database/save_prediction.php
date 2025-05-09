@@ -94,6 +94,9 @@ if ($historyId) {
 } else {
     // Log the specific database error if possible from savePredictionHistory
     error_log("Failed to save prediction history for user {$userId}.");
-    returnJsonError('Failed to save prediction history.', 500);
+    // Include more detailed error information in the logs
+    error_log("Payload data: " . json_encode($data));
+    error_log("Processed DB data: " . json_encode($dbData));
+    returnJsonError('Failed to save prediction history. Please check server logs for details.', 500);
 }
 ?>
