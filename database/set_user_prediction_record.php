@@ -88,8 +88,8 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // race (i), diabetic (i), physical_activity (i), gen_health (i), sleep_time (d),
     // asthma (i), kidney_disease (i), skin_cancer (i), prediction_result (i), prediction_confidence (d)
     // Count the parameters: 1(userId) + 17(data fields) + 1(prediction) + 1(confidence) = 20
-    // Adding the missing 'd' for the confidence parameter
-    $types = 'idiiiddiiiiiiidiiidi';
+    // Ensure the confidence parameter is properly typed as 'd' (double/float)
+    $types = 'idiiiddiiiiiiidiiid'; // Changed last 'i' to 'd' for confidence parameter
 
     // Bind the parameters - ensure we have exactly 20 parameters to match our type string
     $stmt->bind_param(
@@ -120,7 +120,11 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     error_log("Executing SQL: {$sql}");
     error_log("User ID: {$userId}");
     error_log("Data values: " . json_encode($data));
-    error_log("Prediction: {$prediction}, Confidence: {$confidence}");
+    error_log("Prediction: {$prediction}, Confidence: {$confidence}, Confidence Type: " . gettype($confidence) . ", Raw Value: " . var_export($confidence, true));
+    
+    // Ensure confidence is properly formatted as float
+    $confidence = (float)$confidence;
+    error_log("After explicit cast - Confidence: {$confidence}, Type: " . gettype($confidence));
     
     try {
         if ($stmt->execute()) {
