@@ -12,7 +12,6 @@ require_once __DIR__ . '/connection.php';
 /**
  * Saves the prediction details to the user_prediction_history table.
  *
- * @param mysqli|PDO $conn The database connection object.
  * @param int $userId The ID of the user.
  * @param array $data The processed input data from the form.
  * @param int $prediction The prediction result (0 or 1).
