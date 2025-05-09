@@ -20,7 +20,47 @@ require_once __DIR__ . '/connection.php';
  */
 function savePredictionHistory($userId, $data, $prediction, $confidence)
 {
+    // Ensure we have a valid database connection
     $db = getDbConnection();
+    if (!$db) {
+        error_log("Failed to get database connection in savePredictionHistory");
+        return false;
+    }
+    
+    // Validate input parameters
+    $userId = (int)$userId; // Ensure userId is an integer
+    $prediction = (int)$prediction; // Ensure prediction is an integer (0 or 1)
+    $confidence = (float)$confidence; // Ensure confidence is a float
+    
+    // Validate data array - ensure all required fields exist and are properly typed
+    $requiredFields = [
+        'bmi', 'smoking', 'alcohol_drinking', 'stroke', 'physical_health',
+        'mental_health', 'diff_walking', 'sex', 'age', 'race', 'diabetic',
+        'physical_activity', 'gen_health', 'sleep_time', 'asthma', 'kidney_disease',
+        'skin_cancer'
+    ];
+    
+    // Check if all required fields exist
+    foreach ($requiredFields as $field) {
+        if (!isset($data[$field])) {
+            error_log("Missing required field '{$field}' in savePredictionHistory");
+            return false;
+        }
+    }
+    
+    // Ensure proper data types for each field
+    $floatFields = ['bmi', 'physical_health', 'mental_health', 'sleep_time'];
+    $intFields = ['smoking', 'alcohol_drinking', 'stroke', 'diff_walking', 'sex', 'age', 
+                 'race', 'diabetic', 'physical_activity', 'gen_health', 'asthma', 
+                 'kidney_disease', 'skin_cancer'];
+    
+    foreach ($floatFields as $field) {
+        $data[$field] = (float)$data[$field];
+    }
+    
+    foreach ($intFields as $field) {
+        $data[$field] = (int)$data[$field];
+    }
     // Map form data keys to database columns - Adjust keys if they differ in $data
     // Ensure data types are correct before binding
     $sql = "INSERT INTO user_prediction_history (
@@ -29,7 +69,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         physical_activity, gen_health, sleep_time, asthma, kidney_disease,
         skin_cancer, prediction_result, prediction_confidence, created_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"; // Added created_at and its placeholder
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"; // NOW() is a MySQL function, not a parameter
 
     $stmt = $db->prepare($sql);
     if (!$stmt) {
@@ -74,12 +114,25 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         $confidence
     );
 
-    if ($stmt->execute()) {
-        $lastId = $db->insert_id;
-        $stmt->close();
-        return $lastId;
-    } else {
-        error_log("Error executing statement for saving history: " . $stmt->error);
+    // Log the SQL and parameters for debugging
+    error_log("Executing SQL: {$sql}");
+    error_log("User ID: {$userId}");
+    error_log("Data values: " . json_encode($data));
+    error_log("Prediction: {$prediction}, Confidence: {$confidence}");
+    
+    try {
+        if ($stmt->execute()) {
+            $lastId = $db->insert_id;
+            $stmt->close();
+            return $lastId;
+        } else {
+            error_log("Error executing statement for saving history: " . $stmt->error);
+            error_log("MySQL Error Code: " . $stmt->errno);
+            $stmt->close();
+            return false;
+        }
+    } catch (Exception $e) {
+        error_log("Exception in savePredictionHistory: " . $e->getMessage());
         $stmt->close();
         return false;
     }
