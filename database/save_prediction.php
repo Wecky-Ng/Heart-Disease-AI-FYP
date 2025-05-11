@@ -85,6 +85,14 @@ foreach ($expected_columns as $column) {
     }
 }
 
+// Verify database connection before attempting to save
+require_once PROJECT_ROOT . '/database/connection.php';
+$db = getDbConnection();
+if (!$db) {
+    error_log("Database connection failed in save_prediction.php");
+    returnJsonError('Database connection failed. Please try again later.', 500);
+}
+
 // Call function to save the history record
 $historyId = savePredictionHistory($userId, $dbData, $prediction, $confidence);
 
