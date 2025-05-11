@@ -148,7 +148,7 @@ const SessionManager = {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Session refreshed. Remaining time:', data.remaining, 'seconds');
+                // console.log('Session refreshed. Remaining time:', data.remaining, 'seconds');
                 
                 // Check if we need to show warning
                 if (data.remaining <= this.warningThreshold && !this.warningDisplayed) {

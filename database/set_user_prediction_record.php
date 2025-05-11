@@ -90,37 +90,76 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // Count the parameters: 1(userId) + 17(data fields) + 1(prediction) + 1(confidence) = 20
     // Ensure the confidence parameter is properly typed as 'd' (double/float)
     $types = 'idiiiddiiiiiiidiiid'; // Changed last 'i' to 'd' for confidence parameter
+    
+    // Explicitly cast all values to their proper types to avoid type conversion issues
+    $userId = (int)$userId;
+    $data['bmi'] = (float)$data['bmi'];
+    $data['smoking'] = (int)$data['smoking'];
+    $data['alcohol_drinking'] = (int)$data['alcohol_drinking'];
+    $data['stroke'] = (int)$data['stroke'];
+    $data['physical_health'] = (float)$data['physical_health'];
+    $data['mental_health'] = (float)$data['mental_health'];
+    $data['diff_walking'] = (int)$data['diff_walking'];
+    $data['sex'] = (int)$data['sex'];
+    $data['age'] = (int)$data['age'];
+    $data['race'] = (int)$data['race'];
+    $data['diabetic'] = (int)$data['diabetic'];
+    $data['physical_activity'] = (int)$data['physical_activity'];
+    $data['gen_health'] = (int)$data['gen_health'];
+    $data['sleep_time'] = (float)$data['sleep_time'];
+    $data['asthma'] = (int)$data['asthma'];
+    $data['kidney_disease'] = (int)$data['kidney_disease'];
+    $data['skin_cancer'] = (int)$data['skin_cancer'];
+    $prediction = (int)$prediction;
+    $confidence = (float)$confidence;
 
     // Bind the parameters - ensure we have exactly 20 parameters to match our type string
-    $stmt->bind_param(
-        $types,
-        $userId,
-        $data['bmi'],
-        $data['smoking'],
-        $data['alcohol_drinking'],
-        $data['stroke'],
-        $data['physical_health'],
-        $data['mental_health'],
-        $data['diff_walking'],
-        $data['sex'],
-        $data['age'],
-        $data['race'],
-        $data['diabetic'],
-        $data['physical_activity'],
-        $data['gen_health'],
-        $data['sleep_time'],
-        $data['asthma'],
-        $data['kidney_disease'],
-        $data['skin_cancer'],
-        $prediction,
-        $confidence
-    );
+    try {
+        // Create references for bind_param (required by mysqli)
+        $params = array();
+        $params[] = &$types;
+        $params[] = &$userId;
+        $params[] = &$data['bmi'];
+        $params[] = &$data['smoking'];
+        $params[] = &$data['alcohol_drinking'];
+        $params[] = &$data['stroke'];
+        $params[] = &$data['physical_health'];
+        $params[] = &$data['mental_health'];
+        $params[] = &$data['diff_walking'];
+        $params[] = &$data['sex'];
+        $params[] = &$data['age'];
+        $params[] = &$data['race'];
+        $params[] = &$data['diabetic'];
+        $params[] = &$data['physical_activity'];
+        $params[] = &$data['gen_health'];
+        $params[] = &$data['sleep_time'];
+        $params[] = &$data['asthma'];
+        $params[] = &$data['kidney_disease'];
+        $params[] = &$data['skin_cancer'];
+        $params[] = &$prediction;
+        $params[] = &$confidence;
+        
+        // Use call_user_func_array to bind all parameters at once
+        call_user_func_array(array($stmt, 'bind_param'), $params);
+        
+        error_log("Successfully bound all parameters");
+    } catch (Exception $e) {
+        error_log("Error binding parameters: " . $e->getMessage());
+        header('X-Debug-BindError: ' . substr($e->getMessage(), 0, 100));
+        throw $e; // Re-throw to be caught by the outer try-catch
+    }
 
-    // Log the SQL and parameters for debugging
+    // Log the SQL and parameters for debugging - use both error_log and headers for client-side debugging
     error_log("Executing SQL: {$sql}");
     error_log("User ID: {$userId}");
     error_log("Data values: " . json_encode($data));
     error_log("Prediction: {$prediction}, Confidence: {$confidence}, Confidence Type: " . gettype($confidence) . ", Raw Value: " . var_export($confidence, true));
+    
+    // Add headers that can be seen in browser network tab
+    header('X-Debug-UserID: ' . $userId);
+    header('X-Debug-Prediction: ' . $prediction);
+    header('X-Debug-Confidence: ' . $confidence);
+    header('X-Debug-ConfidenceType: ' . gettype($confidence));
     
     // Create a copy of the SQL with actual values for debugging
     $debugSql = "INSERT INTO user_prediction_history (
@@ -140,16 +179,26 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     error_log("DEBUG SQL with values: " . $debugSql);
     
     try {
+        // Log bind_param success/failure
+        error_log("About to execute statement with types: {$types}");
+        header('X-Debug-BindTypes: ' . $types);
+        
         if ($stmt->execute()) {
             $lastId = $db->insert_id;
             // Log successful insertion
             error_log("Successfully inserted record with ID: {$lastId}");
+            header('X-Debug-Success: true');
+            header('X-Debug-RecordID: ' . $lastId);
             $stmt->close();
             return $lastId;
         } else {
             // Log SQL execution errors
-            error_log("Error executing statement for saving history: " . $stmt->error);
-            error_log("MySQL Error Code: " . $stmt->errno);
+            $errorMsg = "Error executing statement for saving history: " . $stmt->error;
+            $errorCode = "MySQL Error Code: " . $stmt->errno;
+            error_log($errorMsg);
+            error_log($errorCode);
+            header('X-Debug-Error: ' . substr($errorMsg, 0, 100));
+            header('X-Debug-ErrorCode: ' . $stmt->errno);
             $stmt->close();
             return false;
         }
@@ -157,6 +206,11 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         // Log any exceptions
         $errorMessage = $e->getMessage();
         error_log("Exception in savePredictionHistory: " . $errorMessage);
+        header('X-Debug-Exception: ' . substr($errorMessage, 0, 100));
+        
+        // Log the stack trace for more detailed debugging
+        error_log("Exception stack trace: " . $e->getTraceAsString());
+        
         $stmt->close();
         return false;
     }

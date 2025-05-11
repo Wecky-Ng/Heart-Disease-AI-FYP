@@ -587,6 +587,17 @@ if (isLoggedIn()) {
                         prediction: predictionResult,
                         confidence: confidenceScore
                     };
+                    
+                    // Log the data being sent to save_prediction.php
+                    console.log('Data being sent to save_prediction.php:', JSON.stringify(saveData));
+                    console.log('Prediction type:', typeof predictionResult);
+                    console.log('Confidence type:', typeof confidenceScore);
+                    console.log('Inputs structure:', Object.keys(filteredSaveInputs));
+                    
+                    // Log sample values to verify data types
+                    if (filteredSaveInputs.bmi) console.log('Sample BMI value (should be float):', filteredSaveInputs.bmi, typeof filteredSaveInputs.bmi);
+                    if (filteredSaveInputs.age) console.log('Sample age value (should be int):', filteredSaveInputs.age, typeof filteredSaveInputs.age);
+                    if (filteredSaveInputs.smoking) console.log('Sample smoking value (should be int):', filteredSaveInputs.smoking, typeof filteredSaveInputs.smoking);
 
                     // Check if the user is logged in and wants to save the record
                     const saveRecordCheckbox = document.getElementById('save_record');
@@ -594,6 +605,7 @@ if (isLoggedIn()) {
 
                     if (isUserLoggedIn && saveRecordCheckbox && saveRecordCheckbox.checked) {
                         // 1. Asynchronously save the prediction
+                        console.log('Sending fetch request to save_prediction.php...');
                         fetch('/database/save_prediction.php', { // Call the new PHP endpoint
                             method: 'POST',
                             headers: {
@@ -602,13 +614,31 @@ if (isLoggedIn()) {
                             body: JSON.stringify(saveData) // Send the data for saving
                         })
                         .then(saveResponse => {
+                            // Log all response headers for debugging
+                            console.log('Response status:', saveResponse.status);
+                            console.log('Response headers:');
+                            for (const [key, value] of saveResponse.headers.entries()) {
+                                if (key.startsWith('x-debug')) {
+                                    console.log(`  ${key}: ${value}`);
+                                }
+                            }
+                            return saveResponse;
+                        })
+                        .then(saveResponse => {
                             if (!saveResponse.ok) {
                                  // Attempt to parse save error response if not OK
                                  return saveResponse.text().then(text => {
                                      console.error('Save API Error Response Text:', text);
+                                     console.error('Response status code:', saveResponse.status);
+                                     console.error('Response status text:', saveResponse.statusText);
+                                     
+                                     // Log the full response text for debugging
+                                     console.log('Full response text:', text);
+                                     
                                      // Try to parse as JSON if possible
                                      try {
                                          const err = JSON.parse(text);
+                                         console.log('Parsed error response:', err);
                                          throw new Error(err.message || `Save API returned status ${saveResponse.status}`);
                                      } catch (parseError) {
                                          // If not valid JSON, use the raw text or status
