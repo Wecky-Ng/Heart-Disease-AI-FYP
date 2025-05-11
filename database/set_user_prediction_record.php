@@ -136,26 +136,20 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         {$data['asthma']}, {$data['kidney_disease']}, {$data['skin_cancer']}, {$prediction}, {$confidence}, NOW()
     )";
     
-    // Output to both error log and browser console
+    // Only log to error log, not to browser console (which breaks JSON responses)
     error_log("DEBUG SQL with values: " . $debugSql);
-    echo "<script>console.log('Inserting record with SQL: " . addslashes($debugSql) . "');</script>";
-    echo "<script>console.log('Data values: " . addslashes(json_encode($data)) . "');</script>";
-    echo "<script>console.log('User ID: {$userId}, Prediction: {$prediction}, Confidence: {$confidence}');</script>";
     
     try {
         if ($stmt->execute()) {
             $lastId = $db->insert_id;
             // Log successful insertion
             error_log("Successfully inserted record with ID: {$lastId}");
-            echo "<script>console.log('Successfully inserted record with ID: {$lastId}');</script>";
             $stmt->close();
             return $lastId;
         } else {
             // Log SQL execution errors
             error_log("Error executing statement for saving history: " . $stmt->error);
             error_log("MySQL Error Code: " . $stmt->errno);
-            echo "<script>console.error('Database error: " . addslashes($stmt->error) . "');</script>";
-            echo "<script>console.error('MySQL Error Code: " . $stmt->errno . "');</script>";
             $stmt->close();
             return false;
         }
@@ -163,7 +157,6 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         // Log any exceptions
         $errorMessage = $e->getMessage();
         error_log("Exception in savePredictionHistory: " . $errorMessage);
-        echo "<script>console.error('Exception in savePredictionHistory: " . addslashes($errorMessage) . "');</script>";
         $stmt->close();
         return false;
     }
