@@ -116,9 +116,6 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         $confidence
     );
 
-    // Ensure confidence is properly formatted as float BEFORE binding
-    $confidence = (float)$confidence;
-    
     // Log the SQL and parameters for debugging
     error_log("Executing SQL: {$sql}");
     error_log("User ID: {$userId}");
