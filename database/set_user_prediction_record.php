@@ -89,7 +89,41 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // asthma (i), kidney_disease (i), skin_cancer (i), prediction_result (i), prediction_confidence (d)
     // Count the parameters: 1(userId) + 17(data fields) + 1(prediction) + 1(confidence) = 20
     // Ensure the confidence parameter is properly typed as 'd' (double/float)
-    $types = 'idiiiddiiiiiiidiiid'; // Changed last 'i' to 'd' for confidence parameter
+    // The correct type string must have exactly 20 characters for 20 parameters
+    // i=integer, d=double/float for: user_id(i), bmi(d), smoking(i), alcohol_drinking(i), stroke(i),
+    // physical_health(d), mental_health(d), diff_walking(i), sex(i), age(i), race(i), diabetic(i),
+    // physical_activity(i), gen_health(i), sleep_time(d), asthma(i), kidney_disease(i), skin_cancer(i),
+    // prediction_result(i), prediction_confidence(d)
+    $types = 'idiiiddiiiiiiidiiidi'; // Exactly 20 characters for 20 parameters
+    
+    // Verify the type string length matches the parameter count
+    $typeLength = strlen($types);
+    $questionMarkCount = substr_count($sql, '?');
+    error_log("Type string: '{$types}' has length: {$typeLength}, Question marks in SQL: {$questionMarkCount}");
+    
+    if ($typeLength != $questionMarkCount) {
+        error_log("ERROR: Type string length ({$typeLength}) doesn't match parameter count ({$questionMarkCount})");
+        return false;
+    }
+    
+    // Debug the type string length
+    error_log("Type string length: " . strlen($types) . ", Expected: 20");
+    
+    // Count the question marks in the SQL query
+    $questionMarkCount = substr_count($sql, '?');
+    error_log("Question mark count in SQL: " . $questionMarkCount);
+    
+    // Ensure type string matches parameter count
+    if (strlen($types) != $questionMarkCount) {
+        error_log("Type string length mismatch: " . strlen($types) . " characters for " . $questionMarkCount . " parameters");
+        return false;
+    }
+    
+    // Count the number of characters in the type string to ensure it matches the number of parameters
+    if (strlen($types) !== 20) {
+        error_log("Type string length mismatch: " . strlen($types) . " characters for 20 parameters");
+        return false;
+    }
     
     // Explicitly cast all values to their proper types to avoid type conversion issues
     $userId = (int)$userId;
