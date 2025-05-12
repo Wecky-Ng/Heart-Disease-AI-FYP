@@ -156,13 +156,13 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     $data['kidney_disease'] = (int)$data['kidney_disease'];
     $data['skin_cancer'] = (int)$data['skin_cancer'];
     $prediction = (int)$prediction;
-    // Ensure confidence is properly cast to float again right before binding
-    // This double-casting approach helps ensure the value is correctly processed
-    $confidence = (float)(string)$confidence;
+    // Round the confidence value to 2 decimal places before storing it in the database
+    // This ensures it will be stored as expected (e.g., 0.82 instead of 0.81537892036955)
+    $confidence = round((float)(string)$confidence, 2);
     // Add console.log for browser debugging
-    echo "<script>console.log('Final confidence value before binding: " . addslashes(var_export($confidence, true)) . "');</script>";
+    echo "<script>console.log('Final confidence value before binding (rounded to 2 decimals): " . addslashes(var_export($confidence, true)) . "');</script>";
     // Keep error_log as backup
-    error_log("Final confidence value before binding: " . var_export($confidence, true));
+    error_log("Final confidence value before binding (rounded to 2 decimals): " . var_export($confidence, true));
 
     // Bind the parameters - ensure we have exactly 20 parameters to match our type string
     try {
