@@ -105,7 +105,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // physical_health(d), mental_health(d), diff_walking(i), sex(i), age(i), race(i), diabetic(i),
     // physical_activity(i), gen_health(i), sleep_time(d), asthma(i), kidney_disease(i), skin_cancer(i),
     // prediction_result(i), prediction_confidence(d)
-    $types = 'idiiiddiiiiiiidiiifi'; // Exactly 20 characters for 20 parameters - using 'f' for float confidence
+    $types = 'idiiiddiiiiiiidiiidi'; // Exactly 20 characters for 20 parameters
     
     // Verify the type string length matches the parameter count
     $typeLength = strlen($types);
@@ -158,8 +158,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     $prediction = (int)$prediction;
     // Round the confidence value to 2 decimal places before storing it in the database
     // This ensures it will be stored as expected (e.g., 0.82 instead of 0.81537892036955)
-    // Cast to float and use number_format to ensure proper decimal formatting for MySQL
-    $confidence = (float)number_format(round((float)$confidence, 2), 2, '.', '');
+    $confidence = round((float)$confidence, 2);
     // Add console.log for browser debugging
     echo "<script>console.log('Final confidence value before binding (rounded to 2 decimals): " . addslashes(var_export($confidence, true)) . "');</script>";
     // Keep error_log as backup
