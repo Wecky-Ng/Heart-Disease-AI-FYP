@@ -10,6 +10,77 @@
 require_once __DIR__ . '/connection.php';
 
 /**
+ * Updates the prediction result and confidence for an existing prediction history record.
+ *
+ * This function is used as a fallback when the initial insert doesn't properly store
+ * the prediction_result and prediction_confidence values.
+ *
+ * @param int $recordId The ID of the prediction history record to update.
+ * @param int $prediction The prediction result (0 or 1).
+ * @param float $confidence The prediction confidence score.
+ * @return bool True on successful update, false on failure.
+ */
+function updatePredictionResultAndConfidence($recordId, $prediction, $confidence)
+{
+    // Ensure we have a valid database connection
+    $db = getDbConnection();
+    if (!$db) {
+        echo "<script>console.error('Failed to get database connection in updatePredictionResultAndConfidence');</script>";
+        error_log("Failed to get database connection in updatePredictionResultAndConfidence");
+        return false;
+    }
+    
+    // Validate input parameters
+    $recordId = (int)$recordId; // Ensure recordId is an integer
+    $prediction = (int)$prediction; // Ensure prediction is an integer (0 or 1)
+    $confidence = round((float)$confidence, 2); // Round confidence to 2 decimal places
+    
+    // Log the values for debugging
+    echo "<script>console.log('Updating record ID: {$recordId} with prediction: {$prediction}, confidence: {$confidence}');</script>";
+    error_log("Updating record ID: {$recordId} with prediction: {$prediction}, confidence: {$confidence}");
+    
+    // Prepare the update SQL statement
+    $sql = "UPDATE user_prediction_history SET prediction_result = ?, prediction_confidence = ? WHERE id = ?";
+    
+    $stmt = $db->prepare($sql);
+    if (!$stmt) {
+        echo "<script>console.error('Error preparing statement for updating prediction: " . addslashes($db->error) . "');</script>";
+        error_log("Error preparing statement for updating prediction: " . $db->error);
+        return false;
+    }
+    
+    // Bind parameters - 'idi' for double (confidence), integer (prediction), integer (recordId)
+    $stmt->bind_param("idi", $prediction, $confidence, $recordId);
+    
+    try {
+        if ($stmt->execute()) {
+            // Log successful update
+            echo "<script>console.log('Successfully updated prediction values for record ID: {$recordId}');</script>";
+            error_log("Successfully updated prediction values for record ID: {$recordId}");
+            $stmt->close();
+            return true;
+        } else {
+            // Log SQL execution errors
+            $errorMsg = "Error executing statement for updating prediction: " . $stmt->error;
+            echo "<script>console.error('{$errorMsg}');</script>";
+            error_log($errorMsg);
+            $stmt->close();
+            return false;
+        }
+    } catch (Throwable $e) {
+        // Log any exceptions or errors
+        $errorMessage = $e->getMessage();
+        echo "<script>console.error('Exception in updatePredictionResultAndConfidence: " . addslashes($errorMessage) . "');</script>";
+        error_log("Exception in updatePredictionResultAndConfidence: " . $errorMessage);
+        
+        if (isset($stmt) && $stmt) {
+            $stmt->close();
+        }
+        return false;
+    }
+}
+
+/**
  * Saves the prediction details to the user_prediction_history table.
  *
  * @param int $userId The ID of the user.
@@ -257,6 +328,18 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
             header('X-Debug-Success: true');
             header('X-Debug-RecordID: ' . $lastId);
             $stmt->close();
+            
+            // Call the update function to ensure prediction_result and prediction_confidence are properly set
+            // This is a fallback in case these fields weren't properly inserted in the initial query
+            $updateResult = updatePredictionResultAndConfidence($lastId, $prediction, $confidence);
+            if ($updateResult) {
+                echo "<script>console.log('Successfully updated prediction values for record ID: {$lastId}');</script>";
+                error_log("Successfully updated prediction values for record ID: {$lastId}");
+            } else {
+                echo "<script>console.error('Failed to update prediction values for record ID: {$lastId}');</script>";
+                error_log("Failed to update prediction values for record ID: {$lastId}");
+            }
+            
             return $lastId;
         } else {
             // Log SQL execution errors
