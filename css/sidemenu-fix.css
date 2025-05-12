@@ -26,17 +26,17 @@
     padding-right: 12px; /* Add some padding for scrollbar */
 }
 
-/* Ensure main content adjusts properly */
+/* Ensure main content adjusts properly
 .nk-wrap {
     margin-left: 0;
 }
 
-/* Mobile responsiveness */
+Mobile responsiveness
 @media (max-width: 991.98px) {
     .nk-wrap {
         margin-left: 0;
     }
-}
+} */ 
 
 /* Fix for simplebar plugin */
 [data-simplebar] {
