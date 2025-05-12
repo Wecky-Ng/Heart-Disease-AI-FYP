@@ -172,6 +172,18 @@ console_log('About to call savePredictionHistory with userId=' . $userId . ', pr
 // Call function to save the history record
 try {
     console_log('Calling savePredictionHistory with properly typed data');
+    
+    // Ensure we have a valid database connection before proceeding
+    if (!isset($db) || !$db) {
+        console_log('Database connection is not valid before calling savePredictionHistory');
+        returnJsonError('Database connection error. Please try again later.', 500);
+    }
+    
+    // Log data types for debugging
+    console_log('userId type: ' . gettype($userId) . ', value: ' . $userId);
+    console_log('prediction type: ' . gettype($prediction) . ', value: ' . $prediction);
+    console_log('confidence type: ' . gettype($confidence) . ', value: ' . $confidence);
+    
     $historyId = savePredictionHistory($userId, $dbData, $prediction, $confidence);
     
     console_log('savePredictionHistory result: ' . ($historyId ? 'Success, ID: ' . $historyId : 'Failed'));
@@ -181,8 +193,10 @@ try {
         console_log('savePredictionHistory returned false - database error occurred');
         returnJsonError('Failed to save prediction history. Database error occurred.', 500);
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    // Catch both Exception and Error with Throwable
     console_log('Exception in savePredictionHistory call: ' . $e->getMessage());
+    console_log('Exception trace: ' . $e->getTraceAsString());
     returnJsonError('Exception saving prediction: ' . $e->getMessage(), 500);
 }
 
@@ -202,4 +216,7 @@ if ($historyId) {
     console_log('Reached fallback error handler - historyId is false');
     returnJsonError('Failed to save prediction history. Please try again later.', 500);
 }
+
+// Ensure we always exit properly
+exit();
 ?>

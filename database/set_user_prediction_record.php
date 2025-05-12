@@ -146,7 +146,8 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     } catch (Exception $e) {
         error_log("Error binding parameters: " . $e->getMessage());
         header('X-Debug-BindError: ' . substr($e->getMessage(), 0, 100));
-        throw $e; // Re-throw to be caught by the outer try-catch
+        $stmt->close();
+        return false; // Return false instead of re-throwing to prevent uncaught exceptions
     }
 
     // Log the SQL and parameters for debugging - use both error_log and headers for client-side debugging
@@ -202,8 +203,8 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
             $stmt->close();
             return false;
         }
-    } catch (Exception $e) {
-        // Log any exceptions
+    } catch (Throwable $e) {
+        // Log any exceptions or errors (Throwable catches both Exception and Error)
         $errorMessage = $e->getMessage();
         error_log("Exception in savePredictionHistory: " . $errorMessage);
         header('X-Debug-Exception: ' . substr($errorMessage, 0, 100));
@@ -211,7 +212,9 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         // Log the stack trace for more detailed debugging
         error_log("Exception stack trace: " . $e->getTraceAsString());
         
-        $stmt->close();
+        if (isset($stmt) && $stmt) {
+            $stmt->close();
+        }
         return false;
     }
 }
