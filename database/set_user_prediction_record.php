@@ -23,6 +23,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // Ensure we have a valid database connection
     $db = getDbConnection();
     if (!$db) {
+        echo "<script>console.error('Failed to get database connection in savePredictionHistory');</script>";
         error_log("Failed to get database connection in savePredictionHistory");
         return false;
     }
@@ -30,7 +31,14 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // Validate input parameters
     $userId = (int)$userId; // Ensure userId is an integer
     $prediction = (int)$prediction; // Ensure prediction is an integer (0 or 1)
-    $confidence = (float)$confidence; // Ensure confidence is a float
+    
+    // Ensure confidence is properly converted to float
+    // Force conversion to string first to handle any potential formatting issues
+    $confidence = (float)(string)$confidence; 
+    // Add console.log for browser debugging instead of error_log
+    echo "<script>console.log('Confidence value after initial casting: " . addslashes(var_export($confidence, true)) . "');</script>";
+    // Keep error_log as backup
+    error_log("Confidence value after initial casting: " . var_export($confidence, true));
     
     // Validate data array - ensure all required fields exist and are properly typed
     $requiredFields = [
@@ -43,6 +51,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     // Check if all required fields exist
     foreach ($requiredFields as $field) {
         if (!isset($data[$field])) {
+            echo "<script>console.error('Missing required field \'{$field}\\' in savePredictionHistory');</script>";
             error_log("Missing required field '{$field}' in savePredictionHistory");
             return false;
         }
@@ -73,8 +82,10 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
 
     $stmt = $db->prepare($sql);
     if (!$stmt) {
+        echo "<script>console.error('Error preparing statement for saving history: " . addslashes($db->error) . "');</script>";
         error_log("Error preparing statement for saving history: " . $db->error);
         // Log the specific MySQL error for better debugging
+        echo "<script>console.error('MySQL Error: " . addslashes($db->error) . "');</script>";
         error_log("MySQL Error: " . $db->error);
         return false;
     }
@@ -145,7 +156,13 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     $data['kidney_disease'] = (int)$data['kidney_disease'];
     $data['skin_cancer'] = (int)$data['skin_cancer'];
     $prediction = (int)$prediction;
-    $confidence = (float)$confidence;
+    // Ensure confidence is properly cast to float again right before binding
+    // This double-casting approach helps ensure the value is correctly processed
+    $confidence = (float)(string)$confidence;
+    // Add console.log for browser debugging
+    echo "<script>console.log('Final confidence value before binding: " . addslashes(var_export($confidence, true)) . "');</script>";
+    // Keep error_log as backup
+    error_log("Final confidence value before binding: " . var_export($confidence, true));
 
     // Bind the parameters - ensure we have exactly 20 parameters to match our type string
     try {
@@ -176,8 +193,11 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         // Use call_user_func_array to bind all parameters at once
         call_user_func_array(array($stmt, 'bind_param'), $params);
         
+        // Add console.log for browser debugging
+        echo "<script>console.log('Successfully bound all parameters');</script>";
         error_log("Successfully bound all parameters");
     } catch (Exception $e) {
+        echo "<script>console.error('Error binding parameters: " . addslashes($e->getMessage()) . "');</script>";
         error_log("Error binding parameters: " . $e->getMessage());
         header('X-Debug-BindError: ' . substr($e->getMessage(), 0, 100));
         $stmt->close();
@@ -185,6 +205,15 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     }
 
     // Log the SQL and parameters for debugging - use both error_log and headers for client-side debugging
+    // Add console.log for browser debugging
+    echo "<script>
+        console.log('Executing SQL: {$sql}');
+        console.log('User ID: {$userId}');
+        console.log('Data values: " . addslashes(json_encode($data)) . "');
+        console.log('Prediction: {$prediction}, Confidence: {$confidence}, Confidence Type: " . gettype($confidence) . ", Raw Value: " . addslashes(var_export($confidence, true)) . "');
+    </script>";
+    
+    // Keep error_log as backup
     error_log("Executing SQL: {$sql}");
     error_log("User ID: {$userId}");
     error_log("Data values: " . json_encode($data));
@@ -210,17 +239,20 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
         {$data['asthma']}, {$data['kidney_disease']}, {$data['skin_cancer']}, {$prediction}, {$confidence}, NOW()
     )";
     
-    // Only log to error log, not to browser console (which breaks JSON responses)
+    // Log to both error log and browser console
+    echo "<script>console.log('DEBUG SQL with values: " . addslashes($debugSql) . "');</script>";
     error_log("DEBUG SQL with values: " . $debugSql);
     
     try {
         // Log bind_param success/failure
+        echo "<script>console.log('About to execute statement with types: {$types}');</script>";
         error_log("About to execute statement with types: {$types}");
         header('X-Debug-BindTypes: ' . $types);
         
         if ($stmt->execute()) {
             $lastId = $db->insert_id;
             // Log successful insertion
+            echo "<script>console.log('Successfully inserted record with ID: {$lastId}');</script>";
             error_log("Successfully inserted record with ID: {$lastId}");
             header('X-Debug-Success: true');
             header('X-Debug-RecordID: ' . $lastId);
@@ -230,6 +262,8 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
             // Log SQL execution errors
             $errorMsg = "Error executing statement for saving history: " . $stmt->error;
             $errorCode = "MySQL Error Code: " . $stmt->errno;
+            echo "<script>console.error('{$errorMsg}');</script>";
+            echo "<script>console.error('{$errorCode}');</script>";
             error_log($errorMsg);
             error_log($errorCode);
             header('X-Debug-Error: ' . substr($errorMsg, 0, 100));
@@ -240,10 +274,12 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     } catch (Throwable $e) {
         // Log any exceptions or errors (Throwable catches both Exception and Error)
         $errorMessage = $e->getMessage();
+        echo "<script>console.error('Exception in savePredictionHistory: " . addslashes($errorMessage) . "');</script>";
         error_log("Exception in savePredictionHistory: " . $errorMessage);
         header('X-Debug-Exception: ' . substr($errorMessage, 0, 100));
         
         // Log the stack trace for more detailed debugging
+        echo "<script>console.error('Exception stack trace: " . addslashes($e->getTraceAsString()) . "');</script>";
         error_log("Exception stack trace: " . $e->getTraceAsString());
         
         if (isset($stmt) && $stmt) {
