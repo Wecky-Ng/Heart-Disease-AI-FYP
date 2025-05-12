@@ -34,7 +34,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     
     // Ensure confidence is properly converted to float
     // Force conversion to string first to handle any potential formatting issues
-    $confidence = (float)(string)$confidence; 
+    $confidence = (float)$confidence; 
     // Add console.log for browser debugging instead of error_log
     echo "<script>console.log('Confidence value after initial casting: " . addslashes(var_export($confidence, true)) . "');</script>";
     // Keep error_log as backup
@@ -158,7 +158,7 @@ function savePredictionHistory($userId, $data, $prediction, $confidence)
     $prediction = (int)$prediction;
     // Round the confidence value to 2 decimal places before storing it in the database
     // This ensures it will be stored as expected (e.g., 0.82 instead of 0.81537892036955)
-    $confidence = round((float)(string)$confidence, 2);
+    $confidence = round((float)$confidence, 2);
     // Add console.log for browser debugging
     echo "<script>console.log('Final confidence value before binding (rounded to 2 decimals): " . addslashes(var_export($confidence, true)) . "');</script>";
     // Keep error_log as backup
