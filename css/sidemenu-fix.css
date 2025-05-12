@@ -28,7 +28,7 @@
 
 /* Ensure main content adjusts properly */
 .nk-wrap {
-    margin-left: 280px;
+    margin-left: 0;
 }
 
 /* Mobile responsiveness */
