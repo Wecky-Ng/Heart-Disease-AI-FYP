@@ -41,7 +41,8 @@ function deletePredictionRecord($recordId, $userId) {
     if ($execute_success === false) {
         error_log("MySQL execute error in deletePredictionRecord: " . $stmt->error);
         $stmt->close();
-        $db->close();
+        // Don't close the connection here as it's managed by the caller
+        // $db->close();
         return false;
     }
     
